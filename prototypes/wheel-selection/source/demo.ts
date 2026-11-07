@@ -169,7 +169,7 @@ const wheel = () => {
  return group.map(b=>{const tip=p(b.longitude,230);return `<line class="${placement?'body-leader':'group-leader'}" x1="${tip.x}" y1="${tip.y}" x2="${q.x}" y2="${q.y}" stroke="#777" stroke-width="${glyphScale*.8}" opacity=".65"/>`;}).join('');
  }).join('')}</g>
  ${all.filter(i=>i.kind==='Sign').map(i=>{const sector=signSectors()[i.index!],start=sector.start,q=p(start+sector.width/2,253),fill=WHEEL_THEMES.traditional.signFills![i.name];return `<g ${attrs(i)}><path d="${annularSector(231,273,longitudeToSvgAngle(start+sector.width,snapshot()?.bodies.find(b=>b.name==='ASCENDANT_SYMBOL')!.longitude||0),longitudeToSvgAngle(start,snapshot()?.bodies.find(b=>b.name==='ASCENDANT_SYMBOL')!.longitude||0))}" transform="translate(300 300)" fill="${fill}"/>${glyph(i.name==='Ophiuchus'?'M20 15H30V65Q50 95 70 65V15H80V65Q50 115 20 65ZM8 40Q30 65 50 40T92 40V50Q70 25 50 50T8 50Z':zodiacGlyphPaths[signs.indexOf(i.name)],q.x,q.y,contrastInk(fill))}</g>`}).join('')}
- 
+
  ${layouts.map(({group,placement})=>{
  const {q,sector,anchor,houseStart,compact,extent,glyphScale}=layoutGeometry(group,placement);
  if(placement){const b=group[0],i=all.find(i=>i.body===b.name)!,tip=p(b.longitude,230);return `<g ${attrs(i)} data-layout-house="${sector.index}" data-label-longitude="${placement!.longitude}" data-label-radius="${placement!.radius}" data-label-x="${q.x}" data-label-y="${q.y}"><circle cx="${q.x}" cy="${q.y}" r="${22*glyphScale}" fill="transparent"/><circle cx="${q.x}" cy="${q.y}" r="${16*glyphScale}" fill="#fafafa"/><g transform="translate(${q.x} ${q.y}) scale(${glyphScale})">${glyph(bodySymbols[b.name].path,0,0)}</g></g>`;}
