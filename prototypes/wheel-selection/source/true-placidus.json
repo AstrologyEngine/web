@@ -1,0 +1,245 @@
+{
+  "bodies": [
+    {
+      "name": "SUN",
+      "longitude": 53.91549812405814,
+      "speed": 0.9544644395864452,
+      "declination": 23.30326234976709,
+      "sign": {
+        "sign": "taurus",
+        "degrees_in_sign": 34.18689812405814,
+        "width_degrees": 36.8589
+      }
+    },
+    {
+      "name": "EARTH",
+      "longitude": 233.91549812405813,
+      "speed": 0.9544644395864452,
+      "declination": 23.30326234976709,
+      "sign": {
+        "sign": "ophiuchus",
+        "degrees_in_sign": 10.490998124058137,
+        "width_degrees": 12.35730000000001
+      }
+    },
+    {
+      "name": "MOON",
+      "longitude": 261.7731862883358,
+      "speed": 13.926273781802252,
+      "declination": -18.326720539541896,
+      "sign": {
+        "sign": "sagittarius",
+        "degrees_in_sign": 25.991386288335804,
+        "width_degrees": 33.48589999999999
+      }
+    },
+    {
+      "name": "NORTH_NODE",
+      "longitude": 221.1480525368006,
+      "speed": -0.025044746162052434,
+      "declination": -22.100053361054254,
+      "sign": {
+        "sign": "scorpio",
+        "degrees_in_sign": 10.950852536800596,
+        "width_degrees": 13.227299999999985
+      }
+    },
+    {
+      "name": "SOUTH_NODE",
+      "longitude": 41.14805253680064,
+      "speed": -0.025044746162052434,
+      "declination": -22.100053361054254,
+      "sign": {
+        "sign": "taurus",
+        "degrees_in_sign": 21.41945253680064,
+        "width_degrees": 36.8589
+      }
+    },
+    {
+      "name": "MERCURY",
+      "longitude": 71.52611500588591,
+      "speed": 1.7930475191877804,
+      "declination": 24.98084208156676,
+      "sign": {
+        "sign": "gemini",
+        "degrees_in_sign": 14.938615005885914,
+        "width_degrees": 29.453700000000005
+      }
+    },
+    {
+      "name": "VENUS",
+      "longitude": 84.12744683429742,
+      "speed": 0.06084790568695553,
+      "declination": 22.098904181884883,
+      "sign": {
+        "sign": "gemini",
+        "degrees_in_sign": 27.539946834297417,
+        "width_degrees": 29.453700000000005
+      }
+    },
+    {
+      "name": "MARS",
+      "longitude": 21.531436115789376,
+      "speed": 0.723455741501084,
+      "declination": 17.713197234052444,
+      "sign": {
+        "sign": "taurus",
+        "degrees_in_sign": 1.8028361157893755,
+        "width_degrees": 36.8589
+      }
+    },
+    {
+      "name": "JUPITER",
+      "longitude": 213.90504945254784,
+      "speed": -0.1129572281347464,
+      "declination": -20.07602112344361,
+      "sign": {
+        "sign": "scorpio",
+        "degrees_in_sign": 3.7078494525478334,
+        "width_degrees": 13.227299999999985
+      }
+    },
+    {
+      "name": "SATURN",
+      "longitude": 242.5357694724693,
+      "speed": -0.07225477491624588,
+      "declination": -22.42369817490502,
+      "sign": {
+        "sign": "sagittarius",
+        "degrees_in_sign": 6.753969472469294,
+        "width_degrees": 33.48589999999999
+      }
+    },
+    {
+      "name": "URANUS",
+      "longitude": 220.0952635847882,
+      "speed": -0.03961121762836228,
+      "declination": -21.90757642318859,
+      "sign": {
+        "sign": "scorpio",
+        "degrees_in_sign": 9.89806358478819,
+        "width_degrees": 13.227299999999985
+      }
+    },
+    {
+      "name": "NEPTUNE",
+      "longitude": 56.77700909332932,
+      "speed": 0.037257024675454886,
+      "declination": 22.21244821551194,
+      "sign": {
+        "sign": "gemini",
+        "degrees_in_sign": 0.18950909332932042,
+        "width_degrees": 29.453700000000005
+      }
+    },
+    {
+      "name": "PLUTO",
+      "longitude": 46.536616639495456,
+      "speed": 0.02305131072250788,
+      "declination": 13.516300594524674,
+      "sign": {
+        "sign": "taurus",
+        "degrees_in_sign": 26.808016639495456,
+        "width_degrees": 36.8589
+      }
+    },
+    {
+      "name": "CHIRON",
+      "longitude": 231.9794154363528,
+      "speed": -0.06806440071022735,
+      "declination": -17.052524883239276,
+      "sign": {
+        "sign": "ophiuchus",
+        "degrees_in_sign": 8.554915436352815,
+        "width_degrees": 12.35730000000001
+      }
+    },
+    {
+      "name": "CERES",
+      "longitude": 285.5671881839872,
+      "speed": -0.03352183029346634,
+      "declination": -24.775939149244767,
+      "sign": {
+        "sign": "capricorn",
+        "degrees_in_sign": 16.299488183987194,
+        "width_degrees": 25.575800000000015
+      }
+    },
+    {
+      "name": "ASCENDANT_SYMBOL",
+      "longitude": 105.41899030446217,
+      "speed": 0,
+      "declination": 0,
+      "sign": {
+        "sign": "leo",
+        "degrees_in_sign": 2.2289903044621724,
+        "width_degrees": 38.41650000000001
+      }
+    },
+    {
+      "name": "MIDHEAVEN",
+      "longitude": 358.3626373435118,
+      "speed": 0,
+      "declination": 0,
+      "sign": {
+        "sign": "pisces",
+        "degrees_in_sign": 40.352337343511806,
+        "width_degrees": 41.98970000000003
+      }
+    },
+    {
+      "name": "DESCENDANT",
+      "longitude": 285.41899030446217,
+      "speed": 0,
+      "declination": 0,
+      "sign": {
+        "sign": "capricorn",
+        "degrees_in_sign": 16.15129030446218,
+        "width_degrees": 25.575800000000015
+      }
+    },
+    {
+      "name": "IMUM_COELI",
+      "longitude": 178.36263734351178,
+      "speed": 0,
+      "declination": 0,
+      "sign": {
+        "sign": "virgo",
+        "degrees_in_sign": 36.75613734351177,
+        "width_degrees": 49.71349999999998
+      }
+    }
+  ],
+  "cusps": [
+    105.41899030446217,
+    123.28199917067013,
+    146.6530502226612,
+    178.36263734351178,
+    218.1031595291163,
+    255.9565063352667,
+    285.41899030446217,
+    303.2819991706702,
+    326.6530502226612,
+    358.3626373435118,
+    38.10315952911632,
+    75.95650633526671
+  ],
+  "offset": 29.824933686074665,
+  "input": {
+    "utc": "1900-06-15T08:12:34.567000000Z",
+    "latitude": 51.5,
+    "longitude": -0.12,
+    "house": "placidus",
+    "config": {
+      "reference": "true-sky",
+      "divisions": "constellation",
+      "ophiuchus": "enabled"
+    }
+  },
+  "provenance": {
+    "source": "library/tests/fixtures/conventions.json",
+    "index": 22,
+    "libraryCommit": "71350f0889c3b5e1585935d2017c97efe0bb5848",
+    "captureSourceRevision": "dd2e03d9faf256342c84380ccb6fac83c06771ac"
+  }
+}

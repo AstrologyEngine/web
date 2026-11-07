@@ -1,3 +1,5 @@
+import trueWhole from './true-whole.json';
+import truePlacidus from './true-placidus.json';
 // Throwaway interaction prototype, using plugin wheel artwork and geometry.
 import { wheelPoint } from './geometry';
 import { annularSector } from './arcPath';
@@ -8,9 +10,19 @@ import { WHEEL_THEMES, contrastInk } from './theme';
 const signs = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
 const names = ['SUN','MOON','MERCURY','VENUS','MARS','JUPITER','SATURN','URANUS','NEPTUNE','PLUTO','CHIRON','CERES','NORTH_NODE','SOUTH_NODE','EARTH'];
 const positions = [72,192,75,78,252,12,282,45,345,315,25,110,160,340,252];
+let chartMode=new URLSearchParams(location.search).get('chart')||'true-whole';
+const snapshot=()=>chartMode==='true-whole'?trueWhole:chartMode==='true-placidus'?truePlacidus:null;
+const constellationStarts=[0,19.7286,56.5875,86.0412,103.19,141.6065,191.32,210.1972,223.4245,235.7818,269.2677,294.8435,318.0103];
+const constellationNames=[...signs.slice(0,8),'Ophiuchus',...signs.slice(8)];
+const signSectors=()=> (snapshot()?constellationNames:signs).map((name,index)=>({name,start:snapshot()?constellationStarts[index]:index*30,width:snapshot()?(constellationStarts[index+1]??360)-constellationStarts[index]:30}));
+const cuspSectors=()=> (snapshot()?.cusps||signs.map((_,i)=>i*30)).map((start,index,all)=>({start,width:((all[(index+1)%12]-start)+360)%360,index}));
+const houseIndex=(longitude:number)=>cuspSectors().find(h=>(longitude-h.start+360)%360<h.width)!.index;
+const signName=(longitude:number)=>signSectors().find(h=>(longitude-h.start+360)%360<h.width)!.name;
+const chartContext=()=>snapshot()?`True Sky · Constellation-sized signs · ${chartMode==='true-whole'?'Whole-sign':'Placidus'} houses · Ophiuchus on`:'Tropical zodiac · Equal houses';
 const references: Record<string,string> = {
  Sun:'In astrology, the Sun represents identity, vitality, and self-expression.',
  Gemini:'Gemini is associated with curiosity, communication, and exploring different perspectives.',
+ Conjunction:'A conjunction brings two bodies close together in the chart.',
  Trine:'A trine represents an easy-flowing connection between two bodies.',
  Square:'A square represents tension between two bodies.',
  Opposition:'An opposition represents a relationship between bodies on opposite sides of the chart.',
@@ -36,9 +48,19 @@ const reduce = (s: State, a: {type:string; value?:string; choices?:string[]}): S
 let state = initial;
 let opener = '';
 const $ = (id:string) => document.getElementById(id)!;
-const p = (l:number,r:number) => wheelPoint(l,r,0);
-const bodies = () => names.map((name,i) => ({name,longitude:(positions[i]+(state.scenario==='edited'?41:0)+(state.scenario==='crowded' && i<6 ? 73-positions[i]+i*1.3:0)+360)%360}));
-const aspects = () => [
+const p = (l:number,r:number) => wheelPoint(l,r,snapshot()?.bodies.find(b=>b.name==='ASCENDANT_SYMBOL')!.longitude||0);
+const bodies = () => names.map((name,i) => {
+ const base=snapshot()?.bodies.find(b=>b.name===name)!.longitude??positions[i];
+ const narrow=cuspSectors().reduce((a,b)=>a.width<b.width?a:b);
+ const crowded=snapshot()?(narrow.start+narrow.width/2-2.5+i)%360:73+i*1.3;
+ return {name,longitude:((state.scenario==='crowded'&&i<6?crowded:base)+(state.scenario==='edited'?41:0)+360)%360};
+});
+const derivedAspects=()=>bodies().flatMap((a,i)=>bodies().slice(i+1).flatMap(b=>{
+ const d=Math.abs(a.longitude-b.longitude),sep=Math.min(d,360-d);
+ const match=([['Conjunction',0,10],['Sextile',60,6],['Square',90,8],['Trine',120,8],['Opposition',180,10]] as const).find(([,angle,orb])=>Math.abs(sep-angle)<=orb);
+ return match?[{id:`aspect-${a.name}-${b.name}`,name:`${bodySymbols[a.name].name} ${match[0].toLowerCase()} ${bodySymbols[b.name].name}`,kind:'Aspect',pair:[a.name,b.name],type:match[0]}]:[];
+}));
+const aspects = ():Item[] => snapshot()?derivedAspects():[
  {id:'aspect-sun-moon',name:'Sun trine Moon',kind:'Aspect',pair:['SUN','MOON'],type:'Trine'},
  {id:'aspect-sun-mars',name:'Sun opposition Mars',kind:'Aspect',pair:['SUN','MARS'],type:'Opposition'},
  {id:'aspect-moon-jupiter',name:'Moon opposition Jupiter',kind:'Aspect',pair:['MOON','JUPITER'],type:'Opposition'},
@@ -48,9 +70,9 @@ const aspects = () => [
 ] as Item[];
 const items = (): Item[] => [
  ...bodies().map(b=>({id:'body-'+b.name,name:bodySymbols[b.name].name,kind:'Body',body:b.name,longitude:b.longitude})),
- ...signs.map((name,index)=>({id:'sign-'+index,name,kind:'Sign',index})),
+ ...signSectors().map((sector,index)=>({id:'sign-'+index,name:sector.name,kind:'Sign',index})),
  ...signs.map((_,index)=>({id:'house-'+index,name:'House '+(index+1),kind:'House',index})),
- ...[0,270,180,90].map((longitude,index)=>({id:'angle-'+index,name:['ASC','MC','DSC','IC'][index],kind:'Angle',longitude})),
+ ...[0,270,180,90].map((longitude,index)=>({id:'angle-'+index,name:['ASC','MC','DSC','IC'][index],kind:'Angle',longitude:snapshot()?.bodies.find(b=>b.name===['ASCENDANT_SYMBOL','MIDHEAVEN','DESCENDANT','IMUM_COELI'][index])!.longitude??longitude})),
  ...aspects()
 ];
 const active = () => items().find(i=>i.id===state.selected);
@@ -59,11 +81,12 @@ const glyph = (path:string,x:number,y:number,ink='#222') => `<svg x="${x-12}" y=
 // Groups stay within their actual house; no glyph is moved to a neighboring house.
 const clusters = () => [...bodies()].sort((a,b)=>a.longitude-b.longitude).reduce<ReturnType<typeof bodies>[]>((groups,b)=>{
  const last=groups.at(-1),prev=last?.at(-1);
- return prev && Math.floor(prev.longitude/30)===Math.floor(b.longitude/30) && b.longitude-prev.longitude<12
+ return prev && houseIndex(prev.longitude)===houseIndex(b.longitude) && b.longitude-prev.longitude<12
  ? [...groups.slice(0,-1),[...last!,b]] : [...groups,[b]];
 },[]);
 type Picker = {ids:string[]; aspectIds:string[]; mode:'bodies'|'aspects'; body:string|null; relation:string|null};
 let picker:Picker|null=null;
+// Owner selected A; B/C remain available as archived comparison variants.
 let variant = new URLSearchParams(location.search).get('variant') || 'A';
 if(!['A','B','C'].includes(variant))variant='A';
 let spotlight=0, sheetHeight=40, zoom=false;
@@ -76,12 +99,14 @@ const availableAspects=()=>aspects().filter(a=>!picker?.aspectIds.length||picker
 const pickerContent=()=>{
  if(!picker)return '';
  const scope=picker;
- const options= !scope.body ? scope.ids.map(id=>({id,label:bodyName(id),note:scope.mode==='aspects'?'Explore its connections':`${signs[Math.floor(bodies().find(b=>b.name===id)!.longitude/30)]} · House ${Math.floor(bodies().find(b=>b.name===id)!.longitude/30)+1}`,glyph:id}))
+ const options= !scope.body ? scope.ids.map(id=>({id,label:bodyName(id),note:scope.mode==='aspects'?'Explore its connections':`${signName(bodies().find(b=>b.name===id)!.longitude)} · House ${houseIndex(bodies().find(b=>b.name===id)!.longitude)+1}`,glyph:id}))
  : !scope.relation ? [...new Set(availableAspects().filter(a=>a.pair!.includes(scope.body!)).map(a=>a.type!))].map(type=>({id:type,label:type,note:references[type],glyph:scope.body!}))
  : availableAspects().filter(a=>a.pair!.includes(scope.body!)&&a.type===scope.relation).map(a=>({id:a.id,label:bodyName(a.pair!.find(n=>n!==scope.body)!),note:`${bodyName(scope.body!)} · ${scope.relation}`,glyph:a.pair!.find(n=>n!==scope.body)!}));
- const heading=!scope.body?(scope.mode==='bodies'?'Inside this folder':'Explore connections'):!scope.relation?`${bodyName(scope.body)} connections`:`${bodyName(scope.body)} · ${scope.relation}`;
+ const signNames=[...new Set(scope.ids.map(id=>signName(bodies().find(b=>b.name===id)!.longitude)))];
+ const groupTitle=signNames.length===1?`Bodies in ${signNames[0]}`:'Grouped bodies';
+ const heading=!scope.body?(scope.mode==='bodies'?groupTitle:'Explore connections'):!scope.relation?`${bodyName(scope.body)} connections`:`${bodyName(scope.body)} · ${scope.relation}`;
  const buttons=options.map((o,i)=>`<button class="picker-option" data-pick="${o.id}" ${variant==='C'&&i!==spotlight?'hidden':''}>${miniGlyph(o.glyph)}<span><strong>${o.label}</strong><small>${o.note}</small></span><span aria-hidden="true">${scope.mode==='aspects'?'›':'↗'}</span></button>`).join('');
- return `${scope.body?`<nav class="breadcrumbs" aria-label="Picker path"><button data-picker-back="root">${scope.mode==='bodies'?'Folder':'Bodies'}</button>${scope.body?`<span>›</span><button data-picker-back="body">${bodyName(scope.body)}</button>`:''}${scope.relation?`<span>› ${scope.relation}</span>`:''}</nav>`:''}<h2 id="detail-title" tabindex="-1">${heading}</h2>${scope.body?`<p>${!scope.relation?'Choose a relationship.':'Choose the other body.'}</p>`:''}${variant==='C'&&options.length?`<div class="card-navigation"><button data-card="-1" aria-label="Previous choice">←</button><span>${spotlight+1} of ${options.length}</span><button data-card="1" data-count="${options.length}" aria-label="Next choice">→</button></div>`:''}<div class="picker picker-${variant}">${buttons||'<p>No connections in this fixture.</p>'}</div>`;
+ return `${scope.body?`<nav class="breadcrumbs" aria-label="Picker path"><button data-picker-back="root">${scope.mode==='bodies'?'Group':'Bodies'}</button>${scope.body?`<span>›</span><button data-picker-back="body">${bodyName(scope.body)}</button>`:''}${scope.relation?`<span>› ${scope.relation}</span>`:''}</nav>`:''}<h2 id="detail-title" tabindex="-1">${heading}</h2>${scope.body?`<p>${!scope.relation?'Choose a relationship.':'Choose the other body.'}</p>`:''}${variant==='C'&&options.length?`<div class="card-navigation"><button data-card="-1" aria-label="Previous choice">←</button><span>${spotlight+1} of ${options.length}</span><button data-card="1" data-count="${options.length}" aria-label="Next choice">→</button></div>`:''}<div class="picker picker-${variant}">${buttons||'<p>No connections in this fixture.</p>'}</div>`;
 };
 const wheel = () => {
  const all=items(), bs=bodies(), selected=active();
@@ -89,26 +114,40 @@ const wheel = () => {
  return `<svg id="wheel" viewBox="-20 -20 640 640" role="group" aria-label="Interactive chart. Use the named list below for precise selection.">
  <circle cx="300" cy="300" r="273" fill="white" stroke="#ccc"/>
  ${[231,133,108].map(r=>`<circle cx="300" cy="300" r="${r}" fill="${r===108?'#fff':'#fafafa'}" stroke="#ddd"/>`).join('')}
- ${all.filter(i=>i.kind==='House').map(i=>{const start=i.index!*30; const q=p(start+15,118),a=p(start,133),b=p(start,231);return `<path ${attrs(i)} d="${annularSector(108,231,longitudeToSvgAngle(start+30,0),longitudeToSvgAngle(start,0))}" transform="translate(300 300)" fill="${state.selected===i.id?'#e6e5f4':'transparent'}"/><line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#ccc" pointer-events="none"/><text x="${q.x}" y="${q.y}" text-anchor="middle" dominant-baseline="middle" pointer-events="none" font-size="13">${i.index!+1}</text>`}).join('')}
+ ${all.filter(i=>i.kind==='House').map(i=>{const sector=cuspSectors()[i.index!],start=sector.start; const q=p(start+sector.width/2,118),a=p(start,133),b=p(start,231);return `<path ${attrs(i)} d="${annularSector(108,231,longitudeToSvgAngle(start+sector.width,snapshot()?.bodies.find(b=>b.name==='ASCENDANT_SYMBOL')!.longitude||0),longitudeToSvgAngle(start,snapshot()?.bodies.find(b=>b.name==='ASCENDANT_SYMBOL')!.longitude||0))}" transform="translate(300 300)" fill="${state.selected===i.id?'#e6e5f4':'transparent'}"/><line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#ccc" pointer-events="none"/><text x="${q.x}" y="${q.y}" text-anchor="middle" dominant-baseline="middle" pointer-events="none" font-size="13">${i.index!+1}</text>`}).join('')}
  ${lineData.map(a=>{const related=selected?.kind!=='Body'||a.pair!.includes(selected.body!);return `<g ${attrs(a)}><line class="aspect" x1="${a.a.x}" y1="${a.a.y}" x2="${a.b.x}" y2="${a.b.y}" stroke="${['Square','Opposition'].includes(a.type!)?'#c22':'#25c'}" stroke-width="${state.selected===a.id?4:1.6}" opacity="${related?0.8:0.12}"/><line data-aspect-hit="true" x1="${a.a.x}" y1="${a.a.y}" x2="${a.b.x}" y2="${a.b.y}" stroke="transparent" stroke-width="18"/></g>`}).join('')}
- ${all.filter(i=>i.kind==='Sign').map(i=>{const start=i.index!*30,q=p(start+15,253),fill=WHEEL_THEMES.traditional.signFills![i.name];return `<g ${attrs(i)}><path d="${annularSector(231,273,longitudeToSvgAngle(start+30,0),longitudeToSvgAngle(start,0))}" transform="translate(300 300)" fill="${fill}"/>${glyph(zodiacGlyphPaths[i.index!],q.x,q.y,contrastInk(fill))}</g>`}).join('')}
+ ${all.filter(i=>i.kind==='Sign').map(i=>{const sector=signSectors()[i.index!],start=sector.start,q=p(start+sector.width/2,253),fill=WHEEL_THEMES.traditional.signFills![i.name];return `<g ${attrs(i)}><path d="${annularSector(231,273,longitudeToSvgAngle(start+sector.width,snapshot()?.bodies.find(b=>b.name==='ASCENDANT_SYMBOL')!.longitude||0),longitudeToSvgAngle(start,snapshot()?.bodies.find(b=>b.name==='ASCENDANT_SYMBOL')!.longitude||0))}" transform="translate(300 300)" fill="${fill}"/>${glyph(i.name==='Ophiuchus'?'M20 15H30V65Q50 95 70 65V15H80V65Q50 115 20 65ZM8 40Q30 65 50 40T92 40V50Q70 25 50 50T8 50Z':zodiacGlyphPaths[signs.indexOf(i.name)],q.x,q.y,contrastInk(fill))}</g>`}).join('')}
  ${clusters().map(group=>{
- const longitude=group.reduce((sum,b)=>sum+b.longitude,0)/group.length,q=p(longitude,188);
+ const longitude=group.reduce((sum,b)=>sum+b.longitude,0)/group.length;
+ // Whole target, badge, and focus stroke fit inside a conservative circle.
+ // Reserve eight SVG units from each cusp; clamp only the visual anchor.
+ const radius=184,clearance=8,sector=cuspSectors()[houseIndex(group[0].longitude)];
+ const compact=sector.width<30;
+ const targetRadius=compact?Math.min(18,Math.max(4,radius*Math.sin(sector.width/2*Math.PI/180)-clearance)):Math.hypot(26,26);
+ const extent=targetRadius;
+ const inset=Math.asin((extent+clearance)/radius)*180/Math.PI;
+ const houseStart=sector.start;
+ const anchor=Math.max(houseStart+inset,Math.min(houseStart+sector.width-inset,houseStart+(longitude-houseStart+360)%360));
+ const q=p(group.length>1?anchor:longitude,group.length>1?radius:188);
  if(group.length===1){const b=group[0],i=all.find(i=>i.body===b.name)!,tip=p(b.longitude,230);return `<g ${attrs(i)}><line x1="${tip.x}" y1="${tip.y}" x2="${q.x}" y2="${q.y}" stroke="#777"/><circle cx="${q.x}" cy="${q.y}" r="22" fill="transparent"/><circle cx="${q.x}" cy="${q.y}" r="16" fill="#fafafa"/>${glyph(bodySymbols[b.name].path,q.x,q.y)}</g>`;}
- return `<g id="folder-${group[0].name}" data-folder="${group.map(b=>b.name).join(',')}" role="button" tabindex="0" aria-label="Folder: ${group.map(b=>bodyName(b.name)).join(', ')}"><rect x="${q.x-25}" y="${q.y-25}" width="50" height="50" rx="12" fill="#e7e3ee" stroke="#6e617f"/>${group.slice(0,4).map((b,j)=>`<g transform="translate(${q.x+(j%2?10:-10)} ${q.y+(j>1?9:-10)}) scale(.52)">${glyph(bodySymbols[b.name].path,0,0)}</g>`).join('')}<circle cx="${q.x+23}" cy="${q.y-23}" r="10" fill="#65517d"/><text x="${q.x+23}" y="${q.y-23}" fill="white" font-size="11" text-anchor="middle" dominant-baseline="middle">${group.length}</text>${group.map(b=>{const tip=p(b.longitude,230);return `<line x1="${tip.x}" y1="${tip.y}" x2="${q.x}" y2="${q.y-26}" stroke="#aaa" stroke-width=".7" pointer-events="none"/>`}).join('')}</g>`;
+ const leaders=group.map(b=>{const tip=p(b.longitude,230);return `<line class="group-leader" x1="${tip.x}" y1="${tip.y}" x2="${q.x}" y2="${q.y}" stroke="#999" stroke-width=".8" pointer-events="none"/>`}).join('');
+ return `<g id="folder-${group[0].name}" data-folder="${group.map(b=>b.name).join(',')}" data-anchor="${anchor}" data-house-start="${houseStart}" data-house-width="${sector.width}" data-compact="${compact}" data-extent="${extent}" role="button" tabindex="0" aria-label="Grouped bodies: ${group.map(b=>bodyName(b.name)).join(', ')}">${leaders}${compact?`<circle class="compact-plate" cx="${q.x}" cy="${q.y}" r="${extent}" fill="#e7e3ee" stroke="#6e617f"/><text x="${q.x}" y="${q.y}" font-size="12" text-anchor="middle" dominant-baseline="middle">${group.length}</text>`:`<rect class="group-plate" x="${q.x-25}" y="${q.y-25}" width="50" height="50" rx="12" fill="#e7e3ee" stroke="#6e617f"/>${group.slice(0,4).map((b,j)=>`<g transform="translate(${q.x+(j%2?9:-9)} ${q.y+(j>1?12:-3)}) scale(.52)">${glyph(bodySymbols[b.name].path,0,0)}</g>`).join('')}<circle class="group-count" cx="${q.x+17}" cy="${q.y-17}" r="9" fill="#65517d"/><text x="${q.x+17}" y="${q.y-17}" fill="white" font-size="10" text-anchor="middle" dominant-baseline="middle">${group.length}</text>`}</g>`;
  }).join('')}
  ${all.filter(i=>i.kind==='Angle').map(i=>{const q=p(i.longitude!,293);return `<g ${attrs(i)}><rect x="${q.x-20}" y="${q.y-20}" width="40" height="40" fill="transparent"/><text x="${q.x}" y="${q.y}" text-anchor="middle" dominant-baseline="middle" font-size="12">${i.name}</text></g>`}).join('')}
  </svg>`;
 };
 const reference = (i:Item) => references[i.name] || (i.kind==='House' ? (i.index===6?'The seventh house concerns partnerships and how people relate one to one.':'This demo leaves the other house reference entries for the content port.') : 'Select Sun, Gemini, an angle, or an aspect to preview representative reference copy.');
 const facts = (i:Item) => {
- if(i.kind==='Body') return `<dl><dt>Sign</dt><dd>${signs[Math.floor(i.longitude!/30)]}</dd><dt>Degree</dt><dd>${(i.longitude!%30).toFixed(1)}°</dd><dt>House</dt><dd>${Math.floor(i.longitude!/30)+1}</dd><dt>Motion</dt><dd>${i.body==='SATURN'?'Retrograde':'Direct'}</dd></dl>`;
+ if(i.kind==='Body') return `<dl><dt>Sign</dt><dd>${signName(i.longitude!)}</dd><dt>Degree</dt><dd>${((i.longitude!-signSectors().find(s=>s.name===signName(i.longitude!))!.start+360)%360).toFixed(1)}°</dd><dt>House</dt><dd>${houseIndex(i.longitude!)+1}</dd><dt>Motion</dt><dd>${(snapshot()?.bodies.find(b=>b.name===i.body)?.speed??(i.body==='SATURN'?-1:1))<0?'Retrograde':'Direct'}</dd></dl>`;
  if(i.kind==='Aspect') return `<p>${i.pair!.map(n=>bodySymbols[n].name).join(' · ')} · ${i.type}</p><p>${references[i.type!]}</p>`;
- if(i.kind==='House') {const occupants=items().filter(b=>b.kind==='Body'&&Math.floor(b.longitude!/30)===i.index).map(b=>b.name); const rulers=['Mars','Venus','Mercury','Moon','Sun','Mercury','Venus','Mars (traditional), Pluto (modern)','Jupiter','Saturn','Saturn (traditional), Uranus (modern)','Jupiter (traditional), Neptune (modern)']; return `<h3>In this chart</h3><p>Occupants: ${occupants.join(', ')||'None'}</p><p>Ruler: ${rulers[i.index!]}</p>`;}
+ if(i.kind==='House') {const occupants=items().filter(b=>b.kind==='Body'&&houseIndex(b.longitude!)===i.index).map(b=>b.name); const rulers=['Mars','Venus','Mercury','Moon','Sun','Mercury','Venus','Mars (traditional), Pluto (modern)','Jupiter','Saturn','Saturn (traditional), Uranus (modern)','Jupiter (traditional), Neptune (modern)']; return `<h3>In this chart</h3><p>Occupants: ${occupants.join(', ')||'None'}</p><p>Ruler: ${rulers[signs.indexOf(signName(cuspSectors()[i.index!].start))]||'No established ruler'}</p>`;}
  return '';
 };
 const render = () => {
  const i=active();
+ $('concept-switcher').hidden=!new URLSearchParams(location.search).has('variant');
+ ($('chart-mode') as HTMLSelectElement).value=chartMode;
+ $('provenance').textContent=snapshot()?`${chartContext()}. Captured library fixture: ${snapshot()!.input.utc}, latitude ${snapshot()!.input.latitude}, longitude ${snapshot()!.input.longitude}. ${state.scenario==='initial'?'Captured chart positions and cusps.':'Stress fixture: body positions deliberately perturbed; cusps retained.'} ${chartMode==='true-whole'?'Twelve whole-sign houses merge Ophiuchus into Scorpio.':''}`:'Synthetic equal-sector interaction fixture.';
  const pan=$('drawing').scrollLeft;
  ($('category') as HTMLSelectElement).value=state.category;
  ($('scenario') as HTMLSelectElement).value=state.scenario;
@@ -121,7 +160,7 @@ const render = () => {
  $('resize-handle').setAttribute('aria-valuenow',String(sheetHeight));
  $('resize-handle').setAttribute('aria-valuetext',sheetHeight+'% of screen');
  $('panel').classList.toggle('expanded',state.expanded);
- $('details').innerHTML=picker?pickerContent():state.choices.length ? `<h2 id="detail-title" tabindex="-1">Choose an aspect</h2><p>Several lines meet here.</p>${state.choices.map(id=>{const a=items().find(i=>i.id===id)!;return `<button data-choice="${id}">${a.name}</button>`}).join('')}` : i ? `<p class="eyebrow">${i.kind}</p><h2 id="detail-title" tabindex="-1">${i.name}</h2>${i.kind==='Aspect'?'':`<p>${reference(i)}</p>`}${facts(i)}${i.kind==='Body'?`<button data-connections="${i.body}">Explore ${i.name}’s connections ›</button>`:''}<hr><p class="context">Tropical zodiac · Equal houses</p>` : '';
+ $('details').innerHTML=picker?pickerContent():state.choices.length ? `<h2 id="detail-title" tabindex="-1">Choose an aspect</h2><p>Several lines meet here.</p>${state.choices.map(id=>{const a=items().find(i=>i.id===id)!;return `<button data-choice="${id}">${a.name}</button>`}).join('')}` : i ? `<p class="eyebrow">${i.kind}</p><h2 id="detail-title" tabindex="-1">${i.name}</h2>${i.kind==='Aspect'?'':`<p>${reference(i)}</p>`}${facts(i)}${i.kind==='Body'?`<button data-connections="${i.body}">Explore ${i.name}’s connections ›</button>`:''}<hr><p class="context">${chartContext()}</p>` : '';
  $('expand').textContent=sheetHeight>=70?'Show less':'Expand details';
  $('list').innerHTML=items().filter(i=>i.kind===state.category).map(i=>`<button id="list-${i.id}" data-item="${i.id}" aria-pressed="${i.id===state.selected}">${i.name}</button>`).join('');
  $('state').textContent=`${state.scenario==='initial'?'Initial-input fixture':state.scenario==='edited'?'Edited-input fixture':'Crowded-body fixture'} · ${i?i.kind+': '+i.name:'No selection'} · ${state.choices.length?'Choosing between '+state.choices.length+' aspects':state.expanded?'Expanded details':'Compact details'}`;
@@ -162,6 +201,7 @@ $('expand').addEventListener('click',()=>{sheetHeight=sheetHeight>=70?40:70;rend
 $('scenario').addEventListener('change',e=>{picker=null;sheetHeight=40;dispatch({type:'scenario',value:(e.target as HTMLSelectElement).value});});
 $('category').addEventListener('change',e=>dispatch({type:'category',value:(e.target as HTMLSelectElement).value}));
 let suppressClick=false;
+$('chart-mode').addEventListener('change',e=>{chartMode=(e.target as HTMLSelectElement).value;picker=null;sheetHeight=40;dispatch({type:'scenario',value:'initial'});});
 $('zoom').addEventListener('click',()=>{zoom=!zoom;render();});
 $('pan-left').addEventListener('click',()=>$('drawing').scrollBy({left:-140,behavior:'smooth'}));
 $('pan-right').addEventListener('click',()=>$('drawing').scrollBy({left:140,behavior:'smooth'}));
@@ -184,8 +224,8 @@ render();
 
 // Guided scenarios reset to a known state; each step remains a real action.
 const walks = [
- {name:'Body and aspect',intro:'Watch unrelated lines dim, then replace the body selection with an aspect.',steps:[{label:'1. Select Sun',action:{type:'select',value:'body-SUN'}},{label:'2. Select Sun–Moon trine',action:{type:'select',value:'aspect-sun-moon'}},{label:'3. Clear selection',action:{type:'clear'}}]},
- {name:'Crossing lines',intro:'Two opposition lines cross at the center. Choose the precise relationship.',steps:[{label:'1. Open crossing chooser',action:{type:'choices',choices:['aspect-sun-mars','aspect-moon-jupiter']}},{label:'2. Choose Moon–Jupiter',action:{type:'select',value:'aspect-moon-jupiter'}},{label:'3. Clear selection',action:{type:'clear'}}]},
+ {name:'Body and aspect',intro:'Watch unrelated lines dim, then replace the body selection with an aspect.',steps:[{label:'1. Select Sun',action:{type:'select',value:'body-SUN'}},{label:'2. Select a Sun connection',action:{type:'select',value:'aspect-sun-moon'}},{label:'3. Clear selection',action:{type:'clear'}}]},
+ {name:'Crossing lines',intro:'Two opposition lines cross at the center. Choose the precise relationship.',steps:[{label:'1. Open crossing chooser',action:{type:'choices',choices:['aspect-sun-mars','aspect-moon-jupiter']}},{label:'2. Select an aspect',action:{type:'select',value:'aspect-moon-jupiter'}},{label:'3. Clear selection',action:{type:'clear'}}]},
  {name:'Changing chart inputs',intro:'A selected object should not keep showing facts from the previous chart.',steps:[{label:'1. Select Sun',action:{type:'select',value:'body-SUN'}},{label:'2. Simulate edited birth inputs',action:{type:'scenario',value:'edited'}},{label:'3. Select Sun in updated fixture',action:{type:'select',value:'body-SUN'}}]}
 ];
 const showWalk = (index:number) => {
@@ -196,7 +236,7 @@ const showWalk = (index:number) => {
 document.addEventListener('click',e=>{
  const target=e.target as HTMLElement,walk=target.closest<HTMLElement>('[data-walk]'),step=target.closest<HTMLElement>('[data-step]');
  if(walk)showWalk(Number(walk.dataset.walk));
- if(step){picker=null;sheetHeight=40;opener='walk-tabs';dispatch(walks[Number(step.dataset.guide)].steps[Number(step.dataset.step)].action);}
+ if(step){picker=null;sheetHeight=40;opener='walk-tabs';const action=walks[Number(step.dataset.guide)].steps[Number(step.dataset.step)].action;if(action.type==='choices'){const near=aspects().slice(0,3);openPicker([...new Set(near.flatMap(a=>a.pair!))],'aspects',near.map(a=>a.id));}else if(action.value?.startsWith('aspect-')&&snapshot()){dispatch({type:'select',value:aspects().find(a=>a.pair!.includes('SUN'))?.id??aspects()[0].id});}else dispatch(action);}
 });
 showWalk(0);
 // Shareable review links can open the crowded folder immediately.

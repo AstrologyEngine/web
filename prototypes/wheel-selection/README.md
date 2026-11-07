@@ -83,3 +83,37 @@ handling remain prototype limitations, not a settled production algorithm.
 Zoom doubles the wheel width inside a horizontally clipped viewport, showing
 half its width and retaining its full height, matching the owner's reference.
 Drag sideways or use the pan buttons. Full-wheel view remains available.
+
+## Selected picker and unequal-sector review
+
+The owner chose **A — Folder tiles**. The default view now hides the comparison
+switcher; old `?variant=` links retain it for reference.
+
+- Connector lines are painted before the opaque group target and converge at
+  its center. True body positions remain the connector origins.
+- The complete group plus badge has eight SVG units of clearance from house
+  cusp rays. Its visual anchor is clamped inside its actual house.
+- A narrow house uses a compact count circle instead of a miniature-glyph
+  tile. It opens the same picker without shrinking its contents into illegibility.
+- Picker headings use `Bodies in <sign>` when all members share a sign,
+  otherwise `Grouped bodies`. A visual collision group is not automatically
+  a stellium: it can contain two bodies, nodes, asteroids, or multiple signs.
+
+The default is now `?chart=true-whole`: True Sky constellation sectors with
+Ophiuchus enabled, and twelve unequal whole-sign houses. The library merges
+Ophiuchus into Scorpio for whole-sign houses. `?chart=true-placidus` compares
+Placidus cusp geometry. `?chart=tropical` retains the original synthetic case.
+
+`source/true-whole.json` and `source/true-placidus.json` are selected captures
+from library regression fixtures, with capture provenance embedded. They use
+the same historical reference instant/location, allowing cusp geometry to be
+compared directly. They are captured calculation outputs, not a live engine
+integration. The 13 sign-sector boundaries come from library `conventions.rs`.
+
+Initial scenarios retain captured bodies/cusps. Edited and crowded scenarios
+explicitly perturb body positions for interaction stress; the crowded scenario
+places six bodies in the narrowest house. Context, body sign/degree, occupants,
+and house assignment follow the chosen sectors/cusps. Aspect candidates in
+captured layouts are derived from fixture positions. This does not validate
+a live chart calculator or settle production collision handling for arbitrarily
+small cusps, collisions across houses, or final minimum target sizes.
