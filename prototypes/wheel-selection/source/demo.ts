@@ -86,32 +86,10 @@ const items = (): Item[] => [
 const active = () => items().find(i=>i.id===state.selected);
 const attrs = (i:Item) => `id="wheel-${i.id}" data-item="${i.id}" role="button" tabindex="0" aria-label="${i.name}, ${i.kind.toLowerCase()}" aria-pressed="${i.id===state.selected}"`;
 const glyph = (path:string,x:number,y:number,ink='#222') => `<svg x="${x-12}" y="${y-12}" width="24" height="24" viewBox="0 0 100 100" aria-hidden="true"><path d="${path}" fill="${ink}" fill-rule="evenodd"/></svg>`;
-// Camera crops the existing wheel; every longitude, cusp and aspect stays in place.
-let focusedHouse:number|null=null;
-let returnView:{zoom:boolean;pan:number;opener:string}|null=null;
-const houseCamera=()=>{
- if(focusedHouse===null)return null;
- const sector=cuspSectors()[focusedHouse];
- const points=Array.from({length:25},(_,i)=>sector.start+sector.width*i/24).flatMap(l=>[p(l,112),p(l,284)]);
- const minX=Math.min(...points.map(p=>p.x)),maxX=Math.max(...points.map(p=>p.x)),minY=Math.min(...points.map(p=>p.y)),maxY=Math.max(...points.map(p=>p.y));
- const size=Math.max(maxX-minX,maxY-minY)+30;
- return {x:(minX+maxX-size)/2,y:(minY+maxY-size)/2,size,scale:size/640};
-};
-const focusHouse=(ids:string[],origin:string)=>{
- returnView={zoom,pan:$('drawing').scrollLeft,opener:origin};
- focusedHouse=houseIndex(bodies().find(b=>b.name===ids[0])!.longitude);
- picker=null;zoom=false;sheetHeight=0;state={...state,selected:null,choices:[]};render();
- $('house-back').focus({preventScroll:true});$('drawing').scrollLeft=Math.max(0,($('drawing').scrollWidth-$('drawing').clientWidth)/2);
- $('house-back').closest('.wheel-controls')!.scrollIntoView({block:'start'});
-};
-const leaveHouse=()=>{
- const previous=returnView;focusedHouse=null;returnView=null;picker=null;sheetHeight=0;state={...state,selected:null,choices:[]};zoom=previous?.zoom??false;render();
- $('drawing').scrollLeft=previous?.pan??0;document.getElementById(previous?.opener||'zoom')?.focus({preventScroll:true});
-};
 // Fit all bodies in each house before creating a fallback group.
 const bodyLayouts=()=>cuspSectors().flatMap(sector=>{
  const members=bodies().filter(b=>houseIndex(b.longitude)===sector.index);
- const fitted=fitHouse(members,sector,sector.index===focusedHouse?houseCamera()!.scale:1);
+ const fitted=fitHouse(members,sector);
  return fitted?fitted.map(placement=>({group:[placement.body],placement})):members.length?[{group:members,placement:null}]:[];
 });
 const clusters=()=>bodyLayouts().map(layout=>layout.group);
@@ -128,8 +106,7 @@ const layoutGeometry=(group:ReturnType<typeof bodies>,placement:{longitude:numbe
  const houseStart=sector.start;
  const anchor=Math.max(houseStart+inset,Math.min(houseStart+sector.width-inset,houseStart+(longitude-houseStart+360)%360));
  const q=placement?p(placement.longitude,placement.radius):p(anchor,radius);
- const glyphScale=sector.index===focusedHouse?houseCamera()!.scale:1;
- return {q,sector,anchor,houseStart,compact,extent,glyphScale};
+ return {q,sector,anchor,houseStart,compact,extent};
 };
 type Picker = {ids:string[]; aspectIds:string[]; mode:'bodies'|'aspects'; body:string|null; relation:string|null};
 let picker:Picker|null=null;
@@ -158,21 +135,19 @@ const pickerContent=()=>{
 const wheel = () => {
  const all=items(), bs=bodies(), selected=active(),layouts=bodyLayouts();
  const lineData=aspects().map(a=>({...a,a:p(bs.find(b=>b.name===a.pair![0])!.longitude,104), b:p(bs.find(b=>b.name===a.pair![1])!.longitude,104)}));
- const camera=houseCamera();
- return `<svg id="wheel" viewBox="${camera?`${camera.x} ${camera.y} ${camera.size} ${camera.size}`:'-20 -20 640 640'}" role="group" aria-label="Interactive chart. Use the named list below for precise selection.">
+ return `<svg id="wheel" viewBox="-20 -20 640 640" role="group" aria-label="Interactive chart. Use the named list below for precise selection.">
  <circle cx="300" cy="300" r="273" fill="white" stroke="#ccc"/>
  ${[231,133,108].map(r=>`<circle cx="300" cy="300" r="${r}" fill="${r===108?'#fff':'#fafafa'}" stroke="#ddd"/>`).join('')}
  ${all.filter(i=>i.kind==='House').map(i=>{const sector=cuspSectors()[i.index!],start=sector.start; const q=p(start+sector.width/2,118),a=p(start,133),b=p(start,231);return `<path ${attrs(i)} d="${annularSector(108,231,longitudeToSvgAngle(start+sector.width,snapshot()?.bodies.find(b=>b.name==='ASCENDANT_SYMBOL')!.longitude||0),longitudeToSvgAngle(start,snapshot()?.bodies.find(b=>b.name==='ASCENDANT_SYMBOL')!.longitude||0))}" transform="translate(300 300)" fill="${state.selected===i.id?'#e6e5f4':'transparent'}"/><line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#ccc" pointer-events="none"/><text x="${q.x}" y="${q.y}" text-anchor="middle" dominant-baseline="middle" pointer-events="none" font-size="13">${i.index!+1}</text>`}).join('')}
  ${lineData.map(a=>{const related=selected?.kind!=='Body'||a.pair!.includes(selected.body!);return `<g ${attrs(a)}><line class="aspect" x1="${a.a.x}" y1="${a.a.y}" x2="${a.b.x}" y2="${a.b.y}" stroke="${['Square','Opposition'].includes(a.type!)?'#c22':'#25c'}" stroke-width="${state.selected===a.id?4:1.6}" opacity="${related?0.8:0.12}"/><line data-aspect-hit="true" x1="${a.a.x}" y1="${a.a.y}" x2="${a.b.x}" y2="${a.b.y}" stroke="transparent" stroke-width="18"/></g>`}).join('')}
  <g class="connector-layer" aria-hidden="true" pointer-events="none">${layouts.map(({group,placement})=>{
- const {q,glyphScale}=layoutGeometry(group,placement);
- return group.map(b=>{const tip=p(b.longitude,230);return `<line class="${placement?'body-leader':'group-leader'}" x1="${tip.x}" y1="${tip.y}" x2="${q.x}" y2="${q.y}" stroke="#777" stroke-width="${glyphScale*.8}" opacity=".65"/>`;}).join('');
+ const {q}=layoutGeometry(group,placement);
+ return group.map(b=>{const tip=p(b.longitude,230);return `<line class="${placement?'body-leader':'group-leader'}" x1="${tip.x}" y1="${tip.y}" x2="${q.x}" y2="${q.y}" stroke="#777" stroke-width=".8" opacity=".65"/>`;}).join('');
  }).join('')}</g>
  ${all.filter(i=>i.kind==='Sign').map(i=>{const sector=signSectors()[i.index!],start=sector.start,q=p(start+sector.width/2,253),fill=WHEEL_THEMES.traditional.signFills![i.name];return `<g ${attrs(i)}><path d="${annularSector(231,273,longitudeToSvgAngle(start+sector.width,snapshot()?.bodies.find(b=>b.name==='ASCENDANT_SYMBOL')!.longitude||0),longitudeToSvgAngle(start,snapshot()?.bodies.find(b=>b.name==='ASCENDANT_SYMBOL')!.longitude||0))}" transform="translate(300 300)" fill="${fill}"/>${glyph(i.name==='Ophiuchus'?'M20 15H30V65Q50 95 70 65V15H80V65Q50 115 20 65ZM8 40Q30 65 50 40T92 40V50Q70 25 50 50T8 50Z':zodiacGlyphPaths[signs.indexOf(i.name)],q.x,q.y,contrastInk(fill))}</g>`}).join('')}
-
  ${layouts.map(({group,placement})=>{
- const {q,sector,anchor,houseStart,compact,extent,glyphScale}=layoutGeometry(group,placement);
- if(placement){const b=group[0],i=all.find(i=>i.body===b.name)!,tip=p(b.longitude,230);return `<g ${attrs(i)} data-layout-house="${sector.index}" data-label-longitude="${placement!.longitude}" data-label-radius="${placement!.radius}" data-label-x="${q.x}" data-label-y="${q.y}"><circle cx="${q.x}" cy="${q.y}" r="${22*glyphScale}" fill="transparent"/><circle cx="${q.x}" cy="${q.y}" r="${16*glyphScale}" fill="#fafafa"/><g transform="translate(${q.x} ${q.y}) scale(${glyphScale})">${glyph(bodySymbols[b.name].path,0,0)}</g></g>`;}
+ const {q,sector,anchor,houseStart,compact,extent}=layoutGeometry(group,placement);
+ if(placement){const b=group[0],i=all.find(i=>i.body===b.name)!,tip=p(b.longitude,230);return `<g ${attrs(i)} data-layout-house="${sector.index}" data-label-longitude="${placement!.longitude}" data-label-radius="${placement!.radius}" data-label-x="${q.x}" data-label-y="${q.y}"><circle cx="${q.x}" cy="${q.y}" r="22" fill="transparent"/><circle cx="${q.x}" cy="${q.y}" r="16" fill="#fafafa"/>${glyph(bodySymbols[b.name].path,q.x,q.y)}</g>`;}
 
  return `<g id="folder-${group[0].name}" data-folder="${group.map(b=>b.name).join(',')}" data-anchor="${anchor}" data-house-start="${houseStart}" data-house-width="${sector.width}" data-compact="${compact}" data-extent="${extent}" role="button" tabindex="0" aria-label="Grouped bodies: ${group.map(b=>bodyName(b.name)).join(', ')}">${compact?`<circle class="compact-plate" cx="${q.x}" cy="${q.y}" r="${extent}" fill="#e7e3ee" stroke="#6e617f"/><text x="${q.x}" y="${q.y}" font-size="12" text-anchor="middle" dominant-baseline="middle">${group.length}</text>`:`<rect class="group-plate" x="${q.x-25}" y="${q.y-25}" width="50" height="50" rx="12" fill="#e7e3ee" stroke="#6e617f"/>${group.slice(0,4).map((b,j)=>`<g transform="translate(${q.x+(j%2?9:-9)} ${q.y+(j>1?12:-3)}) scale(.52)">${glyph(bodySymbols[b.name].path,0,0)}</g>`).join('')}<circle class="group-count" cx="${q.x+17}" cy="${q.y-17}" r="9" fill="#65517d"/><text x="${q.x+17}" y="${q.y-17}" fill="white" font-size="10" text-anchor="middle" dominant-baseline="middle">${group.length}</text>`}</g>`;
  }).join('')}
@@ -194,12 +169,7 @@ const render = () => {
  const pan=$('drawing').scrollLeft;
  ($('category') as HTMLSelectElement).value=state.category;
  ($('scenario') as HTMLSelectElement).value=state.scenario;
- const markup=wheel();
- const existing=$('drawing').querySelector('svg');
- if(existing){const template=document.createElement('template');template.innerHTML=markup;const next=template.content.querySelector('svg')!;existing.setAttribute('viewBox',next.getAttribute('viewBox')!);existing.innerHTML=next.innerHTML;}else $('drawing').innerHTML=markup;
- $('house-back').hidden=focusedHouse===null;
- $('house-status').textContent=focusedHouse===null?'':`House ${focusedHouse+1} · same chart, magnified. Choose a body.`;
- $('drawing').classList.toggle('house-focused',focusedHouse!==null);
+ $('drawing').innerHTML=wheel();
  $('drawing').classList.toggle('zoomed',zoom);$('drawing').scrollLeft=pan;
  $('zoom').textContent=zoom?'Show whole wheel':'Zoom · half wheel';$('zoom').setAttribute('aria-pressed',String(zoom));
  $('variant-name').textContent=({A:'A · Folder tiles',B:'B · Guided list',C:'C · Spotlight cards'} as Record<string,string>)[variant];
@@ -222,7 +192,7 @@ document.addEventListener('click',e=>{
  if(suppressClick){suppressClick=false;return;}
  const target=e.target as Element,button=target.closest<HTMLElement>('[data-item]'),choice=target.closest<HTMLElement>('[data-choice]');
  const folder=target.closest<HTMLElement>('[data-folder]'),pick=target.closest<HTMLElement>('[data-pick]'),back=target.closest<HTMLElement>('[data-picker-back]'),card=target.closest<HTMLElement>('[data-card]'),connections=target.closest<HTMLElement>('[data-connections]');
- if(folder){opener=folder.id;focusHouse(folder.dataset.folder!.split(','),folder.id);return;}
+ if(folder){opener=folder.id;openPicker(folder.dataset.folder!.split(','));return;}
  if(connections){const id=connections.dataset.connections!;openPicker([id], 'aspects');picker={...picker!,body:id};render();return;}
  if(back&&picker){picker=back.dataset.pickerBack==='root'?{...picker,body:null,relation:null}:{...picker,relation:null};spotlight=0;render();$('detail-title').focus({preventScroll:true});return;}
  if(card){const count=$('details').querySelectorAll('[data-pick]').length;spotlight=(spotlight+Number(card.dataset.card)+count)%count;render();return;}
@@ -230,7 +200,7 @@ document.addEventListener('click',e=>{
  if(choice){dispatch({type:'select',value:choice.dataset.choice},'detail-title');return;}
  if(button){
   if(button.closest('svg') && button.dataset.item!.startsWith('aspect-') && e.detail!==0){
-   const svg=$('wheel') as unknown as SVGSVGElement,rect=svg.getBoundingClientRect(),box=svg.viewBox.baseVal,q={x:(e.clientX-rect.left)*box.width/rect.width+box.x,y:(e.clientY-rect.top)*box.height/rect.height+box.y};
+   const svg=$('wheel') as unknown as SVGSVGElement,rect=svg.getBoundingClientRect(),q={x:(e.clientX-rect.left)*640/rect.width-20,y:(e.clientY-rect.top)*640/rect.height-20};
    const bs=bodies(),near=aspects().filter(a=>distance(q,p(bs.find(b=>b.name===a.pair![0])!.longitude,104),p(bs.find(b=>b.name===a.pair![1])!.longitude,104))<11);
    if(near.length>1){opener=button.id;openPicker([...new Set(near.flatMap(a=>a.pair!))],'aspects',near.map(a=>a.id));return;}
   }
@@ -239,23 +209,22 @@ document.addEventListener('click',e=>{
  if(target.closest('#wheel'))clear();
 });
 document.addEventListener('keydown',e=>{
- if(e.key==='Escape'){e.preventDefault();if(focusedHouse!==null&&!state.selected&&!picker)leaveHouse();else clear();}
- const folder=(e.target as Element).closest<HTMLElement>('[data-folder]');if(folder&&(e.key==='Enter'||e.key===' ')){e.preventDefault();opener=folder.id;focusHouse(folder.dataset.folder!.split(','),folder.id);return;}
+ if(e.key==='Escape'){e.preventDefault();clear();}
+ const folder=(e.target as Element).closest<HTMLElement>('[data-folder]');if(folder&&(e.key==='Enter'||e.key===' ')){e.preventDefault();opener=folder.id;openPicker(folder.dataset.folder!.split(','));$('detail-title').focus();return;}
  const target=(e.target as Element).closest<HTMLElement>('g[data-item],path[data-item]');
  if(target&&(e.key==='Enter'||e.key===' ')){e.preventDefault();selectItem(target.dataset.item!,target.id,true);}
 });
-$('house-back').addEventListener('click',leaveHouse);
 $('close').addEventListener('click',clear);
 $('expand').addEventListener('click',()=>{sheetHeight=sheetHeight>=70?40:70;render();});
-$('scenario').addEventListener('change',e=>{focusedHouse=null;returnView=null;picker=null;sheetHeight=40;dispatch({type:'scenario',value:(e.target as HTMLSelectElement).value});});
+$('scenario').addEventListener('change',e=>{picker=null;sheetHeight=40;dispatch({type:'scenario',value:(e.target as HTMLSelectElement).value});});
 $('category').addEventListener('change',e=>dispatch({type:'category',value:(e.target as HTMLSelectElement).value}));
 let suppressClick=false;
-$('chart-mode').addEventListener('change',e=>{chartMode=(e.target as HTMLSelectElement).value;focusedHouse=null;returnView=null;picker=null;sheetHeight=40;dispatch({type:'scenario',value:'initial'});});
+$('chart-mode').addEventListener('change',e=>{chartMode=(e.target as HTMLSelectElement).value;picker=null;sheetHeight=40;dispatch({type:'scenario',value:'initial'});});
 $('zoom').addEventListener('click',()=>{zoom=!zoom;render();});
 $('pan-left').addEventListener('click',()=>$('drawing').scrollBy({left:-140,behavior:'smooth'}));
 $('pan-right').addEventListener('click',()=>$('drawing').scrollBy({left:140,behavior:'smooth'}));
 let panDrag:{id:number;x:number;y:number;scroll:number;moved:boolean}|null=null;
-$('drawing').addEventListener('pointerdown',e=>{if(!zoom&&focusedHouse===null)return;panDrag={id:e.pointerId,x:e.clientX,y:e.clientY,scroll:$('drawing').scrollLeft,moved:false};});
+$('drawing').addEventListener('pointerdown',e=>{if(!zoom)return;panDrag={id:e.pointerId,x:e.clientX,y:e.clientY,scroll:$('drawing').scrollLeft,moved:false};});
 $('drawing').addEventListener('pointermove',e=>{if(!panDrag)return;const delta=e.clientX-panDrag.x;if(Math.abs(delta)>6&&Math.abs(delta)>Math.abs(e.clientY-panDrag.y)){panDrag={...panDrag,moved:true};$('drawing').setPointerCapture(e.pointerId);$('drawing').scrollLeft=panDrag.scroll-delta;}});
 const finishPan=()=>{if(panDrag?.moved)suppressClick=true;panDrag=null;};
 $('drawing').addEventListener('pointerup',finishPan);$('drawing').addEventListener('pointercancel',()=>{panDrag=null;});
@@ -292,11 +261,9 @@ showWalk(0);
 if(new URLSearchParams(location.search).get('picker')==='folder'){
  state={...initial,scenario:'crowded'};
  const group=clusters().find(group=>group.length>1);
- if(group){opener='folder-'+group[0].name;focusHouse(group.map(b=>b.name),opener);}else render();
+ if(group){opener='folder-'+group[0].name;openPicker(group.map(b=>b.name));}else render();
 }
 const requestedScenario=new URLSearchParams(location.search).get('scenario');
 if(requestedScenario&&['initial','edited','crowded','triangle','overflow'].includes(requestedScenario)){
  picker=null;state={...initial,scenario:requestedScenario};render();
 }
-
-if(new URLSearchParams(location.search).get('focus')==='group'){const group=clusters().find(g=>g.length>1);if(group)focusHouse(group.map(b=>b.name),'folder-'+group[0].name);}

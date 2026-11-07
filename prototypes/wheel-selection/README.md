@@ -150,9 +150,13 @@ centers remained at least 47 SVG units apart; overflow houses opened the tile
 picker with all ten members. Desktop/mobile screenshots were inspected and no
 page exceptions were observed. Physical-device usability remains unverified.
 
-## House zoom picker (latest interaction proposal)
+## House zoom picker (rejected experiment)
 
-A crowded-group activation now zooms the existing chart camera into that house
+Historical experiment, rejected by the owner in live review. The current
+prototype restores the prior tile picker; the description below records the
+experiment rather than the current behavior.
+
+In that experiment, a crowded-group activation zoomed the existing chart camera into that house
 instead of opening a separate body tile picker. The outer SVG element is
 preserved while its `viewBox` changes; signs, cusp geometry, body coordinates,
 and aspect geometry still come from the same chart. No chart is recalculated
@@ -188,3 +192,14 @@ and restoration of the previous half-wheel view and its 120px pan. Paint-order
 inspection confirmed the connector layer precedes all body/group/sign targets.
 This is still a prototype heuristic; arbitrary house occupancies and physical
 touch-device usability are not yet established.
+
+
+## Current restored iteration
+
+The owner rejected the house-zoom picker and selected the preceding iteration:
+fit-first glyph packing, with option A's body tiles when a house needs a group.
+The house-zoom camera and magnified packing are removed from the current demo;
+the experiment remains in Git history. The independent requirement that glyphs
+paint above lines is retained through the shared connector layer. Half-wheel
+zoom/pan, the 0/40/70% sheet, unequal-house scenarios, and triangular packing
+remain available.
