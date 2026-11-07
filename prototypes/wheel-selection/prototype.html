@@ -8,34 +8,41 @@
 @media(max-width:799px){.drawing.zoomed{max-width:100%}aside{height:var(--sheet-height,40dvh)!important;max-height:70dvh;padding:0!important;overflow:hidden;display:flex;flex-direction:column;animation:none}aside[hidden]{display:none}.resize-handle{display:flex;flex-shrink:0;height:28px;min-height:28px;align-items:center;justify-content:center;touch-action:none;cursor:ns-resize;border:0;background:transparent}.resize-handle span{display:block;width:42px;height:7px;border-top:2px solid #9991a2;border-bottom:2px solid #9991a2}.panel-tools{position:static;flex-shrink:0;padding:0 16px 8px;top:auto}#details{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 20px 88px;flex:1}.picker-B .picker-option{min-height:76px}.concept-switcher{bottom:max(8px,env(safe-area-inset-bottom))}.wheel-controls{margin-top:4px}}
 .picker-C .picker-option span:first-of-type{order:-1}.picker-C .picker-option{padding:14px;min-height:185px}.picker-C .picker-option svg{width:48px;height:48px}.card-navigation{margin:0 0 8px}.picker-C .picker-option strong{font-size:25px}
 .concept-switcher[hidden]{display:none}g[data-folder]:focus-visible>.compact-plate{stroke:#492881;stroke-width:3}
+#house-back[hidden]{display:none}.drawing.house-focused{scroll-margin-top:12px;background:#f8f6f0;border-radius:12px}.drawing.house-focused>#wheel{aspect-ratio:1}.drawing.house-focused .group-leader{opacity:.7}
+@media(max-width:799px){.drawing.house-focused{max-width:100%;cursor:grab}.drawing.house-focused>#wheel{min-width:640px;width:640px}.drawing.house-focused.zoomed>#wheel{width:1280px}}
 </style>
 <header><h1>Explore the chart</h1><p><strong>Throwaway interaction prototype.</strong> Does one selection at a time work on the wheel and in a sidebar or mobile sheet? The wheel uses plugin artwork and layout. Compare synthetic interaction scenarios and captured library charts; the source is shown below.</p><div class="toolbar"><label for="chart-mode">Chart layout</label><select id="chart-mode"><option value="tropical">Tropical · Equal houses</option><option value="true-whole">True Sky · Whole-sign houses</option><option value="true-placidus">True Sky · Placidus houses</option></select><label for="scenario">Try a scenario</label><select id="scenario"><option value="initial">Initial chart inputs</option><option value="edited">After birth inputs change</option><option value="crowded">Crowded glyphs</option><option value="triangle">Triangle · three bodies</option><option value="overflow">Over capacity · ten bodies</option></select></div><details class="guide"><summary>Guided walkthroughs and things to try</summary><div id="walk-tabs" role="group" aria-label="Guided scenarios" tabindex="-1"></div><div id="walk-steps"></div><p>Choose Sun, then an aspect; select a house wedge or its number; choose a sign or ASC. At crossing lines choose the exact aspect from the list offered. Try crowded glyphs using the named list. Press Tab, Enter/Space, then Escape. Resize below 800px, open details, expand, and close. Changing the scenario clears the old selection.</p><p>Proposals to review: selecting again clears; blank wheel space and Escape clear; a new target replaces; keyboard activation focuses details and closing returns focus. The mobile sheet is nonmodal, leaves the wheel interactive, snaps to 0%, 40%, and 70% height, and scrolls internally. Drag the double-line resize handle. Angles show reference text only. Zoom the wheel to pan horizontally. Crowded bodies stay in their house inside a folder; try all three picker concepts using the bottom switcher.</p></details><p id="provenance" class="guide"></p></header>
-<main><div class="workspace"><section class="chart" aria-label="Chart"><div class="wheel-controls"><button id="zoom" aria-pressed="false">Zoom · half wheel</button><button id="pan-left" aria-label="Pan wheel left">←</button><button id="pan-right" aria-label="Pan wheel right">→</button><small>Drag sideways when zoomed</small></div><div id="drawing" class="drawing" tabindex="-1"></div><p id="instruction"></p></section><aside id="panel" aria-labelledby="detail-title" hidden><div id="resize-handle" class="resize-handle" role="slider" tabindex="0" aria-label="Resize details sheet" aria-orientation="vertical" aria-valuemin="0" aria-valuemax="70" aria-valuenow="40"><span aria-hidden="true"></span></div><div class="panel-tools"><button id="expand" class="expand">Expand details</button><button id="close">Close details</button></div><div id="details"></div></aside></div><section class="selection-list" aria-label="Named chart targets"><h2>Choose by name</h2><label for="category">Target type</label> <select id="category"><option>Body</option><option>Sign</option><option>House</option><option>Aspect</option><option>Angle</option></select><div id="list"></div></section></main><div id="state" class="state" role="status" aria-live="polite"></div>
+<main><div class="workspace"><section class="chart" aria-label="Chart"><div class="wheel-controls"><button id="house-back" hidden>Back to whole chart</button><span id="house-status" role="status"></span><button id="zoom" aria-pressed="false">Zoom · half wheel</button><button id="pan-left" aria-label="Pan wheel left">←</button><button id="pan-right" aria-label="Pan wheel right">→</button><small>Drag sideways when zoomed</small></div><div id="drawing" class="drawing" tabindex="-1"></div><p id="instruction"></p></section><aside id="panel" aria-labelledby="detail-title" hidden><div id="resize-handle" class="resize-handle" role="slider" tabindex="0" aria-label="Resize details sheet" aria-orientation="vertical" aria-valuemin="0" aria-valuemax="70" aria-valuenow="40"><span aria-hidden="true"></span></div><div class="panel-tools"><button id="expand" class="expand">Expand details</button><button id="close">Close details</button></div><div id="details"></div></aside></div><section class="selection-list" aria-label="Named chart targets"><h2>Choose by name</h2><label for="category">Target type</label> <select id="category"><option>Body</option><option>Sign</option><option>House</option><option>Aspect</option><option>Angle</option></select><div id="list"></div></section></main><div id="state" class="state" role="status" aria-live="polite"></div>
 <nav id="concept-switcher" class="concept-switcher" aria-label="Picker concepts"><button id="previous-variant" aria-label="Previous picker concept">←</button><span id="variant-name"></span><button id="next-variant" aria-label="Next picker concept">→</button></nav><script type="module">// prototypes/wheel-selection/source/fit-bodies.ts
 var radians = Math.PI / 180;
 var point = (longitude, radius) => ({ x: radius * Math.cos(longitude * radians), y: radius * Math.sin(longitude * radians) });
 var footprint = 22;
 var clearance = 5;
 var separation = footprint * 2 + 3;
-var slotsFor = (sector) => [203, 160].flatMap((radius) => {
-  const inset = Math.asin((footprint + clearance) / radius) / radians;
-  const available = sector.width - 2 * inset;
-  if (available < 0)
-    return [];
-  const steps = Math.max(1, Math.ceil(available / 1.5));
-  return Array.from({ length: steps + 1 }, (_, i) => {
-    const longitude = sector.start + inset + available * i / steps;
-    return { longitude, radius, ...point(longitude, radius) };
+var slotsFor = (sector, scale) => {
+  const outer = scale === 1 ? 203 : 231 - (footprint + clearance) * scale;
+  const inner = scale === 1 ? 160 : 133 + (footprint + clearance) * scale;
+  const radii = scale === 1 ? [203, 160] : Array.from({ length: Math.floor((outer - inner) / (separation * scale)) + 1 }, (_, i) => outer - i * separation * scale);
+  return radii.flatMap((radius) => {
+    const inset = Math.asin((footprint + clearance) * scale / radius) / radians;
+    const available = sector.width - 2 * inset;
+    if (available < 0)
+      return [];
+    const steps = Math.max(1, Math.ceil(available / (1.5 * scale)));
+    return Array.from({ length: steps + 1 }, (_, i) => {
+      const longitude = sector.start + inset + available * i / steps;
+      return { longitude, radius, ...point(longitude, radius) };
+    });
   });
-});
-var fitHouse = (bodies, sector) => {
+};
+var fitHouse = (bodies, sector, scale = 1) => {
   if (!bodies.length)
     return [];
-  const slots = slotsFor(sector);
+  const slots = slotsFor(sector, scale);
   const ordered = [...bodies].sort((a, b) => (a.longitude - sector.start + 360) % 360 - (b.longitude - sector.start + 360) % 360 || a.name.localeCompare(b.name));
-  const result = ordered.reduce((beam, body) => beam.flatMap((candidate) => slots.filter((slot) => candidate.placed.every((p) => Math.hypot(p.x - slot.x, p.y - slot.y) >= separation)).map((slot) => {
+  const result = ordered.reduce((beam, body) => beam.flatMap((candidate) => slots.filter((slot) => candidate.placed.every((p) => Math.hypot(p.x - slot.x, p.y - slot.y) >= separation * scale)).map((slot) => {
     const delta = (slot.longitude - body.longitude + 540) % 360 - 180;
-    return { cost: candidate.cost + delta * delta + (slot.radius === 203 ? 0 : 18), placed: [...candidate.placed, { ...slot, body }] };
+    return { cost: candidate.cost + delta * delta + (231 - slot.radius) * 0.42, placed: [...candidate.placed, { ...slot, body }] };
   })).sort((a, b) => a.cost - b.cost).slice(0, 160), [{ cost: 0, placed: [] }]);
   return result[0]?.placed ?? null;
 };
@@ -794,12 +801,61 @@ var items = () => [
 var active = () => items().find((i) => i.id === state.selected);
 var attrs = (i) => `id="wheel-${i.id}" data-item="${i.id}" role="button" tabindex="0" aria-label="${i.name}, ${i.kind.toLowerCase()}" aria-pressed="${i.id === state.selected}"`;
 var glyph = (path, x, y, ink = "#222") => `<svg x="${x - 12}" y="${y - 12}" width="24" height="24" viewBox="0 0 100 100" aria-hidden="true"><path d="${path}" fill="${ink}" fill-rule="evenodd"/></svg>`;
+var focusedHouse = null;
+var returnView = null;
+var houseCamera = () => {
+  if (focusedHouse === null)
+    return null;
+  const sector = cuspSectors()[focusedHouse];
+  const points = Array.from({ length: 25 }, (_, i) => sector.start + sector.width * i / 24).flatMap((l) => [p(l, 112), p(l, 284)]);
+  const minX = Math.min(...points.map((p2) => p2.x)), maxX = Math.max(...points.map((p2) => p2.x)), minY = Math.min(...points.map((p2) => p2.y)), maxY = Math.max(...points.map((p2) => p2.y));
+  const size = Math.max(maxX - minX, maxY - minY) + 30;
+  return { x: (minX + maxX - size) / 2, y: (minY + maxY - size) / 2, size, scale: size / 640 };
+};
+var focusHouse = (ids, origin) => {
+  returnView = { zoom, pan: $("drawing").scrollLeft, opener: origin };
+  focusedHouse = houseIndex(bodies().find((b) => b.name === ids[0]).longitude);
+  picker = null;
+  zoom = false;
+  sheetHeight = 0;
+  state = { ...state, selected: null, choices: [] };
+  render();
+  $("house-back").focus({ preventScroll: true });
+  $("drawing").scrollLeft = Math.max(0, ($("drawing").scrollWidth - $("drawing").clientWidth) / 2);
+  $("house-back").closest(".wheel-controls").scrollIntoView({ block: "start" });
+};
+var leaveHouse = () => {
+  const previous = returnView;
+  focusedHouse = null;
+  returnView = null;
+  picker = null;
+  sheetHeight = 0;
+  state = { ...state, selected: null, choices: [] };
+  zoom = previous?.zoom ?? false;
+  render();
+  $("drawing").scrollLeft = previous?.pan ?? 0;
+  document.getElementById(previous?.opener || "zoom")?.focus({ preventScroll: true });
+};
 var bodyLayouts = () => cuspSectors().flatMap((sector) => {
   const members = bodies().filter((b) => houseIndex(b.longitude) === sector.index);
-  const fitted = fitHouse(members, sector);
+  const fitted = fitHouse(members, sector, sector.index === focusedHouse ? houseCamera().scale : 1);
   return fitted ? fitted.map((placement) => ({ group: [placement.body], placement })) : members.length ? [{ group: members, placement: null }] : [];
 });
 var clusters = () => bodyLayouts().map((layout) => layout.group);
+var layoutGeometry = (group, placement) => {
+  const groupHouse = cuspSectors()[houseIndex(group[0].longitude)];
+  const longitude = groupHouse.start + group.reduce((sum, b) => sum + (b.longitude - groupHouse.start + 360) % 360, 0) / group.length;
+  const radius = 184, clearance2 = 8, sector = cuspSectors()[houseIndex(group[0].longitude)];
+  const compact = sector.width < 30;
+  const targetRadius = compact ? Math.min(18, Math.max(4, radius * Math.sin(sector.width / 2 * Math.PI / 180) - clearance2)) : Math.hypot(26, 26);
+  const extent = targetRadius;
+  const inset = Math.asin((extent + clearance2) / radius) * 180 / Math.PI;
+  const houseStart = sector.start;
+  const anchor = Math.max(houseStart + inset, Math.min(houseStart + sector.width - inset, houseStart + (longitude - houseStart + 360) % 360));
+  const q = placement ? p(placement.longitude, placement.radius) : p(anchor, radius);
+  const glyphScale = sector.index === focusedHouse ? houseCamera().scale : 1;
+  return { q, sector, anchor, houseStart, compact, extent, glyphScale };
+};
 var picker = null;
 var variant = new URLSearchParams(location.search).get("variant") || "A";
 if (!["A", "B", "C"].includes(variant))
@@ -830,9 +886,10 @@ var pickerContent = () => {
   return `${scope.body ? `<nav class="breadcrumbs" aria-label="Picker path"><button data-picker-back="root">${scope.mode === "bodies" ? "Group" : "Bodies"}</button>${scope.body ? `<span>›</span><button data-picker-back="body">${bodyName(scope.body)}</button>` : ""}${scope.relation ? `<span>› ${scope.relation}</span>` : ""}</nav>` : ""}<h2 id="detail-title" tabindex="-1">${heading}</h2>${scope.body ? `<p>${!scope.relation ? "Choose a relationship." : "Choose the other body."}</p>` : ""}${variant === "C" && options.length ? `<div class="card-navigation"><button data-card="-1" aria-label="Previous choice">←</button><span>${spotlight + 1} of ${options.length}</span><button data-card="1" data-count="${options.length}" aria-label="Next choice">→</button></div>` : ""}<div class="picker picker-${variant}">${buttons || "<p>No connections in this fixture.</p>"}</div>`;
 };
 var wheel = () => {
-  const all = items(), bs = bodies(), selected = active();
+  const all = items(), bs = bodies(), selected = active(), layouts = bodyLayouts();
   const lineData = aspects().map((a) => ({ ...a, a: p(bs.find((b) => b.name === a.pair[0]).longitude, 104), b: p(bs.find((b) => b.name === a.pair[1]).longitude, 104) }));
-  return `<svg id="wheel" viewBox="-20 -20 640 640" role="group" aria-label="Interactive chart. Use the named list below for precise selection.">
+  const camera = houseCamera();
+  return `<svg id="wheel" viewBox="${camera ? `${camera.x} ${camera.y} ${camera.size} ${camera.size}` : "-20 -20 640 640"}" role="group" aria-label="Interactive chart. Use the named list below for precise selection.">
  <circle cx="300" cy="300" r="273" fill="white" stroke="#ccc"/>
  ${[231, 133, 108].map((r) => `<circle cx="300" cy="300" r="${r}" fill="${r === 108 ? "#fff" : "#fafafa"}" stroke="#ddd"/>`).join("")}
  ${all.filter((i) => i.kind === "House").map((i) => {
@@ -844,30 +901,25 @@ var wheel = () => {
     const related = selected?.kind !== "Body" || a.pair.includes(selected.body);
     return `<g ${attrs(a)}><line class="aspect" x1="${a.a.x}" y1="${a.a.y}" x2="${a.b.x}" y2="${a.b.y}" stroke="${["Square", "Opposition"].includes(a.type) ? "#c22" : "#25c"}" stroke-width="${state.selected === a.id ? 4 : 1.6}" opacity="${related ? 0.8 : 0.12}"/><line data-aspect-hit="true" x1="${a.a.x}" y1="${a.a.y}" x2="${a.b.x}" y2="${a.b.y}" stroke="transparent" stroke-width="18"/></g>`;
   }).join("")}
+ <g class="connector-layer" aria-hidden="true" pointer-events="none">${layouts.map(({ group, placement }) => {
+    const { q, glyphScale } = layoutGeometry(group, placement);
+    return group.map((b) => {
+      const tip = p(b.longitude, 230);
+      return `<line class="${placement ? "body-leader" : "group-leader"}" x1="${tip.x}" y1="${tip.y}" x2="${q.x}" y2="${q.y}" stroke="#777" stroke-width="${glyphScale * 0.8}" opacity=".65"/>`;
+    }).join("");
+  }).join("")}</g>
  ${all.filter((i) => i.kind === "Sign").map((i) => {
     const sector = signSectors()[i.index], start = sector.start, q = p(start + sector.width / 2, 253), fill = WHEEL_THEMES.traditional.signFills[i.name];
     return `<g ${attrs(i)}><path d="${annularSector(231, 273, longitudeToSvgAngle(start + sector.width, snapshot()?.bodies.find((b) => b.name === "ASCENDANT_SYMBOL").longitude || 0), longitudeToSvgAngle(start, snapshot()?.bodies.find((b) => b.name === "ASCENDANT_SYMBOL").longitude || 0))}" transform="translate(300 300)" fill="${fill}"/>${glyph(i.name === "Ophiuchus" ? "M20 15H30V65Q50 95 70 65V15H80V65Q50 115 20 65ZM8 40Q30 65 50 40T92 40V50Q70 25 50 50T8 50Z" : zodiacGlyphPaths[signs.indexOf(i.name)], q.x, q.y, contrastInk(fill))}</g>`;
   }).join("")}
- ${bodyLayouts().map(({ group, placement }) => {
-    const groupHouse = cuspSectors()[houseIndex(group[0].longitude)];
-    const longitude = groupHouse.start + group.reduce((sum, b) => sum + (b.longitude - groupHouse.start + 360) % 360, 0) / group.length;
-    const radius = 184, clearance2 = 8, sector = cuspSectors()[houseIndex(group[0].longitude)];
-    const compact = sector.width < 30;
-    const targetRadius = compact ? Math.min(18, Math.max(4, radius * Math.sin(sector.width / 2 * Math.PI / 180) - clearance2)) : Math.hypot(26, 26);
-    const extent = targetRadius;
-    const inset = Math.asin((extent + clearance2) / radius) * 180 / Math.PI;
-    const houseStart = sector.start;
-    const anchor = Math.max(houseStart + inset, Math.min(houseStart + sector.width - inset, houseStart + (longitude - houseStart + 360) % 360));
-    const q = placement ? p(placement.longitude, placement.radius) : p(anchor, radius);
+ 
+ ${layouts.map(({ group, placement }) => {
+    const { q, sector, anchor, houseStart, compact, extent, glyphScale } = layoutGeometry(group, placement);
     if (placement) {
       const b = group[0], i = all.find((i2) => i2.body === b.name), tip = p(b.longitude, 230);
-      return `<g ${attrs(i)} data-layout-house="${sector.index}" data-label-longitude="${placement.longitude}" data-label-radius="${placement.radius}" data-label-x="${q.x}" data-label-y="${q.y}"><line x1="${tip.x}" y1="${tip.y}" x2="${q.x}" y2="${q.y}" stroke="#777"/><circle cx="${q.x}" cy="${q.y}" r="22" fill="transparent"/><circle cx="${q.x}" cy="${q.y}" r="16" fill="#fafafa"/>${glyph(bodySymbols[b.name].path, q.x, q.y)}</g>`;
+      return `<g ${attrs(i)} data-layout-house="${sector.index}" data-label-longitude="${placement.longitude}" data-label-radius="${placement.radius}" data-label-x="${q.x}" data-label-y="${q.y}"><circle cx="${q.x}" cy="${q.y}" r="${22 * glyphScale}" fill="transparent"/><circle cx="${q.x}" cy="${q.y}" r="${16 * glyphScale}" fill="#fafafa"/><g transform="translate(${q.x} ${q.y}) scale(${glyphScale})">${glyph(bodySymbols[b.name].path, 0, 0)}</g></g>`;
     }
-    const leaders = group.map((b) => {
-      const tip = p(b.longitude, 230);
-      return `<line class="group-leader" x1="${tip.x}" y1="${tip.y}" x2="${q.x}" y2="${q.y}" stroke="#999" stroke-width=".8" pointer-events="none"/>`;
-    }).join("");
-    return `<g id="folder-${group[0].name}" data-folder="${group.map((b) => b.name).join(",")}" data-anchor="${anchor}" data-house-start="${houseStart}" data-house-width="${sector.width}" data-compact="${compact}" data-extent="${extent}" role="button" tabindex="0" aria-label="Grouped bodies: ${group.map((b) => bodyName(b.name)).join(", ")}">${leaders}${compact ? `<circle class="compact-plate" cx="${q.x}" cy="${q.y}" r="${extent}" fill="#e7e3ee" stroke="#6e617f"/><text x="${q.x}" y="${q.y}" font-size="12" text-anchor="middle" dominant-baseline="middle">${group.length}</text>` : `<rect class="group-plate" x="${q.x - 25}" y="${q.y - 25}" width="50" height="50" rx="12" fill="#e7e3ee" stroke="#6e617f"/>${group.slice(0, 4).map((b, j) => `<g transform="translate(${q.x + (j % 2 ? 9 : -9)} ${q.y + (j > 1 ? 12 : -3)}) scale(.52)">${glyph(bodySymbols[b.name].path, 0, 0)}</g>`).join("")}<circle class="group-count" cx="${q.x + 17}" cy="${q.y - 17}" r="9" fill="#65517d"/><text x="${q.x + 17}" y="${q.y - 17}" fill="white" font-size="10" text-anchor="middle" dominant-baseline="middle">${group.length}</text>`}</g>`;
+    return `<g id="folder-${group[0].name}" data-folder="${group.map((b) => b.name).join(",")}" data-anchor="${anchor}" data-house-start="${houseStart}" data-house-width="${sector.width}" data-compact="${compact}" data-extent="${extent}" role="button" tabindex="0" aria-label="Grouped bodies: ${group.map((b) => bodyName(b.name)).join(", ")}">${compact ? `<circle class="compact-plate" cx="${q.x}" cy="${q.y}" r="${extent}" fill="#e7e3ee" stroke="#6e617f"/><text x="${q.x}" y="${q.y}" font-size="12" text-anchor="middle" dominant-baseline="middle">${group.length}</text>` : `<rect class="group-plate" x="${q.x - 25}" y="${q.y - 25}" width="50" height="50" rx="12" fill="#e7e3ee" stroke="#6e617f"/>${group.slice(0, 4).map((b, j) => `<g transform="translate(${q.x + (j % 2 ? 9 : -9)} ${q.y + (j > 1 ? 12 : -3)}) scale(.52)">${glyph(bodySymbols[b.name].path, 0, 0)}</g>`).join("")}<circle class="group-count" cx="${q.x + 17}" cy="${q.y - 17}" r="9" fill="#65517d"/><text x="${q.x + 17}" y="${q.y - 17}" fill="white" font-size="10" text-anchor="middle" dominant-baseline="middle">${group.length}</text>`}</g>`;
   }).join("")}
  ${all.filter((i) => i.kind === "Angle").map((i) => {
     const q = p(i.longitude, 293);
@@ -896,7 +948,19 @@ var render = () => {
   const pan = $("drawing").scrollLeft;
   $("category").value = state.category;
   $("scenario").value = state.scenario;
-  $("drawing").innerHTML = wheel();
+  const markup = wheel();
+  const existing = $("drawing").querySelector("svg");
+  if (existing) {
+    const template = document.createElement("template");
+    template.innerHTML = markup;
+    const next = template.content.querySelector("svg");
+    existing.setAttribute("viewBox", next.getAttribute("viewBox"));
+    existing.innerHTML = next.innerHTML;
+  } else
+    $("drawing").innerHTML = markup;
+  $("house-back").hidden = focusedHouse === null;
+  $("house-status").textContent = focusedHouse === null ? "" : `House ${focusedHouse + 1} · same chart, magnified. Choose a body.`;
+  $("drawing").classList.toggle("house-focused", focusedHouse !== null);
   $("drawing").classList.toggle("zoomed", zoom);
   $("drawing").scrollLeft = pan;
   $("zoom").textContent = zoom ? "Show whole wheel" : "Zoom · half wheel";
@@ -952,7 +1016,7 @@ document.addEventListener("click", (e) => {
   const folder = target.closest("[data-folder]"), pick = target.closest("[data-pick]"), back = target.closest("[data-picker-back]"), card = target.closest("[data-card]"), connections = target.closest("[data-connections]");
   if (folder) {
     opener = folder.id;
-    openPicker(folder.dataset.folder.split(","));
+    focusHouse(folder.dataset.folder.split(","), folder.id);
     return;
   }
   if (connections) {
@@ -999,7 +1063,7 @@ document.addEventListener("click", (e) => {
   }
   if (button) {
     if (button.closest("svg") && button.dataset.item.startsWith("aspect-") && e.detail !== 0) {
-      const svg = $("wheel"), rect = svg.getBoundingClientRect(), q = { x: (e.clientX - rect.left) * 640 / rect.width - 20, y: (e.clientY - rect.top) * 640 / rect.height - 20 };
+      const svg = $("wheel"), rect = svg.getBoundingClientRect(), box = svg.viewBox.baseVal, q = { x: (e.clientX - rect.left) * box.width / rect.width + box.x, y: (e.clientY - rect.top) * box.height / rect.height + box.y };
       const bs = bodies(), near = aspects().filter((a) => distance(q, p(bs.find((b) => b.name === a.pair[0]).longitude, 104), p(bs.find((b) => b.name === a.pair[1]).longitude, 104)) < 11);
       if (near.length > 1) {
         opener = button.id;
@@ -1016,14 +1080,16 @@ document.addEventListener("click", (e) => {
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     e.preventDefault();
-    clear();
+    if (focusedHouse !== null && !state.selected && !picker)
+      leaveHouse();
+    else
+      clear();
   }
   const folder = e.target.closest("[data-folder]");
   if (folder && (e.key === "Enter" || e.key === " ")) {
     e.preventDefault();
     opener = folder.id;
-    openPicker(folder.dataset.folder.split(","));
-    $("detail-title").focus();
+    focusHouse(folder.dataset.folder.split(","), folder.id);
     return;
   }
   const target = e.target.closest("g[data-item],path[data-item]");
@@ -1032,12 +1098,15 @@ document.addEventListener("keydown", (e) => {
     selectItem(target.dataset.item, target.id, true);
   }
 });
+$("house-back").addEventListener("click", leaveHouse);
 $("close").addEventListener("click", clear);
 $("expand").addEventListener("click", () => {
   sheetHeight = sheetHeight >= 70 ? 40 : 70;
   render();
 });
 $("scenario").addEventListener("change", (e) => {
+  focusedHouse = null;
+  returnView = null;
   picker = null;
   sheetHeight = 40;
   dispatch({ type: "scenario", value: e.target.value });
@@ -1046,6 +1115,8 @@ $("category").addEventListener("change", (e) => dispatch({ type: "category", val
 var suppressClick = false;
 $("chart-mode").addEventListener("change", (e) => {
   chartMode = e.target.value;
+  focusedHouse = null;
+  returnView = null;
   picker = null;
   sheetHeight = 40;
   dispatch({ type: "scenario", value: "initial" });
@@ -1058,7 +1129,7 @@ $("pan-left").addEventListener("click", () => $("drawing").scrollBy({ left: -140
 $("pan-right").addEventListener("click", () => $("drawing").scrollBy({ left: 140, behavior: "smooth" }));
 var panDrag = null;
 $("drawing").addEventListener("pointerdown", (e) => {
-  if (!zoom)
+  if (!zoom && focusedHouse === null)
     return;
   panDrag = { id: e.pointerId, x: e.clientX, y: e.clientY, scroll: $("drawing").scrollLeft, moved: false };
 });
@@ -1168,7 +1239,7 @@ if (new URLSearchParams(location.search).get("picker") === "folder") {
   const group = clusters().find((group2) => group2.length > 1);
   if (group) {
     opener = "folder-" + group[0].name;
-    openPicker(group.map((b) => b.name));
+    focusHouse(group.map((b) => b.name), opener);
   } else
     render();
 }
@@ -1177,5 +1248,10 @@ if (requestedScenario && ["initial", "edited", "crowded", "triangle", "overflow"
   picker = null;
   state = { ...initial, scenario: requestedScenario };
   render();
+}
+if (new URLSearchParams(location.search).get("focus") === "group") {
+  const group = clusters().find((g) => g.length > 1);
+  if (group)
+    focusHouse(group.map((b) => b.name), "folder-" + group[0].name);
 }
 </script></html>

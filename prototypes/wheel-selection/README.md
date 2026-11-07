@@ -149,3 +149,42 @@ placed Sun and Mercury on the outer row and Moon inward. Individual target
 centers remained at least 47 SVG units apart; overflow houses opened the tile
 picker with all ten members. Desktop/mobile screenshots were inspected and no
 page exceptions were observed. Physical-device usability remains unverified.
+
+## House zoom picker (latest interaction proposal)
+
+A crowded-group activation now zooms the existing chart camera into that house
+instead of opening a separate body tile picker. The outer SVG element is
+preserved while its `viewBox` changes; signs, cusp geometry, body coordinates,
+and aspect geometry still come from the same chart. No chart is recalculated
+or copied into a separate picker surface.
+
+The fit-first layout re-runs for the focused house at the magnified scale,
+using more radial rows and smaller world-space footprints. Individual glyphs
+remain readable at the resulting scale. Other houses retain their overview
+layout. Connector origins and chart facts are unchanged; visual labels can
+move within their house to make room. All body connectors share a layer before
+sign glyphs, individual body glyphs, and group markers, so no later connector
+can paint over an earlier glyph.
+
+Select an individual glyph in the magnified house to open the normal details
+sheet. “Back to whole chart” restores the prior overview/half-wheel zoom and
+horizontal pan. Escape closes details first, then leaves the focused house;
+keyboard focus returns to the original group. Changing the fixture/layout
+clears house focus.
+
+On mobile, the focused canvas is at least 640px wide, centered on entry, with
+horizontal drag/pan controls. This keeps glyphs readable rather than shrinking
+them to fit the phone. The overflow example's ten bodies remain individually
+visible; wider house layouts may need panning. Mobile sheet snapping is
+unchanged. The aspect relationship picker remains available from body details.
+
+Direct review: `?chart=true-whole&scenario=overflow&focus=group`.
+
+Headless checks across tropical, True Sky whole-sign, and True Sky Placidus
+confirmed the same SVG identity through focus/return, ten individual overflow
+members, normal selection, restored viewBox, and no page exceptions. A mobile
+keyboard exercise confirmed details/escape behavior, original group focus,
+and restoration of the previous half-wheel view and its 120px pan. Paint-order
+inspection confirmed the connector layer precedes all body/group/sign targets.
+This is still a prototype heuristic; arbitrary house occupancies and physical
+touch-device usability are not yet established.
