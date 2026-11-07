@@ -1,0 +1,9 @@
+node_modules/
+.svelte-kit/
+build/
+.wrangler/
+playwright-report/
+test-results/
+static/release.json
+.env*
+.dev.vars*
