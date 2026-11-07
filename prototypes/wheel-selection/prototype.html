@@ -3,42 +3,20 @@
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f8f6f0;color:#282c29;font:15px/1.5 system-ui,sans-serif}header{padding:20px 28px;border-bottom:1px solid #ddd}h1{font:normal 30px Georgia,serif;margin:0 0 8px}header p{max-width:850px;margin:6px 0;color:#5d625e}button,select{font:inherit;color:inherit;background:white;border:1px solid #c8cbc6;border-radius:7px;min-height:44px;padding:8px 12px;cursor:pointer}button:hover{background:#f1f1fa}button:focus-visible,select:focus-visible{outline:3px solid #6455a4;outline-offset:3px}button[aria-pressed=true]{background:#e6e5f4;border-color:#6455a4}.toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}.workspace{max-width:1150px;margin:auto;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:32px;padding:24px}.chart{min-width:0}.drawing{max-width:660px;margin:auto}svg{display:block;width:100%;height:auto}svg svg{width:24px;height:24px}g[role=button],path[role=button]{cursor:pointer;outline:none}g[role=button]:focus-visible>circle,g[role=button][aria-pressed=true]>circle{stroke:#67529d;stroke-width:2.5}g[role=button]:focus-visible>path,g[role=button][aria-pressed=true]>path,path[role=button]:focus-visible,path[role=button][aria-pressed=true]{stroke:#333;stroke-width:3}g[role=button]:focus-visible>text,g[role=button][aria-pressed=true]>text{fill:#6433b6;font-weight:bold}g[role=button]:focus-visible>.aspect{stroke-width:5}g[role=button]:focus-visible>rect,g[role=button][aria-pressed=true]>rect{stroke:#67529d;stroke-width:2}aside{align-self:start;position:sticky;top:24px;border:1px solid #d9d9d0;border-radius:14px;background:white;padding:20px;max-height:calc(100dvh - 48px);overflow:auto}aside[hidden]{display:none}.panel-tools{display:flex;gap:10px;justify-content:space-between}.expand{display:none}h2{font:normal 30px Georgia,serif;margin:12px 0}h3{font-size:15px}.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:#676374}.context{font-size:13px;color:#646860}dl{display:grid;grid-template-columns:1fr 1fr;gap:12px}dd{margin:0}dt{color:#62665f}hr{border:0;border-top:1px solid #e6e6e0;margin:24px 0}.selection-list{max-width:1086px;margin:0 auto;padding:0 0 220px}.selection-list h2{font:normal 22px Georgia,serif}#list{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.state{border-top:1px solid #ddd;padding:12px 28px;font-size:13px;color:#565c52}#details>button{display:block;width:100%;margin:8px 0}#instruction{min-height:45px;color:#62665f}.guide{font-size:13px;color:#62665f}.guide summary{cursor:pointer;min-height:44px;padding:10px 0}
 @media(max-width:799px){header{padding:16px}h1{font-size:25px}.workspace{display:block;padding:12px}.drawing{max-width:min(100%,calc(100dvh - 220px))}.selection-list{padding:0 16px 55dvh}aside{position:fixed;z-index:5;bottom:0;left:0;right:0;top:auto;border-radius:18px 18px 0 0;height:40dvh;max-height:80dvh;padding:16px 20px max(20px,env(safe-area-inset-bottom));box-shadow:0 -8px 35px #0002;animation:enter .18s ease-out}aside.expanded{height:75dvh}.expand{display:block}.state{padding:12px 16px}.panel-tools{position:sticky;top:-16px;background:white;padding:8px 0}.toolbar{gap:8px}h2{font-size:26px}}@keyframes enter{from{transform:translateY(100%)}to{transform:translateY(0)}}@media(prefers-reduced-motion:reduce){aside{animation:none}}
+
+.drawing{overflow-x:auto;scrollbar-width:thin;touch-action:pan-y}.drawing.zoomed{aspect-ratio:1/2;cursor:grab}.drawing.zoomed:active{cursor:grabbing}.drawing.zoomed>#wheel{width:200%;max-width:none}.wheel-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 12px}.wheel-controls small{color:#62665f}.resize-handle{display:none}.concept-switcher{position:fixed;z-index:8;bottom:10px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;background:#302c38;color:#fff;padding:5px 8px;border-radius:30px;box-shadow:0 3px 14px #0003;white-space:nowrap}.concept-switcher button{border:0;background:transparent;color:white;border-radius:50%;font-size:20px}.concept-switcher span{min-width:160px;text-align:center;font-size:13px}.picker-option{display:flex;gap:12px;align-items:center;width:100%;text-align:left;padding:14px;margin:8px 0;min-height:68px}.picker-option svg{width:28px;height:28px;flex-shrink:0}.picker-option span:first-of-type{flex:1}.picker-option small{display:block;font-size:13px;font-weight:400;color:#68636f;margin-top:3px}.picker-A{display:grid;grid-template-columns:1fr 1fr;gap:10px}.picker-A .picker-option{margin:0;flex-direction:column;text-align:center;min-height:130px}.picker-A .picker-option>span:last-child{display:none}.picker-A .picker-option svg{width:34px;height:34px}.picker-C .picker-option{flex-direction:column;text-align:center;padding:30px 16px;min-height:235px;background:#f2eff7;border:0}.picker-C .picker-option svg{width:80px;height:80px}.picker-C .picker-option strong{font:normal 28px Georgia,serif}.picker-C .picker-option>span:last-child{font-size:24px}.picker-option[hidden]{display:none}.card-navigation{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px}.breadcrumbs{display:flex;align-items:center;gap:4px;flex-wrap:wrap;font-size:12px}.breadcrumbs button{font-size:12px;padding:4px 8px;min-height:36px}g[data-folder]{cursor:pointer;outline:none}g[data-folder]:focus-visible>rect{stroke:#492881;stroke-width:4}aside{padding-bottom:80px}
+@media(max-width:799px){.drawing.zoomed{max-width:100%}aside{height:var(--sheet-height,40dvh)!important;max-height:70dvh;padding:0!important;overflow:hidden;display:flex;flex-direction:column;animation:none}aside[hidden]{display:none}.resize-handle{display:flex;flex-shrink:0;height:28px;min-height:28px;align-items:center;justify-content:center;touch-action:none;cursor:ns-resize;border:0;background:transparent}.resize-handle span{display:block;width:42px;height:7px;border-top:2px solid #9991a2;border-bottom:2px solid #9991a2}.panel-tools{position:static;flex-shrink:0;padding:0 16px 8px;top:auto}#details{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 20px 88px;flex:1}.picker-B .picker-option{min-height:76px}.concept-switcher{bottom:max(8px,env(safe-area-inset-bottom))}.wheel-controls{margin-top:4px}}
+.picker-C .picker-option span:first-of-type{order:-1}.picker-C .picker-option{padding:14px;min-height:185px}.picker-C .picker-option svg{width:48px;height:48px}.card-navigation{margin:0 0 8px}.picker-C .picker-option strong{font-size:25px}
 </style>
-<header><h1>Explore the chart</h1><p><strong>Throwaway interaction prototype.</strong> Does one selection at a time work on the wheel and in a sidebar or mobile sheet? The wheel uses plugin artwork and layout. All chart values below are synthetic fixtures, not calculated birth charts.</p><div class="toolbar"><label for="scenario">Try a scenario</label><select id="scenario"><option value="initial">Initial chart inputs</option><option value="edited">After birth inputs change</option><option value="crowded">Crowded glyphs</option></select></div><details class="guide"><summary>Guided walkthroughs and things to try</summary><div id="walk-tabs" role="group" aria-label="Guided scenarios" tabindex="-1"></div><div id="walk-steps"></div><p>Choose Sun, then an aspect; select a house wedge or its number; choose a sign or ASC. At crossing lines choose the exact aspect from the list offered. Try crowded glyphs using the named list. Press Tab, Enter/Space, then Escape. Resize below 800px, open details, expand, and close. Changing the scenario clears the old selection.</p><p>Proposals to review: selecting again clears; blank wheel space and Escape clear; a new target replaces; keyboard activation focuses details and closing returns focus. The mobile sheet is nonmodal, leaves the wheel interactive, starts at 40% height, expands to 75%, and scrolls internally. Angles show reference text only. No swipe or drag gesture in this demo.</p></details></header>
-<main><div class="workspace"><section class="chart" aria-label="Chart"><div id="drawing" class="drawing"></div><p id="instruction"></p></section><aside id="panel" aria-labelledby="detail-title" hidden><div class="panel-tools"><button id="expand" class="expand">Expand details</button><button id="close">Close details</button></div><div id="details"></div></aside></div><section class="selection-list" aria-label="Named chart targets"><h2>Choose by name</h2><label for="category">Target type</label> <select id="category"><option>Body</option><option>Sign</option><option>House</option><option>Aspect</option><option>Angle</option></select><div id="list"></div></section></main><div id="state" class="state" role="status" aria-live="polite"></div>
-<script type="module">// prototypes/wheel-selection/source/geometry.ts
+<header><h1>Explore the chart</h1><p><strong>Throwaway interaction prototype.</strong> Does one selection at a time work on the wheel and in a sidebar or mobile sheet? The wheel uses plugin artwork and layout. All chart values below are synthetic fixtures, not calculated birth charts.</p><div class="toolbar"><label for="scenario">Try a scenario</label><select id="scenario"><option value="initial">Initial chart inputs</option><option value="edited">After birth inputs change</option><option value="crowded">Crowded glyphs</option></select></div><details class="guide"><summary>Guided walkthroughs and things to try</summary><div id="walk-tabs" role="group" aria-label="Guided scenarios" tabindex="-1"></div><div id="walk-steps"></div><p>Choose Sun, then an aspect; select a house wedge or its number; choose a sign or ASC. At crossing lines choose the exact aspect from the list offered. Try crowded glyphs using the named list. Press Tab, Enter/Space, then Escape. Resize below 800px, open details, expand, and close. Changing the scenario clears the old selection.</p><p>Proposals to review: selecting again clears; blank wheel space and Escape clear; a new target replaces; keyboard activation focuses details and closing returns focus. The mobile sheet is nonmodal, leaves the wheel interactive, snaps to 0%, 40%, and 70% height, and scrolls internally. Drag the double-line resize handle. Angles show reference text only. Zoom the wheel to pan horizontally. Crowded bodies stay in their house inside a folder; try all three picker concepts using the bottom switcher.</p></details></header>
+<main><div class="workspace"><section class="chart" aria-label="Chart"><div class="wheel-controls"><button id="zoom" aria-pressed="false">Zoom · half wheel</button><button id="pan-left" aria-label="Pan wheel left">←</button><button id="pan-right" aria-label="Pan wheel right">→</button><small>Drag sideways when zoomed</small></div><div id="drawing" class="drawing" tabindex="-1"></div><p id="instruction"></p></section><aside id="panel" aria-labelledby="detail-title" hidden><div id="resize-handle" class="resize-handle" role="slider" tabindex="0" aria-label="Resize details sheet" aria-orientation="vertical" aria-valuemin="0" aria-valuemax="70" aria-valuenow="40"><span aria-hidden="true"></span></div><div class="panel-tools"><button id="expand" class="expand">Expand details</button><button id="close">Close details</button></div><div id="details"></div></aside></div><section class="selection-list" aria-label="Named chart targets"><h2>Choose by name</h2><label for="category">Target type</label> <select id="category"><option>Body</option><option>Sign</option><option>House</option><option>Aspect</option><option>Angle</option></select><div id="list"></div></section></main><div id="state" class="state" role="status" aria-live="polite"></div>
+<nav class="concept-switcher" aria-label="Picker concepts"><button id="previous-variant" aria-label="Previous picker concept">←</button><span id="variant-name"></span><button id="next-variant" aria-label="Next picker concept">→</button></nav><script type="module">// prototypes/wheel-selection/source/geometry.ts
 var wheelPoint = (longitude, radius, ascendant) => {
   const radians = (longitude - ascendant) * Math.PI / 180;
   return {
     x: 300 - radius * Math.cos(radians),
     y: 300 + radius * Math.sin(radians)
   };
-};
-var layoutBodyPositions = (bodies) => {
-  if (!bodies.length)
-    return [];
-  const gap = 12;
-  const sorted = [...bodies].sort((a, b) => a.longitude - b.longitude);
-  const seam = sorted.reduce((best2, body, index) => {
-    const space = (sorted[(index + 1) % sorted.length].longitude - body.longitude + 360) % 360;
-    return space > best2.space ? { index, space } : best2;
-  }, { index: sorted.length - 1, space: -1 }).index;
-  const ordered = [...sorted.slice(seam + 1), ...sorted.slice(0, seam + 1)];
-  const origin = ordered[0].longitude;
-  const actual = ordered.map((body) => origin + (body.longitude - origin + 360) % 360);
-  const candidates = Array.from({ length: 361 }, (_, index) => actual[0] + index - 180);
-  const best = candidates.reduce((best2, start) => {
-    const labels2 = actual.reduce((placed, longitude, index) => {
-      return [
-        ...placed,
-        index === 0 ? start : Math.min(Math.max(longitude, placed[index - 1] + gap), start + 360 - (actual.length - index) * gap)
-      ];
-    }, []);
-    const cost = labels2.reduce((total, label, index) => total + (label - actual[index]) ** 2, 0);
-    return cost < best2.cost ? { cost, labels: labels2 } : best2;
-  }, { cost: Infinity, labels: [] });
-  const labels = Object.fromEntries(ordered.map((body, index) => [body.name, best.labels[index]]));
-  return bodies.map((body) => ({ ...body, labelLongitude: labels[body.name] }));
 };
 
 // prototypes/wheel-selection/source/angles.ts
@@ -249,7 +227,7 @@ var state = initial;
 var opener = "";
 var $ = (id) => document.getElementById(id);
 var p = (l, r) => wheelPoint(l, r, 0);
-var bodies = () => layoutBodyPositions(names.map((name, i) => ({ name, longitude: (positions[i] + (state.scenario === "edited" ? 41 : 0) + (state.scenario === "crowded" && i < 6 ? 73 - positions[i] + i * 1.3 : 0) + 360) % 360 })));
+var bodies = () => names.map((name, i) => ({ name, longitude: (positions[i] + (state.scenario === "edited" ? 41 : 0) + (state.scenario === "crowded" && i < 6 ? 73 - positions[i] + i * 1.3 : 0) + 360) % 360 }));
 var aspects = () => [
   { id: "aspect-sun-moon", name: "Sun trine Moon", kind: "Aspect", pair: ["SUN", "MOON"], type: "Trine" },
   { id: "aspect-sun-mars", name: "Sun opposition Mars", kind: "Aspect", pair: ["SUN", "MARS"], type: "Opposition" },
@@ -268,6 +246,37 @@ var items = () => [
 var active = () => items().find((i) => i.id === state.selected);
 var attrs = (i) => `id="wheel-${i.id}" data-item="${i.id}" role="button" tabindex="0" aria-label="${i.name}, ${i.kind.toLowerCase()}" aria-pressed="${i.id === state.selected}"`;
 var glyph = (path, x, y, ink = "#222") => `<svg x="${x - 12}" y="${y - 12}" width="24" height="24" viewBox="0 0 100 100" aria-hidden="true"><path d="${path}" fill="${ink}" fill-rule="evenodd"/></svg>`;
+var clusters = () => [...bodies()].sort((a, b) => a.longitude - b.longitude).reduce((groups, b) => {
+  const last = groups.at(-1), prev = last?.at(-1);
+  return prev && Math.floor(prev.longitude / 30) === Math.floor(b.longitude / 30) && b.longitude - prev.longitude < 12 ? [...groups.slice(0, -1), [...last, b]] : [...groups, [b]];
+}, []);
+var picker = null;
+var variant = new URLSearchParams(location.search).get("variant") || "A";
+if (!["A", "B", "C"].includes(variant))
+  variant = "A";
+var spotlight = 0;
+var sheetHeight = 40;
+var zoom = false;
+var bodyName = (name) => bodySymbols[name].name;
+var miniGlyph = (name) => `<svg viewBox="0 0 100 100" aria-hidden="true"><path d="${bodySymbols[name].path}" fill="currentColor" fill-rule="evenodd"/></svg>`;
+var openPicker = (ids, mode = "bodies", aspectIds = []) => {
+  picker = { ids, mode, aspectIds, body: null, relation: null };
+  spotlight = 0;
+  sheetHeight = 40;
+  state = { ...state, selected: null, choices: [] };
+  render();
+  $("detail-title").focus({ preventScroll: true });
+};
+var availableAspects = () => aspects().filter((a) => !picker?.aspectIds.length || picker.aspectIds.includes(a.id));
+var pickerContent = () => {
+  if (!picker)
+    return "";
+  const scope = picker;
+  const options = !scope.body ? scope.ids.map((id) => ({ id, label: bodyName(id), note: scope.mode === "aspects" ? "Explore its connections" : `${signs[Math.floor(bodies().find((b) => b.name === id).longitude / 30)]} · House ${Math.floor(bodies().find((b) => b.name === id).longitude / 30) + 1}`, glyph: id })) : !scope.relation ? [...new Set(availableAspects().filter((a) => a.pair.includes(scope.body)).map((a) => a.type))].map((type) => ({ id: type, label: type, note: references[type], glyph: scope.body })) : availableAspects().filter((a) => a.pair.includes(scope.body) && a.type === scope.relation).map((a) => ({ id: a.id, label: bodyName(a.pair.find((n) => n !== scope.body)), note: `${bodyName(scope.body)} · ${scope.relation}`, glyph: a.pair.find((n) => n !== scope.body) }));
+  const heading = !scope.body ? scope.mode === "bodies" ? "Inside this folder" : "Explore connections" : !scope.relation ? `${bodyName(scope.body)} connections` : `${bodyName(scope.body)} · ${scope.relation}`;
+  const buttons = options.map((o, i) => `<button class="picker-option" data-pick="${o.id}" ${variant === "C" && i !== spotlight ? "hidden" : ""}>${miniGlyph(o.glyph)}<span><strong>${o.label}</strong><small>${o.note}</small></span><span aria-hidden="true">${scope.mode === "aspects" ? "›" : "↗"}</span></button>`).join("");
+  return `${scope.body ? `<nav class="breadcrumbs" aria-label="Picker path"><button data-picker-back="root">${scope.mode === "bodies" ? "Folder" : "Bodies"}</button>${scope.body ? `<span>›</span><button data-picker-back="body">${bodyName(scope.body)}</button>` : ""}${scope.relation ? `<span>› ${scope.relation}</span>` : ""}</nav>` : ""}<h2 id="detail-title" tabindex="-1">${heading}</h2>${scope.body ? `<p>${!scope.relation ? "Choose a relationship." : "Choose the other body."}</p>` : ""}${variant === "C" && options.length ? `<div class="card-navigation"><button data-card="-1" aria-label="Previous choice">←</button><span>${spotlight + 1} of ${options.length}</span><button data-card="1" data-count="${options.length}" aria-label="Next choice">→</button></div>` : ""}<div class="picker picker-${variant}">${buttons || "<p>No connections in this fixture.</p>"}</div>`;
+};
 var wheel = () => {
   const all = items(), bs = bodies(), selected = active();
   const lineData = aspects().map((a) => ({ ...a, a: p(bs.find((b) => b.name === a.pair[0]).longitude, 104), b: p(bs.find((b) => b.name === a.pair[1]).longitude, 104) }));
@@ -287,9 +296,16 @@ var wheel = () => {
     const start = i.index * 30, q = p(start + 15, 253), fill = WHEEL_THEMES.traditional.signFills[i.name];
     return `<g ${attrs(i)}><path d="${annularSector(231, 273, longitudeToSvgAngle(start + 30, 0), longitudeToSvgAngle(start, 0))}" transform="translate(300 300)" fill="${fill}"/>${glyph(zodiacGlyphPaths[i.index], q.x, q.y, contrastInk(fill))}</g>`;
   }).join("")}
- ${bs.map((b) => {
-    const i = all.find((i2) => i2.body === b.name), q = p(b.labelLongitude, 188), tip = p(b.longitude, 230);
-    return `<g ${attrs(i)}><line x1="${tip.x}" y1="${tip.y}" x2="${q.x}" y2="${q.y}" stroke="#777" stroke-width=".8"/><circle cx="${tip.x}" cy="${tip.y}" r="2" fill="#222"/><circle cx="${q.x}" cy="${q.y}" r="22" fill="transparent"/><circle cx="${q.x}" cy="${q.y}" r="16" fill="#fafafa"/>${glyph(bodySymbols[b.name].path, q.x, q.y)}</g>`;
+ ${clusters().map((group) => {
+    const longitude = group.reduce((sum, b) => sum + b.longitude, 0) / group.length, q = p(longitude, 188);
+    if (group.length === 1) {
+      const b = group[0], i = all.find((i2) => i2.body === b.name), tip = p(b.longitude, 230);
+      return `<g ${attrs(i)}><line x1="${tip.x}" y1="${tip.y}" x2="${q.x}" y2="${q.y}" stroke="#777"/><circle cx="${q.x}" cy="${q.y}" r="22" fill="transparent"/><circle cx="${q.x}" cy="${q.y}" r="16" fill="#fafafa"/>${glyph(bodySymbols[b.name].path, q.x, q.y)}</g>`;
+    }
+    return `<g id="folder-${group[0].name}" data-folder="${group.map((b) => b.name).join(",")}" role="button" tabindex="0" aria-label="Folder: ${group.map((b) => bodyName(b.name)).join(", ")}"><rect x="${q.x - 25}" y="${q.y - 25}" width="50" height="50" rx="12" fill="#e7e3ee" stroke="#6e617f"/>${group.slice(0, 4).map((b, j) => `<g transform="translate(${q.x + (j % 2 ? 10 : -10)} ${q.y + (j > 1 ? 9 : -10)}) scale(.52)">${glyph(bodySymbols[b.name].path, 0, 0)}</g>`).join("")}<circle cx="${q.x + 23}" cy="${q.y - 23}" r="10" fill="#65517d"/><text x="${q.x + 23}" y="${q.y - 23}" fill="white" font-size="11" text-anchor="middle" dominant-baseline="middle">${group.length}</text>${group.map((b) => {
+      const tip = p(b.longitude, 230);
+      return `<line x1="${tip.x}" y1="${tip.y}" x2="${q.x}" y2="${q.y - 26}" stroke="#aaa" stroke-width=".7" pointer-events="none"/>`;
+    }).join("")}</g>`;
   }).join("")}
  ${all.filter((i) => i.kind === "Angle").map((i) => {
     const q = p(i.longitude, 293);
@@ -312,16 +328,25 @@ var facts = (i) => {
 };
 var render = () => {
   const i = active();
+  const pan = $("drawing").scrollLeft;
   $("category").value = state.category;
   $("scenario").value = state.scenario;
   $("drawing").innerHTML = wheel();
-  $("panel").hidden = !i && !state.choices.length;
+  $("drawing").classList.toggle("zoomed", zoom);
+  $("drawing").scrollLeft = pan;
+  $("zoom").textContent = zoom ? "Show whole wheel" : "Zoom · half wheel";
+  $("zoom").setAttribute("aria-pressed", String(zoom));
+  $("variant-name").textContent = { A: "A · Folder tiles", B: "B · Guided list", C: "C · Spotlight cards" }[variant];
+  $("panel").hidden = sheetHeight === 0 || !i && !state.choices.length && !picker;
+  $("panel").style.setProperty("--sheet-height", sheetHeight + "dvh");
+  $("resize-handle").setAttribute("aria-valuenow", String(sheetHeight));
+  $("resize-handle").setAttribute("aria-valuetext", sheetHeight + "% of screen");
   $("panel").classList.toggle("expanded", state.expanded);
-  $("details").innerHTML = state.choices.length ? `<h2 id="detail-title" tabindex="-1">Choose an aspect</h2><p>Several lines meet here.</p>${state.choices.map((id) => {
+  $("details").innerHTML = picker ? pickerContent() : state.choices.length ? `<h2 id="detail-title" tabindex="-1">Choose an aspect</h2><p>Several lines meet here.</p>${state.choices.map((id) => {
     const a = items().find((i2) => i2.id === id);
     return `<button data-choice="${id}">${a.name}</button>`;
-  }).join("")}` : i ? `<p class="eyebrow">${i.kind}</p><h2 id="detail-title" tabindex="-1">${i.name}</h2>${i.kind === "Aspect" ? "" : `<p>${reference(i)}</p>`}${facts(i)}<hr><p class="context">Tropical zodiac · Equal houses</p>` : "";
-  $("expand").textContent = state.expanded ? "Show less" : "Expand details";
+  }).join("")}` : i ? `<p class="eyebrow">${i.kind}</p><h2 id="detail-title" tabindex="-1">${i.name}</h2>${i.kind === "Aspect" ? "" : `<p>${reference(i)}</p>`}${facts(i)}${i.kind === "Body" ? `<button data-connections="${i.body}">Explore ${i.name}’s connections ›</button>` : ""}<hr><p class="context">Tropical zodiac · Equal houses</p>` : "";
+  $("expand").textContent = sheetHeight >= 70 ? "Show less" : "Expand details";
   $("list").innerHTML = items().filter((i2) => i2.kind === state.category).map((i2) => `<button id="list-${i2.id}" data-item="${i2.id}" aria-pressed="${i2.id === state.selected}">${i2.name}</button>`).join("");
   $("state").textContent = `${state.scenario === "initial" ? "Initial-input fixture" : state.scenario === "edited" ? "Edited-input fixture" : "Crowded-body fixture"} · ${i ? i.kind + ": " + i.name : "No selection"} · ${state.choices.length ? "Choosing between " + state.choices.length + " aspects" : state.expanded ? "Expanded details" : "Compact details"}`;
   $("instruction").textContent = i?.kind === "Body" ? "Unrelated aspects are dimmed. Choose another target to replace this selection." : "Choose a body, sign, house, angle, or aspect. Use the named list for small or crowded targets.";
@@ -335,8 +360,14 @@ var dispatch = (a, focus) => {
   else if (focused)
     document.getElementById(focused)?.focus();
 };
-var clear = () => dispatch({ type: "clear" }, opener);
+var clear = () => {
+  picker = null;
+  sheetHeight = 0;
+  dispatch({ type: "clear" }, opener);
+};
 var selectItem = (id, origin, keyboard) => {
+  picker = null;
+  sheetHeight = 40;
   opener = origin;
   dispatch({ type: "select", value: id });
   if (keyboard && state.selected)
@@ -348,7 +379,55 @@ var distance = (q, a, b) => {
   return Math.hypot(q.x - a.x - t * dx, q.y - a.y - t * dy);
 };
 document.addEventListener("click", (e) => {
+  if (suppressClick) {
+    suppressClick = false;
+    return;
+  }
   const target = e.target, button = target.closest("[data-item]"), choice = target.closest("[data-choice]");
+  const folder = target.closest("[data-folder]"), pick = target.closest("[data-pick]"), back = target.closest("[data-picker-back]"), card = target.closest("[data-card]"), connections = target.closest("[data-connections]");
+  if (folder) {
+    opener = folder.id;
+    openPicker(folder.dataset.folder.split(","));
+    return;
+  }
+  if (connections) {
+    const id = connections.dataset.connections;
+    openPicker([id], "aspects");
+    picker = { ...picker, body: id };
+    render();
+    return;
+  }
+  if (back && picker) {
+    picker = back.dataset.pickerBack === "root" ? { ...picker, body: null, relation: null } : { ...picker, relation: null };
+    spotlight = 0;
+    render();
+    $("detail-title").focus({ preventScroll: true });
+    return;
+  }
+  if (card) {
+    const count = $("details").querySelectorAll("[data-pick]").length;
+    spotlight = (spotlight + Number(card.dataset.card) + count) % count;
+    render();
+    return;
+  }
+  if (pick && picker) {
+    const id = pick.dataset.pick;
+    if (picker.mode === "bodies") {
+      selectItem("body-" + id, opener, true);
+    } else if (!picker.body) {
+      picker = { ...picker, body: id };
+      spotlight = 0;
+      render();
+      $("detail-title").focus({ preventScroll: true });
+    } else if (!picker.relation) {
+      picker = { ...picker, relation: id };
+      spotlight = 0;
+      render();
+      $("detail-title").focus({ preventScroll: true });
+    } else
+      selectItem(id, opener, true);
+    return;
+  }
   if (choice) {
     dispatch({ type: "select", value: choice.dataset.choice }, "detail-title");
     return;
@@ -359,7 +438,7 @@ document.addEventListener("click", (e) => {
       const bs = bodies(), near = aspects().filter((a) => distance(q, p(bs.find((b) => b.name === a.pair[0]).longitude, 104), p(bs.find((b) => b.name === a.pair[1]).longitude, 104)) < 11);
       if (near.length > 1) {
         opener = button.id;
-        dispatch({ type: "choices", choices: near.map((a) => a.id) }, "detail-title");
+        openPicker([...new Set(near.flatMap((a) => a.pair))], "aspects", near.map((a) => a.id));
         return;
       }
     }
@@ -374,6 +453,14 @@ document.addEventListener("keydown", (e) => {
     e.preventDefault();
     clear();
   }
+  const folder = e.target.closest("[data-folder]");
+  if (folder && (e.key === "Enter" || e.key === " ")) {
+    e.preventDefault();
+    opener = folder.id;
+    openPicker(folder.dataset.folder.split(","));
+    $("detail-title").focus();
+    return;
+  }
   const target = e.target.closest("g[data-item],path[data-item]");
   if (target && (e.key === "Enter" || e.key === " ")) {
     e.preventDefault();
@@ -381,9 +468,100 @@ document.addEventListener("keydown", (e) => {
   }
 });
 $("close").addEventListener("click", clear);
-$("expand").addEventListener("click", () => dispatch({ type: "expand" }));
-$("scenario").addEventListener("change", (e) => dispatch({ type: "scenario", value: e.target.value }));
+$("expand").addEventListener("click", () => {
+  sheetHeight = sheetHeight >= 70 ? 40 : 70;
+  render();
+});
+$("scenario").addEventListener("change", (e) => {
+  picker = null;
+  sheetHeight = 40;
+  dispatch({ type: "scenario", value: e.target.value });
+});
 $("category").addEventListener("change", (e) => dispatch({ type: "category", value: e.target.value }));
+var suppressClick = false;
+$("zoom").addEventListener("click", () => {
+  zoom = !zoom;
+  render();
+});
+$("pan-left").addEventListener("click", () => $("drawing").scrollBy({ left: -140, behavior: "smooth" }));
+$("pan-right").addEventListener("click", () => $("drawing").scrollBy({ left: 140, behavior: "smooth" }));
+var panDrag = null;
+$("drawing").addEventListener("pointerdown", (e) => {
+  if (!zoom)
+    return;
+  panDrag = { id: e.pointerId, x: e.clientX, y: e.clientY, scroll: $("drawing").scrollLeft, moved: false };
+});
+$("drawing").addEventListener("pointermove", (e) => {
+  if (!panDrag)
+    return;
+  const delta = e.clientX - panDrag.x;
+  if (Math.abs(delta) > 6 && Math.abs(delta) > Math.abs(e.clientY - panDrag.y)) {
+    panDrag = { ...panDrag, moved: true };
+    $("drawing").setPointerCapture(e.pointerId);
+    $("drawing").scrollLeft = panDrag.scroll - delta;
+  }
+});
+var finishPan = () => {
+  if (panDrag?.moved)
+    suppressClick = true;
+  panDrag = null;
+};
+$("drawing").addEventListener("pointerup", finishPan);
+$("drawing").addEventListener("pointercancel", () => {
+  panDrag = null;
+});
+var resizeDrag = null;
+var handle = $("resize-handle");
+handle.addEventListener("pointerdown", (e) => {
+  resizeDrag = { y: e.clientY, start: sheetHeight };
+  handle.setPointerCapture(e.pointerId);
+});
+handle.addEventListener("pointermove", (e) => {
+  if (!resizeDrag)
+    return;
+  sheetHeight = Math.max(0, Math.min(70, resizeDrag.start + (resizeDrag.y - e.clientY) / innerHeight * 100));
+  $("panel").style.setProperty("--sheet-height", sheetHeight + "dvh");
+});
+var finishResize = () => {
+  if (!resizeDrag)
+    return;
+  sheetHeight = [0, 40, 70].reduce((a, b) => Math.abs(b - sheetHeight) < Math.abs(a - sheetHeight) ? b : a);
+  resizeDrag = null;
+  if (!sheetHeight)
+    clear();
+  else
+    render();
+};
+handle.addEventListener("pointerup", finishResize);
+handle.addEventListener("pointercancel", finishResize);
+handle.addEventListener("keydown", (e) => {
+  if (["ArrowUp", "ArrowDown", "Home", "End"].includes(e.key)) {
+    e.preventDefault();
+    sheetHeight = e.key === "Home" ? 0 : e.key === "End" ? 70 : e.key === "ArrowUp" ? 70 : sheetHeight > 40 ? 40 : 0;
+    if (!sheetHeight)
+      clear();
+    else
+      render();
+  }
+});
+var changeVariant = (delta) => {
+  variant = ["A", "B", "C"][(["A", "B", "C"].indexOf(variant) + delta + 3) % 3];
+  const url = new URL(location.href);
+  url.searchParams.set("variant", variant);
+  history.replaceState(null, "", url);
+  spotlight = 0;
+  render();
+};
+$("previous-variant").addEventListener("click", () => changeVariant(-1));
+$("next-variant").addEventListener("click", () => changeVariant(1));
+document.addEventListener("keydown", (e) => {
+  if (e.target.closest("input,select,textarea,[contenteditable], [role=slider]"))
+    return;
+  if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+    e.preventDefault();
+    changeVariant(e.key === "ArrowLeft" ? -1 : 1);
+  }
+});
 render();
 var walks = [
   { name: "Body and aspect", intro: "Watch unrelated lines dim, then replace the body selection with an aspect.", steps: [{ label: "1. Select Sun", action: { type: "select", value: "body-SUN" } }, { label: "2. Select Sun–Moon trine", action: { type: "select", value: "aspect-sun-moon" } }, { label: "3. Clear selection", action: { type: "clear" } }] },
@@ -400,9 +578,17 @@ document.addEventListener("click", (e) => {
   if (walk)
     showWalk(Number(walk.dataset.walk));
   if (step) {
+    picker = null;
+    sheetHeight = 40;
     opener = "walk-tabs";
     dispatch(walks[Number(step.dataset.guide)].steps[Number(step.dataset.step)].action);
   }
 });
 showWalk(0);
+if (new URLSearchParams(location.search).get("picker") === "folder") {
+  state = { ...initial, scenario: "crowded" };
+  const group = clusters().find((group2) => group2.some((b) => b.name === "SUN"));
+  opener = "folder-SUN";
+  openPicker(group.map((b) => b.name));
+}
 </script></html>
