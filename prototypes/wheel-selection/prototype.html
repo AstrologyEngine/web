@@ -823,7 +823,7 @@ var zoom = false;
 var bodyName = (name) => bodySymbols[name].name;
 var miniGlyph = (name) => `<svg viewBox="0 0 100 100" aria-hidden="true"><path d="${bodySymbols[name].path}" fill="currentColor" fill-rule="evenodd"/></svg>`;
 var openPicker = (ids, mode = "bodies", aspectIds = []) => {
-  picker = { ids, mode, aspectIds, body: null, relation: null };
+  picker = { ids, mode, aspectIds, body: null };
   spotlight = 0;
   sheetHeight = 40;
   state = { ...state, selected: null, choices: [] };
@@ -835,12 +835,12 @@ var pickerContent = () => {
   if (!picker)
     return "";
   const scope = picker;
-  const options = !scope.body ? scope.ids.map((id) => ({ id, label: bodyName(id), note: scope.mode === "aspects" ? "Explore its connections" : `${signName(bodies().find((b) => b.name === id).longitude)} · House ${houseIndex(bodies().find((b) => b.name === id).longitude) + 1}`, glyph: id })) : !scope.relation ? [...new Set(availableAspects().filter((a) => a.pair.includes(scope.body)).map((a) => a.type))].map((type) => ({ id: type, label: type, note: references[type], glyph: scope.body })) : availableAspects().filter((a) => a.pair.includes(scope.body) && a.type === scope.relation).map((a) => ({ id: a.id, label: bodyName(a.pair.find((n) => n !== scope.body)), note: `${bodyName(scope.body)} · ${scope.relation}`, glyph: a.pair.find((n) => n !== scope.body) }));
+  const options = !scope.body ? scope.ids.map((id) => ({ id, label: bodyName(id), note: scope.mode === "aspects" ? "Choose first body" : `${signName(bodies().find((b) => b.name === id).longitude)} · House ${houseIndex(bodies().find((b) => b.name === id).longitude) + 1}`, glyph: id })) : availableAspects().filter((a) => a.pair.includes(scope.body)).map((a) => ({ id: a.id, label: bodyName(a.pair.find((n) => n !== scope.body)), note: `${bodyName(scope.body)} → ${bodyName(a.pair.find((n) => n !== scope.body))}`, glyph: a.pair.find((n) => n !== scope.body) }));
   const signNames = [...new Set(scope.ids.map((id) => signName(bodies().find((b) => b.name === id).longitude)))];
   const groupTitle = signNames.length === 1 ? `Bodies in ${signNames[0]}` : "Grouped bodies";
-  const heading = !scope.body ? scope.mode === "bodies" ? groupTitle : "Explore connections" : !scope.relation ? `${bodyName(scope.body)} connections` : `${bodyName(scope.body)} · ${scope.relation}`;
+  const heading = !scope.body ? scope.mode === "bodies" ? groupTitle : "Choose first body" : `${bodyName(scope.body)} → …`;
   const buttons = options.map((o, i) => `<button class="picker-option" data-pick="${o.id}" ${variant === "C" && i !== spotlight ? "hidden" : ""}>${miniGlyph(o.glyph)}<span><strong>${o.label}</strong><small>${o.note}</small></span><span aria-hidden="true">${scope.mode === "aspects" ? "›" : "↗"}</span></button>`).join("");
-  return `${scope.body ? `<nav class="breadcrumbs" aria-label="Picker path"><button data-picker-back="root">${scope.mode === "bodies" ? "Group" : "Bodies"}</button>${scope.body ? `<span>›</span><button data-picker-back="body">${bodyName(scope.body)}</button>` : ""}${scope.relation ? `<span>› ${scope.relation}</span>` : ""}</nav>` : ""}<h2 id="detail-title" tabindex="-1">${heading}</h2>${scope.body ? `<p>${!scope.relation ? "Choose a relationship." : "Choose the other body."}</p>` : ""}${variant === "C" && options.length ? `<div class="card-navigation"><button data-card="-1" aria-label="Previous choice">←</button><span>${spotlight + 1} of ${options.length}</span><button data-card="1" data-count="${options.length}" aria-label="Next choice">→</button></div>` : ""}<div class="picker picker-${variant}">${buttons || "<p>No connections in this fixture.</p>"}</div>`;
+  return `${scope.body ? `<nav class="breadcrumbs" aria-label="Picker path"><button data-picker-back="root">Choose first body</button><span>› ${bodyName(scope.body)}</span></nav>` : ""}<h2 id="detail-title" tabindex="-1">${heading}</h2>${scope.body ? "<p>Choose the second body.</p>" : ""}${variant === "C" && options.length ? `<div class="card-navigation"><button data-card="-1" aria-label="Previous choice">←</button><span>${spotlight + 1} of ${options.length}</span><button data-card="1" data-count="${options.length}" aria-label="Next choice">→</button></div>` : ""}<div class="picker picker-${variant}">${buttons || "<p>No connections in this fixture.</p>"}</div>`;
 };
 var wheel = () => {
   const all = items(), bs = bodies(), selected = active(), layouts = bodyLayouts();
@@ -917,7 +917,7 @@ var render = () => {
   $("details").innerHTML = picker ? pickerContent() : state.choices.length ? `<h2 id="detail-title" tabindex="-1">Choose an aspect</h2><p>Several lines meet here.</p>${state.choices.map((id) => {
     const a = items().find((i2) => i2.id === id);
     return `<button data-choice="${id}">${a.name}</button>`;
-  }).join("")}` : i ? `<p class="eyebrow">${i.kind}</p><h2 id="detail-title" tabindex="-1">${i.name}</h2>${i.kind === "Aspect" ? "" : `<p>${reference(i)}</p>`}${facts(i)}${i.kind === "Body" ? `<button data-connections="${i.body}">Explore ${i.name}’s connections ›</button>` : ""}<hr><p class="context">${chartContext()}</p>` : "";
+  }).join("")}` : i ? `<p class="eyebrow">${i.kind}</p><h2 id="detail-title" tabindex="-1">${i.name}</h2>${i.kind === "Aspect" ? "" : `<p>${reference(i)}</p>`}${facts(i)}${i.kind === "Body" ? `<button data-connections="${i.body}">Explore ${i.name}’s aspects ›</button>` : ""}<hr><p class="context">${chartContext()}</p>` : "";
   $("expand").textContent = sheetHeight >= 70 ? "Show less" : "Expand details";
   $("list").innerHTML = items().filter((i2) => i2.kind === state.category).map((i2) => `<button id="list-${i2.id}" data-item="${i2.id}" aria-pressed="${i2.id === state.selected}">${i2.name}</button>`).join("");
   $("state").textContent = `${state.scenario === "initial" ? "Initial-input fixture" : state.scenario === "edited" ? "Edited-input fixture" : "Crowded-body fixture"} · ${i ? i.kind + ": " + i.name : "No selection"} · ${state.choices.length ? "Choosing between " + state.choices.length + " aspects" : state.expanded ? "Expanded details" : "Compact details"}`;
@@ -970,7 +970,7 @@ document.addEventListener("click", (e) => {
     return;
   }
   if (back && picker) {
-    picker = back.dataset.pickerBack === "root" ? { ...picker, body: null, relation: null } : { ...picker, relation: null };
+    picker = { ...picker, body: null };
     spotlight = 0;
     render();
     $("detail-title").focus({ preventScroll: true });
@@ -988,11 +988,6 @@ document.addEventListener("click", (e) => {
       selectItem("body-" + id, opener, true);
     } else if (!picker.body) {
       picker = { ...picker, body: id };
-      spotlight = 0;
-      render();
-      $("detail-title").focus({ preventScroll: true });
-    } else if (!picker.relation) {
-      picker = { ...picker, relation: id };
       spotlight = 0;
       render();
       $("detail-title").focus({ preventScroll: true });

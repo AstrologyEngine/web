@@ -108,7 +108,7 @@ const layoutGeometry=(group:ReturnType<typeof bodies>,placement:{longitude:numbe
  const q=placement?p(placement.longitude,placement.radius):p(anchor,radius);
  return {q,sector,anchor,houseStart,compact,extent};
 };
-type Picker = {ids:string[]; aspectIds:string[]; mode:'bodies'|'aspects'; body:string|null; relation:string|null};
+type Picker = {ids:string[]; aspectIds:string[]; mode:'bodies'|'aspects'; body:string|null};
 let picker:Picker|null=null;
 // Owner selected A; B/C remain available as archived comparison variants.
 let variant = new URLSearchParams(location.search).get('variant') || 'A';
@@ -117,20 +117,19 @@ let spotlight=0, sheetHeight=40, zoom=false;
 const bodyName=(name:string)=>bodySymbols[name].name;
 const miniGlyph=(name:string)=>`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="${bodySymbols[name].path}" fill="currentColor" fill-rule="evenodd"/></svg>`;
 const openPicker=(ids:string[],mode:'bodies'|'aspects'='bodies',aspectIds:string[]=[])=>{
- picker={ids,mode,aspectIds,body:null,relation:null};spotlight=0;sheetHeight=40;state={...state,selected:null,choices:[]};render();$('detail-title').focus({preventScroll:true});
+ picker={ids,mode,aspectIds,body:null};spotlight=0;sheetHeight=40;state={...state,selected:null,choices:[]};render();$('detail-title').focus({preventScroll:true});
 };
 const availableAspects=()=>aspects().filter(a=>!picker?.aspectIds.length||picker.aspectIds.includes(a.id));
 const pickerContent=()=>{
  if(!picker)return '';
  const scope=picker;
- const options= !scope.body ? scope.ids.map(id=>({id,label:bodyName(id),note:scope.mode==='aspects'?'Explore its connections':`${signName(bodies().find(b=>b.name===id)!.longitude)} · House ${houseIndex(bodies().find(b=>b.name===id)!.longitude)+1}`,glyph:id}))
- : !scope.relation ? [...new Set(availableAspects().filter(a=>a.pair!.includes(scope.body!)).map(a=>a.type!))].map(type=>({id:type,label:type,note:references[type],glyph:scope.body!}))
- : availableAspects().filter(a=>a.pair!.includes(scope.body!)&&a.type===scope.relation).map(a=>({id:a.id,label:bodyName(a.pair!.find(n=>n!==scope.body)!),note:`${bodyName(scope.body!)} · ${scope.relation}`,glyph:a.pair!.find(n=>n!==scope.body)!}));
+ const options= !scope.body ? scope.ids.map(id=>({id,label:bodyName(id),note:scope.mode==='aspects'?'Choose first body':`${signName(bodies().find(b=>b.name===id)!.longitude)} · House ${houseIndex(bodies().find(b=>b.name===id)!.longitude)+1}`,glyph:id}))
+ : availableAspects().filter(a=>a.pair!.includes(scope.body!)).map(a=>({id:a.id,label:bodyName(a.pair!.find(n=>n!==scope.body)!),note:`${bodyName(scope.body!)} → ${bodyName(a.pair!.find(n=>n!==scope.body)!)}`,glyph:a.pair!.find(n=>n!==scope.body)!}));
  const signNames=[...new Set(scope.ids.map(id=>signName(bodies().find(b=>b.name===id)!.longitude)))];
  const groupTitle=signNames.length===1?`Bodies in ${signNames[0]}`:'Grouped bodies';
- const heading=!scope.body?(scope.mode==='bodies'?groupTitle:'Explore connections'):!scope.relation?`${bodyName(scope.body)} connections`:`${bodyName(scope.body)} · ${scope.relation}`;
+ const heading=!scope.body?(scope.mode==='bodies'?groupTitle:'Choose first body'):`${bodyName(scope.body)} → …`;
  const buttons=options.map((o,i)=>`<button class="picker-option" data-pick="${o.id}" ${variant==='C'&&i!==spotlight?'hidden':''}>${miniGlyph(o.glyph)}<span><strong>${o.label}</strong><small>${o.note}</small></span><span aria-hidden="true">${scope.mode==='aspects'?'›':'↗'}</span></button>`).join('');
- return `${scope.body?`<nav class="breadcrumbs" aria-label="Picker path"><button data-picker-back="root">${scope.mode==='bodies'?'Group':'Bodies'}</button>${scope.body?`<span>›</span><button data-picker-back="body">${bodyName(scope.body)}</button>`:''}${scope.relation?`<span>› ${scope.relation}</span>`:''}</nav>`:''}<h2 id="detail-title" tabindex="-1">${heading}</h2>${scope.body?`<p>${!scope.relation?'Choose a relationship.':'Choose the other body.'}</p>`:''}${variant==='C'&&options.length?`<div class="card-navigation"><button data-card="-1" aria-label="Previous choice">←</button><span>${spotlight+1} of ${options.length}</span><button data-card="1" data-count="${options.length}" aria-label="Next choice">→</button></div>`:''}<div class="picker picker-${variant}">${buttons||'<p>No connections in this fixture.</p>'}</div>`;
+ return `${scope.body?`<nav class="breadcrumbs" aria-label="Picker path"><button data-picker-back="root">Choose first body</button><span>› ${bodyName(scope.body)}</span></nav>`:''}<h2 id="detail-title" tabindex="-1">${heading}</h2>${scope.body?'<p>Choose the second body.</p>':''}${variant==='C'&&options.length?`<div class="card-navigation"><button data-card="-1" aria-label="Previous choice">←</button><span>${spotlight+1} of ${options.length}</span><button data-card="1" data-count="${options.length}" aria-label="Next choice">→</button></div>`:''}<div class="picker picker-${variant}">${buttons||'<p>No connections in this fixture.</p>'}</div>`;
 };
 const wheel = () => {
  const all=items(), bs=bodies(), selected=active(),layouts=bodyLayouts();
@@ -178,7 +177,7 @@ const render = () => {
  $('resize-handle').setAttribute('aria-valuenow',String(sheetHeight));
  $('resize-handle').setAttribute('aria-valuetext',sheetHeight+'% of screen');
  $('panel').classList.toggle('expanded',state.expanded);
- $('details').innerHTML=picker?pickerContent():state.choices.length ? `<h2 id="detail-title" tabindex="-1">Choose an aspect</h2><p>Several lines meet here.</p>${state.choices.map(id=>{const a=items().find(i=>i.id===id)!;return `<button data-choice="${id}">${a.name}</button>`}).join('')}` : i ? `<p class="eyebrow">${i.kind}</p><h2 id="detail-title" tabindex="-1">${i.name}</h2>${i.kind==='Aspect'?'':`<p>${reference(i)}</p>`}${facts(i)}${i.kind==='Body'?`<button data-connections="${i.body}">Explore ${i.name}’s connections ›</button>`:''}<hr><p class="context">${chartContext()}</p>` : '';
+ $('details').innerHTML=picker?pickerContent():state.choices.length ? `<h2 id="detail-title" tabindex="-1">Choose an aspect</h2><p>Several lines meet here.</p>${state.choices.map(id=>{const a=items().find(i=>i.id===id)!;return `<button data-choice="${id}">${a.name}</button>`}).join('')}` : i ? `<p class="eyebrow">${i.kind}</p><h2 id="detail-title" tabindex="-1">${i.name}</h2>${i.kind==='Aspect'?'':`<p>${reference(i)}</p>`}${facts(i)}${i.kind==='Body'?`<button data-connections="${i.body}">Explore ${i.name}’s aspects ›</button>`:''}<hr><p class="context">${chartContext()}</p>` : '';
  $('expand').textContent=sheetHeight>=70?'Show less':'Expand details';
  $('list').innerHTML=items().filter(i=>i.kind===state.category).map(i=>`<button id="list-${i.id}" data-item="${i.id}" aria-pressed="${i.id===state.selected}">${i.name}</button>`).join('');
  $('state').textContent=`${state.scenario==='initial'?'Initial-input fixture':state.scenario==='edited'?'Edited-input fixture':'Crowded-body fixture'} · ${i?i.kind+': '+i.name:'No selection'} · ${state.choices.length?'Choosing between '+state.choices.length+' aspects':state.expanded?'Expanded details':'Compact details'}`;
@@ -194,9 +193,9 @@ document.addEventListener('click',e=>{
  const folder=target.closest<HTMLElement>('[data-folder]'),pick=target.closest<HTMLElement>('[data-pick]'),back=target.closest<HTMLElement>('[data-picker-back]'),card=target.closest<HTMLElement>('[data-card]'),connections=target.closest<HTMLElement>('[data-connections]');
  if(folder){opener=folder.id;openPicker(folder.dataset.folder!.split(','));return;}
  if(connections){const id=connections.dataset.connections!;openPicker([id], 'aspects');picker={...picker!,body:id};render();return;}
- if(back&&picker){picker=back.dataset.pickerBack==='root'?{...picker,body:null,relation:null}:{...picker,relation:null};spotlight=0;render();$('detail-title').focus({preventScroll:true});return;}
+ if(back&&picker){picker={...picker,body:null};spotlight=0;render();$('detail-title').focus({preventScroll:true});return;}
  if(card){const count=$('details').querySelectorAll('[data-pick]').length;spotlight=(spotlight+Number(card.dataset.card)+count)%count;render();return;}
- if(pick&&picker){const id=pick.dataset.pick!;if(picker.mode==='bodies'){selectItem('body-'+id,opener,true);}else if(!picker.body){picker={...picker,body:id};spotlight=0;render();$('detail-title').focus({preventScroll:true});}else if(!picker.relation){picker={...picker,relation:id};spotlight=0;render();$('detail-title').focus({preventScroll:true});}else selectItem(id,opener,true);return;}
+ if(pick&&picker){const id=pick.dataset.pick!;if(picker.mode==='bodies'){selectItem('body-'+id,opener,true);}else if(!picker.body){picker={...picker,body:id};spotlight=0;render();$('detail-title').focus({preventScroll:true});}else selectItem(id,opener,true);return;}
  if(choice){dispatch({type:'select',value:choice.dataset.choice},'detail-title');return;}
  if(button){
   if(button.closest('svg') && button.dataset.item!.startsWith('aspect-') && e.detail!==0){

@@ -203,3 +203,16 @@ the experiment remains in Git history. The independent requirement that glyphs
 paint above lines is retained through the shared connector layer. Half-wheel
 zoom/pan, the 0/40/70% sheet, unequal-house scenarios, and triangular packing
 remain available.
+
+## Aspect picker simplification
+
+Owner-selected aspect path is now **body A → body B → aspect details**.
+There is no relationship-type selection stage. First-body selection shows
+only second bodies connected by an aspect in the current scope. Crossing-line
+entry retains its nearby-aspect scope. Entry from a selected body's details
+starts directly with its possible second bodies. Back returns to first-body
+selection. The aspect type/reference remains in the final details panel.
+
+Desktop crossing-line and mobile True Sky whole-sign/Placidus exercises
+verified the two-body flow, back navigation, selected-body shortcut, and
+resulting aspect details with no page exceptions.
