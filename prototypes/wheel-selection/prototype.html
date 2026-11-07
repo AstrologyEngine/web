@@ -859,7 +859,7 @@ var wheel = () => {
     const houseStart = sector.start;
     const anchor = Math.max(houseStart + inset, Math.min(houseStart + sector.width - inset, houseStart + (longitude - houseStart + 360) % 360));
     const q = placement ? p(placement.longitude, placement.radius) : p(anchor, radius);
-    if (group.length === 1) {
+    if (placement) {
       const b = group[0], i = all.find((i2) => i2.body === b.name), tip = p(b.longitude, 230);
       return `<g ${attrs(i)} data-layout-house="${sector.index}" data-label-longitude="${placement.longitude}" data-label-radius="${placement.radius}" data-label-x="${q.x}" data-label-y="${q.y}"><line x1="${tip.x}" y1="${tip.y}" x2="${q.x}" y2="${q.y}" stroke="#777"/><circle cx="${q.x}" cy="${q.y}" r="22" fill="transparent"/><circle cx="${q.x}" cy="${q.y}" r="16" fill="#fafafa"/>${glyph(bodySymbols[b.name].path, q.x, q.y)}</g>`;
     }
