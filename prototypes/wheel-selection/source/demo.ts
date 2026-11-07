@@ -111,9 +111,20 @@ const layoutGeometry=(group:ReturnType<typeof bodies>,placement:{longitude:numbe
 type Picker = {ids:string[]; aspectIds:string[]; mode:'bodies'|'aspects'; body:string|null};
 let picker:Picker|null=null;
 // Owner selected A; B/C remain available as archived comparison variants.
-let variant = new URLSearchParams(location.search).get('variant') || 'A';
+let variant = 'A';
 if(!['A','B','C'].includes(variant))variant='A';
 let spotlight=0, sheetHeight=40, zoom=false;
+const navigationNames = ['Half wheel','Quarter wheel','Linked list','Area picker'];
+const requestedVariant = new URLSearchParams(location.search).get('variant') || 'A';
+let navigation = Math.max(0,['A','B','C','D'].indexOf(requestedVariant));
+let steps=0;
+const comparisonCopy = [
+ 'Half wheel: enlarge to twice the width and drag sideways. More spatial context; tall wheel and sheet can compete for screen space. Groups still open named tiles.',
+ 'Quarter wheel: the same enlarged wheel in a square viewport. Drag in two directions or use pan buttons. Larger targets with less context; vertical dragging competes with page scrolling.',
+ 'Linked list: choose a named body beside the whole wheel. One direct selection; highlighted true position links the row to the chart. Long lists require scrolling and less spatial exploration.',
+ 'Area picker: choose a numbered house, then a named body. Two explicit steps without panning; requires understanding house numbers and may contain empty areas.'
+];
+
 const bodyName=(name:string)=>bodySymbols[name].name;
 const miniGlyph=(name:string)=>`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="${bodySymbols[name].path}" fill="currentColor" fill-rule="evenodd"/></svg>`;
 const openPicker=(ids:string[],mode:'bodies'|'aspects'='bodies',aspectIds:string[]=[])=>{
@@ -162,35 +173,57 @@ const facts = (i:Item) => {
 };
 const render = () => {
  const i=active();
- $('concept-switcher').hidden=!new URLSearchParams(location.search).has('variant');
+ $('comparison-note').textContent=comparisonCopy[navigation];
+ document.querySelector<HTMLElement>('.selection-list')!.hidden=navigation===2;
+ $('comparison-list').hidden=navigation!==2;
+ $('area-list').hidden=navigation!==3;
+ $('comparison-list').innerHTML=bodies().map(b=>`<button id="linked-${b.name}" data-item="body-${b.name}" aria-pressed="${state.selected==='body-'+b.name}">${miniGlyph(b.name)}<span>${bodyName(b.name)}<small>${signName(b.longitude)} · House ${houseIndex(b.longitude)+1}</small></span></button>`).join('');
+ $('area-list').innerHTML=cuspSectors().map(h=>{const members=bodies().filter(b=>houseIndex(b.longitude)===h.index);return `<button id="area-${h.index}" data-area="${h.index}" ${members.length?'':'disabled'}>House ${h.index+1}<small>${members.length} bodies · ${h.width.toFixed(1)}° wide</small></button>`;}).join('');
+ $('concept-switcher').hidden=false;
  ($('chart-mode') as HTMLSelectElement).value=chartMode;
  $('provenance').textContent=snapshot()?`${chartContext()}. Captured library fixture: ${snapshot()!.input.utc}, latitude ${snapshot()!.input.latitude}, longitude ${snapshot()!.input.longitude}. ${state.scenario==='initial'?'Captured chart positions and cusps.':'Stress fixture: body positions deliberately perturbed; cusps retained.'} ${chartMode==='true-whole'?'Twelve whole-sign houses merge Ophiuchus into Scorpio.':''}`:'Synthetic equal-sector interaction fixture.';
- const pan=$('drawing').scrollLeft;
+ const pan=$('drawing').scrollLeft, panY=$('drawing').scrollTop;
  ($('category') as HTMLSelectElement).value=state.category;
  ($('scenario') as HTMLSelectElement).value=state.scenario;
  $('drawing').innerHTML=wheel();
- $('drawing').classList.toggle('zoomed',zoom);$('drawing').scrollLeft=pan;
- $('zoom').textContent=zoom?'Show whole wheel':'Zoom · half wheel';$('zoom').setAttribute('aria-pressed',String(zoom));
- $('variant-name').textContent=({A:'A · Folder tiles',B:'B · Guided list',C:'C · Spotlight cards'} as Record<string,string>)[variant];
- $('panel').hidden=sheetHeight===0||(!i&&!state.choices.length&&!picker);
+ $('drawing').classList.toggle('zoomed',zoom);
+ $('drawing').classList.toggle('quarter',zoom&&navigation===1);
+ $('drawing').scrollLeft=pan;$('drawing').scrollTop=panY;
+ $('pan-up').hidden=$('pan-down').hidden=navigation!==1;
+ const selectedBody=i?.kind==='Body'?bodies().find(b=>b.name===i.body):null;
+ if(selectedBody){const point=p(selectedBody.longitude,230);$('wheel').insertAdjacentHTML('beforeend',`<circle class="position-marker" cx="${point.x}" cy="${point.y}" r="9" fill="#f9e589" stroke="#382068" stroke-width="3" pointer-events="none"/><text x="300" y="300" text-anchor="middle" font-size="16" fill="#382068">${i!.name}</text>`);}
+ const modal=$('body-modal') as HTMLDialogElement;
+ const bodyPicker=picker?.mode==='bodies';
+ if(bodyPicker){$('modal-content').innerHTML=pickerContent();if(!modal.open)modal.showModal();}
+ else {if(modal.open)modal.close();$('modal-content').innerHTML='';}
+
+ $('zoom').textContent=zoom?'Show whole wheel':navigation===1?'Zoom · quarter wheel':'Zoom · half wheel';$('zoom').setAttribute('aria-pressed',String(zoom));
+ $('variant-name').textContent=`${['A','B','C','D'][navigation]} · ${navigationNames[navigation]}`;
+ $('panel').hidden=sheetHeight===0||(!i&&!state.choices.length&&(!picker||picker.mode==='bodies'));
  $('panel').style.setProperty('--sheet-height',sheetHeight+'dvh');
  $('resize-handle').setAttribute('aria-valuenow',String(sheetHeight));
  $('resize-handle').setAttribute('aria-valuetext',sheetHeight+'% of screen');
  $('panel').classList.toggle('expanded',state.expanded);
- $('details').innerHTML=picker?pickerContent():state.choices.length ? `<h2 id="detail-title" tabindex="-1">Choose an aspect</h2><p>Several lines meet here.</p>${state.choices.map(id=>{const a=items().find(i=>i.id===id)!;return `<button data-choice="${id}">${a.name}</button>`}).join('')}` : i ? `<p class="eyebrow">${i.kind}</p><h2 id="detail-title" tabindex="-1">${i.name}</h2>${i.kind==='Aspect'?'':`<p>${reference(i)}</p>`}${facts(i)}${i.kind==='Body'?`<button data-connections="${i.body}">Explore ${i.name}’s aspects ›</button>`:''}<hr><p class="context">${chartContext()}</p>` : '';
+ $('details').innerHTML=picker&&picker.mode!=='bodies'?pickerContent():state.choices.length ? `<h2 id="detail-title" tabindex="-1">Choose an aspect</h2><p>Several lines meet here.</p>${state.choices.map(id=>{const a=items().find(i=>i.id===id)!;return `<button data-choice="${id}">${a.name}</button>`}).join('')}` : i ? `<p class="eyebrow">${i.kind}</p><h2 id="detail-title" tabindex="-1">${i.name}</h2>${i.kind==='Aspect'?'':`<p>${reference(i)}</p>`}${facts(i)}${i.kind==='Body'?`<button data-connections="${i.body}">Explore ${i.name}’s aspects ›</button>`:''}<hr><p class="context">${chartContext()}</p>` : '';
  $('expand').textContent=sheetHeight>=70?'Show less':'Expand details';
  $('list').innerHTML=items().filter(i=>i.kind===state.category).map(i=>`<button id="list-${i.id}" data-item="${i.id}" aria-pressed="${i.id===state.selected}">${i.name}</button>`).join('');
+ $('comparison-state').textContent=`${navigationNames[navigation]} · ${zoom?'Zoomed':'Whole wheel'} · ${steps} activations · Selected: ${i?.name||'none'} · Sheet: ${$('panel').hidden?0:sheetHeight}% · Picker: ${picker?.mode||'closed'} · Pan: ${Math.round(pan)}, ${Math.round(panY)}`;
  $('state').textContent=`${state.scenario==='initial'?'Initial-input fixture':state.scenario==='edited'?'Edited-input fixture':'Crowded-body fixture'} · ${i?i.kind+': '+i.name:'No selection'} · ${state.choices.length?'Choosing between '+state.choices.length+' aspects':state.expanded?'Expanded details':'Compact details'}`;
  $('instruction').textContent=i?.kind==='Body'?'Unrelated aspects are dimmed. Choose another target to replace this selection.':'Choose a body, sign, house, angle, or aspect. Use the named list for small or crowded targets.';
 };
 const dispatch = (a:Parameters<typeof reduce>[1],focus?:string) => {const focused=document.activeElement?.id;state=reduce(state,a);render();if(focus)$(focus)?.focus();else if(focused)document.getElementById(focused)?.focus();};
 const clear = () => {picker=null;sheetHeight=0;dispatch({type:'clear'},opener);};
+($('body-modal') as HTMLDialogElement).addEventListener('cancel',e=>{e.preventDefault();clear();});
+$('modal-close').addEventListener('click',clear);
+
 const selectItem = (id:string,origin:string,keyboard:boolean) => {picker=null;sheetHeight=40;opener=origin;dispatch({type:'select',value:id});if(keyboard&&state.selected)$('detail-title').focus();};
 const distance = (q:{x:number;y:number},a:{x:number;y:number},b:{x:number;y:number}) => {const dx=b.x-a.x,dy=b.y-a.y;const t=Math.max(0,Math.min(1,((q.x-a.x)*dx+(q.y-a.y)*dy)/(dx*dx+dy*dy||1)));return Math.hypot(q.x-a.x-t*dx,q.y-a.y-t*dy);};
 document.addEventListener('click',e=>{
  if(suppressClick){suppressClick=false;return;}
  const target=e.target as Element,button=target.closest<HTMLElement>('[data-item]'),choice=target.closest<HTMLElement>('[data-choice]');
  const folder=target.closest<HTMLElement>('[data-folder]'),pick=target.closest<HTMLElement>('[data-pick]'),back=target.closest<HTMLElement>('[data-picker-back]'),card=target.closest<HTMLElement>('[data-card]'),connections=target.closest<HTMLElement>('[data-connections]');
+ const area=target.closest<HTMLElement>('[data-area]');
+ if(area){opener=area.id;openPicker(bodies().filter(b=>houseIndex(b.longitude)===Number(area.dataset.area)).map(b=>b.name));return;}
  if(folder){opener=folder.id;openPicker(folder.dataset.folder!.split(','));return;}
  if(connections){const id=connections.dataset.connections!;openPicker([id], 'aspects');picker={...picker!,body:id};render();return;}
  if(back&&picker){picker={...picker,body:null};spotlight=0;render();$('detail-title').focus({preventScroll:true});return;}
@@ -208,7 +241,7 @@ document.addEventListener('click',e=>{
  if(target.closest('#wheel'))clear();
 });
 document.addEventListener('keydown',e=>{
- if(e.key==='Escape'){e.preventDefault();clear();}
+ if(e.key==='Escape'){e.preventDefault();clear();return;}
  const folder=(e.target as Element).closest<HTMLElement>('[data-folder]');if(folder&&(e.key==='Enter'||e.key===' ')){e.preventDefault();opener=folder.id;openPicker(folder.dataset.folder!.split(','));$('detail-title').focus();return;}
  const target=(e.target as Element).closest<HTMLElement>('g[data-item],path[data-item]');
  if(target&&(e.key==='Enter'||e.key===' ')){e.preventDefault();selectItem(target.dataset.item!,target.id,true);}
@@ -220,11 +253,16 @@ $('category').addEventListener('change',e=>dispatch({type:'category',value:(e.ta
 let suppressClick=false;
 $('chart-mode').addEventListener('change',e=>{chartMode=(e.target as HTMLSelectElement).value;picker=null;sheetHeight=40;dispatch({type:'scenario',value:'initial'});});
 $('zoom').addEventListener('click',()=>{zoom=!zoom;render();});
+$('whole').addEventListener('click',()=>{zoom=false;render();$('drawing').scrollTo(0,0);$('whole').focus();});
+$('pan-up').addEventListener('click',()=>$('drawing').scrollBy({top:-140,behavior:'smooth'}));
+$('pan-down').addEventListener('click',()=>$('drawing').scrollBy({top:140,behavior:'smooth'}));
+$('restart').addEventListener('click',()=>{steps=0;zoom=navigation<2;picker=null;sheetHeight=0;state={...initial,scenario:state.scenario};render();$('drawing').scrollTo(0,0);});
+
 $('pan-left').addEventListener('click',()=>$('drawing').scrollBy({left:-140,behavior:'smooth'}));
 $('pan-right').addEventListener('click',()=>$('drawing').scrollBy({left:140,behavior:'smooth'}));
-let panDrag:{id:number;x:number;y:number;scroll:number;moved:boolean}|null=null;
-$('drawing').addEventListener('pointerdown',e=>{if(!zoom)return;panDrag={id:e.pointerId,x:e.clientX,y:e.clientY,scroll:$('drawing').scrollLeft,moved:false};});
-$('drawing').addEventListener('pointermove',e=>{if(!panDrag)return;const delta=e.clientX-panDrag.x;if(Math.abs(delta)>6&&Math.abs(delta)>Math.abs(e.clientY-panDrag.y)){panDrag={...panDrag,moved:true};$('drawing').setPointerCapture(e.pointerId);$('drawing').scrollLeft=panDrag.scroll-delta;}});
+let panDrag:{id:number;x:number;y:number;scroll:number;top:number;moved:boolean}|null=null;
+$('drawing').addEventListener('pointerdown',e=>{if(!zoom)return;panDrag={id:e.pointerId,x:e.clientX,y:e.clientY,scroll:$('drawing').scrollLeft,top:$('drawing').scrollTop,moved:false};});
+$('drawing').addEventListener('pointermove',e=>{if(!panDrag)return;const delta=e.clientX-panDrag.x;if(Math.abs(delta)>6||navigation===1&&Math.abs(e.clientY-panDrag.y)>6){panDrag={...panDrag,moved:true};$('drawing').setPointerCapture(e.pointerId);$('drawing').scrollLeft=panDrag.scroll-delta;if(navigation===1)$('drawing').scrollTop=panDrag.top-(e.clientY-panDrag.y);}});
 const finishPan=()=>{if(panDrag?.moved)suppressClick=true;panDrag=null;};
 $('drawing').addEventListener('pointerup',finishPan);$('drawing').addEventListener('pointercancel',()=>{panDrag=null;});
 let resizeDrag:{y:number;start:number}|null=null;
@@ -234,9 +272,17 @@ handle.addEventListener('pointermove',e=>{if(!resizeDrag)return;sheetHeight=Math
 const finishResize=()=>{if(!resizeDrag)return;sheetHeight=[0,40,70].reduce((a,b)=>Math.abs(b-sheetHeight)<Math.abs(a-sheetHeight)?b:a);resizeDrag=null;if(!sheetHeight)clear();else render();};
 handle.addEventListener('pointerup',finishResize);handle.addEventListener('pointercancel',finishResize);
 handle.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','Home','End'].includes(e.key)){e.preventDefault();sheetHeight=e.key==='Home'?0:e.key==='End'?70:e.key==='ArrowUp'?70:sheetHeight>40?40:0;if(!sheetHeight)clear();else render();}});
-const changeVariant=(delta:number)=>{variant=['A','B','C'][(['A','B','C'].indexOf(variant)+delta+3)%3];const url=new URL(location.href);url.searchParams.set('variant',variant);history.replaceState(null,'',url);spotlight=0;render();};
+const changeVariant=(delta:number)=>{
+ navigation=(navigation+delta+4)%4;
+ const url=new URL(location.href);url.searchParams.set('variant',['A','B','C','D'][navigation]);history.replaceState(null,'',url);
+ picker=null;zoom=navigation<2;sheetHeight=0;state={...state,selected:null,choices:[]};steps=0;render();$('drawing').scrollTo(0,0);
+};
 $('previous-variant').addEventListener('click',()=>changeVariant(-1));$('next-variant').addEventListener('click',()=>changeVariant(1));
-document.addEventListener('keydown',e=>{if((e.target as Element).closest('input,select,textarea,[contenteditable], [role=slider]'))return;if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();changeVariant(e.key==='ArrowLeft'?-1:1);}});
+document.addEventListener('keydown',e=>{if((e.target as Element).closest('input,select,textarea,[contenteditable],[role=slider],dialog'))return;if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();changeVariant(e.key==='ArrowLeft'?-1:1);}});
+const showComparisonState=()=>{$('comparison-state').textContent=`${navigationNames[navigation]} · ${zoom?'Zoomed':'Whole wheel'} · ${steps} activations · Selected: ${active()?.name||'none'} · Sheet: ${$('panel').hidden?0:sheetHeight}% · Picker: ${picker?.mode||'closed'} · Pan: ${Math.round($('drawing').scrollLeft)}, ${Math.round($('drawing').scrollTop)}`;};
+document.addEventListener('click',()=>{steps++;queueMicrotask(showComparisonState);},true);
+$('drawing').addEventListener('scroll',showComparisonState);
+zoom=navigation<2;
 render();
 
 // Guided scenarios reset to a known state; each step remains a real action.

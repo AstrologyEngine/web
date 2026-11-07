@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Wheel selection — throwaway prototype</title>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mobile crowded-chart comparison — throwaway prototype</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f8f6f0;color:#282c29;font:15px/1.5 system-ui,sans-serif}header{padding:20px 28px;border-bottom:1px solid #ddd}h1{font:normal 30px Georgia,serif;margin:0 0 8px}header p{max-width:850px;margin:6px 0;color:#5d625e}button,select{font:inherit;color:inherit;background:white;border:1px solid #c8cbc6;border-radius:7px;min-height:44px;padding:8px 12px;cursor:pointer}button:hover{background:#f1f1fa}button:focus-visible,select:focus-visible{outline:3px solid #6455a4;outline-offset:3px}button[aria-pressed=true]{background:#e6e5f4;border-color:#6455a4}.toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}.workspace{max-width:1150px;margin:auto;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:32px;padding:24px}.chart{min-width:0}.drawing{max-width:660px;margin:auto}svg{display:block;width:100%;height:auto}svg svg{width:24px;height:24px}g[role=button],path[role=button]{cursor:pointer;outline:none}g[role=button]:focus-visible>circle,g[role=button][aria-pressed=true]>circle{stroke:#67529d;stroke-width:2.5}g[role=button]:focus-visible>path,g[role=button][aria-pressed=true]>path,path[role=button]:focus-visible,path[role=button][aria-pressed=true]{stroke:#333;stroke-width:3}g[role=button]:focus-visible>text,g[role=button][aria-pressed=true]>text{fill:#6433b6;font-weight:bold}g[role=button]:focus-visible>.aspect{stroke-width:5}g[role=button]:focus-visible>rect,g[role=button][aria-pressed=true]>rect{stroke:#67529d;stroke-width:2}aside{align-self:start;position:sticky;top:24px;border:1px solid #d9d9d0;border-radius:14px;background:white;padding:20px;max-height:calc(100dvh - 48px);overflow:auto}aside[hidden]{display:none}.panel-tools{display:flex;gap:10px;justify-content:space-between}.expand{display:none}h2{font:normal 30px Georgia,serif;margin:12px 0}h3{font-size:15px}.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:#676374}.context{font-size:13px;color:#646860}dl{display:grid;grid-template-columns:1fr 1fr;gap:12px}dd{margin:0}dt{color:#62665f}hr{border:0;border-top:1px solid #e6e6e0;margin:24px 0}.selection-list{max-width:1086px;margin:0 auto;padding:0 0 220px}.selection-list h2{font:normal 22px Georgia,serif}#list{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.state{border-top:1px solid #ddd;padding:12px 28px;font-size:13px;color:#565c52}#details>button{display:block;width:100%;margin:8px 0}#instruction{min-height:45px;color:#62665f}.guide{font-size:13px;color:#62665f}.guide summary{cursor:pointer;min-height:44px;padding:10px 0}
 @media(max-width:799px){header{padding:16px}h1{font-size:25px}.workspace{display:block;padding:12px}.drawing{max-width:min(100%,calc(100dvh - 220px))}.selection-list{padding:0 16px 55dvh}aside{position:fixed;z-index:5;bottom:0;left:0;right:0;top:auto;border-radius:18px 18px 0 0;height:40dvh;max-height:80dvh;padding:16px 20px max(20px,env(safe-area-inset-bottom));box-shadow:0 -8px 35px #0002;animation:enter .18s ease-out}aside.expanded{height:75dvh}.expand{display:block}.state{padding:12px 16px}.panel-tools{position:sticky;top:-16px;background:white;padding:8px 0}.toolbar{gap:8px}h2{font-size:26px}}@keyframes enter{from{transform:translateY(100%)}to{transform:translateY(0)}}@media(prefers-reduced-motion:reduce){aside{animation:none}}
@@ -8,10 +8,26 @@
 @media(max-width:799px){.drawing.zoomed{max-width:100%}aside{height:var(--sheet-height,40dvh)!important;max-height:70dvh;padding:0!important;overflow:hidden;display:flex;flex-direction:column;animation:none}aside[hidden]{display:none}.resize-handle{display:flex;flex-shrink:0;height:28px;min-height:28px;align-items:center;justify-content:center;touch-action:none;cursor:ns-resize;border:0;background:transparent}.resize-handle span{display:block;width:42px;height:7px;border-top:2px solid #9991a2;border-bottom:2px solid #9991a2}.panel-tools{position:static;flex-shrink:0;padding:0 16px 8px;top:auto}#details{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 20px 88px;flex:1}.picker-B .picker-option{min-height:76px}.concept-switcher{bottom:max(8px,env(safe-area-inset-bottom))}.wheel-controls{margin-top:4px}}
 .picker-C .picker-option span:first-of-type{order:-1}.picker-C .picker-option{padding:14px;min-height:185px}.picker-C .picker-option svg{width:48px;height:48px}.card-navigation{margin:0 0 8px}.picker-C .picker-option strong{font-size:25px}
 .concept-switcher[hidden]{display:none}g[data-folder]:focus-visible>.compact-plate{stroke:#492881;stroke-width:3}
+
+/* Four mobile navigation variants; shared wheel geometry is unchanged. */
+.drawing.zoomed.quarter{aspect-ratio:1;overflow:auto;touch-action:none}
+#comparison-state{font-size:12px;color:#5a5268;margin-bottom:0}
+#comparison-list{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+#comparison-list button{display:flex;gap:8px;align-items:center;text-align:left;min-height:64px;padding:8px}
+#comparison-list svg{width:24px;height:24px;flex-shrink:0}
+#comparison-list small,#area-list small{display:block;font-size:11px}
+#area-list{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+#comparison-list[hidden],#area-list[hidden]{display:none}
+dialog{border:1px solid #bcb6c7;border-radius:16px;max-width:440px;width:calc(100% - 28px);max-height:75dvh;padding:16px;overflow:auto;background:#fffdf9;color:#282c29}
+dialog::backdrop{background:#19132644}dialog #modal-close{position:sticky;top:0;background:white;float:right}
+#modal-content{clear:both}#modal-content .picker-option{min-height:94px}
+#modal-content .picker-option small{font-size:12px}
+.selection-list{padding-bottom:120px}#instruction{font-size:12px;min-height:0}
+@media(max-width:799px){header{padding:12px 16px}header h1{font-size:24px}header p{font-size:12px;margin:7px 0}.workspace{padding:8px 12px}.wheel-controls{gap:5px;margin-bottom:8px}.wheel-controls button{padding:6px 9px;font-size:12px}.drawing{max-width:100%}.drawing.zoomed:not(.quarter){max-height:none}#comparison-list{max-height:210px;overflow:auto;overscroll-behavior:contain}#area-list{max-height:210px;overflow:auto} .selection-list{padding-bottom:130px}}
 </style>
-<header><h1>Explore the chart</h1><p><strong>Throwaway interaction prototype.</strong> Does one selection at a time work on the wheel and in a sidebar or mobile sheet? The wheel uses plugin artwork and layout. Compare synthetic interaction scenarios and captured library charts; the source is shown below.</p><div class="toolbar"><label for="chart-mode">Chart layout</label><select id="chart-mode"><option value="tropical">Tropical · Equal houses</option><option value="true-whole">True Sky · Whole-sign houses</option><option value="true-placidus">True Sky · Placidus houses</option></select><label for="scenario">Try a scenario</label><select id="scenario"><option value="initial">Initial chart inputs</option><option value="edited">After birth inputs change</option><option value="crowded">Crowded glyphs</option><option value="triangle">Triangle · three bodies</option><option value="overflow">Over capacity · ten bodies</option></select></div><details class="guide"><summary>Guided walkthroughs and things to try</summary><div id="walk-tabs" role="group" aria-label="Guided scenarios" tabindex="-1"></div><div id="walk-steps"></div><p>Choose Sun, then an aspect; select a house wedge or its number; choose a sign or ASC. At crossing lines choose the exact aspect from the list offered. Try crowded glyphs using the named list. Press Tab, Enter/Space, then Escape. Resize below 800px, open details, expand, and close. Changing the scenario clears the old selection.</p><p>Proposals to review: selecting again clears; blank wheel space and Escape clear; a new target replaces; keyboard activation focuses details and closing returns focus. The mobile sheet is nonmodal, leaves the wheel interactive, snaps to 0%, 40%, and 70% height, and scrolls internally. Drag the double-line resize handle. Angles show reference text only. Zoom the wheel to pan horizontally. Crowded bodies stay in their house inside a folder; try all three picker concepts using the bottom switcher.</p></details><p id="provenance" class="guide"></p></header>
-<main><div class="workspace"><section class="chart" aria-label="Chart"><div class="wheel-controls"><button id="zoom" aria-pressed="false">Zoom · half wheel</button><button id="pan-left" aria-label="Pan wheel left">←</button><button id="pan-right" aria-label="Pan wheel right">→</button><small>Drag sideways when zoomed</small></div><div id="drawing" class="drawing" tabindex="-1"></div><p id="instruction"></p></section><aside id="panel" aria-labelledby="detail-title" hidden><div id="resize-handle" class="resize-handle" role="slider" tabindex="0" aria-label="Resize details sheet" aria-orientation="vertical" aria-valuemin="0" aria-valuemax="70" aria-valuenow="40"><span aria-hidden="true"></span></div><div class="panel-tools"><button id="expand" class="expand">Expand details</button><button id="close">Close details</button></div><div id="details"></div></aside></div><section class="selection-list" aria-label="Named chart targets"><h2>Choose by name</h2><label for="category">Target type</label> <select id="category"><option>Body</option><option>Sign</option><option>House</option><option>Aspect</option><option>Angle</option></select><div id="list"></div></section></main><div id="state" class="state" role="status" aria-live="polite"></div>
-<nav id="concept-switcher" class="concept-switcher" aria-label="Picker concepts"><button id="previous-variant" aria-label="Previous picker concept">←</button><span id="variant-name"></span><button id="next-variant" aria-label="Next picker concept">→</button></nav><script type="module">// prototypes/wheel-selection/source/fit-bodies.ts
+<header><h1>Find a crowded body</h1><p><strong>Throwaway comparison · owner choice pending.</strong> Same captured chart, four ways to reach a body. No calculation or product approval implied.</p><details class="guide"><summary>Chart fixtures and comparison guide</summary><div class="toolbar"><label for="chart-mode">Layout</label><select id="chart-mode"><option value="tropical">Tropical · Equal houses</option><option value="true-whole">True Sky · Whole-sign</option><option value="true-placidus">True Sky · Placidus</option></select><label for="scenario">Fixture</label><select id="scenario"><option value="initial">Captured positions</option><option value="crowded">Six crowded bodies</option><option value="triangle">Three bodies</option><option value="overflow">Ten in narrowest house</option><option value="edited">Perturbed positions</option></select></div><p>Try Sun and Saturn in each alternative; close the explanation, return to the whole wheel, and find another body. Repeat with Placidus and ten bodies in the narrowest house. Compare steps, orientation, chart visibility and pan versus scroll. Grouped targets always open the same named tile modal; selecting a body opens the bottom explanation sheet. Escape dismisses and restores the originating control. Activation count includes all clicks, so use Restart for each attempt.</p><div id="walk-tabs" hidden></div><div id="walk-steps" hidden></div><p id="provenance" class="guide"></p></details><p id="comparison-note"></p><button id="restart">Restart attempt</button><p id="comparison-state" role="status" aria-live="polite"></p></header>
+<main><div class="workspace"><section class="chart" aria-label="Chart"><div class="wheel-controls"><button id="whole">Whole wheel</button><button id="zoom" aria-pressed="false">Zoom · half wheel</button><button id="pan-left" aria-label="Pan wheel left">←</button><button id="pan-right" aria-label="Pan wheel right">→</button><button id="pan-up" aria-label="Pan wheel up">↑</button><button id="pan-down" aria-label="Pan wheel down">↓</button></div><div id="drawing" class="drawing" tabindex="-1"></div><p id="instruction"></p><div id="comparison-list" aria-label="Bodies linked to chart"></div><div id="area-list" aria-label="Choose chart area"></div></section><aside id="panel" aria-labelledby="detail-title" hidden><div id="resize-handle" class="resize-handle" role="slider" tabindex="0" aria-label="Resize details sheet" aria-orientation="vertical" aria-valuemin="0" aria-valuemax="70" aria-valuenow="40"><span aria-hidden="true"></span></div><div class="panel-tools"><button id="expand" class="expand">Expand details</button><button id="close">Close details</button></div><div id="details"></div></aside></div><section class="selection-list" aria-label="Named chart targets"><h2>Choose by name</h2><label for="category">Target type</label> <select id="category"><option>Body</option><option>Sign</option><option>House</option><option>Aspect</option><option>Angle</option></select><div id="list"></div></section></main><div id="state" class="state" role="status" aria-live="polite"></div>
+<nav id="concept-switcher" class="concept-switcher" aria-label="Picker concepts"><button id="previous-variant" aria-label="Previous picker concept">←</button><span id="variant-name"></span><button id="next-variant" aria-label="Next picker concept">→</button></nav><dialog id="body-modal" aria-labelledby="detail-title"><button id="modal-close">Close picker</button><div id="modal-content"></div></dialog><script type="module">// prototypes/wheel-selection/source/fit-bodies.ts
 var radians = Math.PI / 180;
 var point = (longitude, radius) => ({ x: radius * Math.cos(longitude * radians), y: radius * Math.sin(longitude * radians) });
 var footprint = 22;
@@ -814,12 +830,22 @@ var layoutGeometry = (group, placement) => {
   return { q, sector, anchor, houseStart, compact, extent };
 };
 var picker = null;
-var variant = new URLSearchParams(location.search).get("variant") || "A";
+var variant = "A";
 if (!["A", "B", "C"].includes(variant))
   variant = "A";
 var spotlight = 0;
 var sheetHeight = 40;
 var zoom = false;
+var navigationNames = ["Half wheel", "Quarter wheel", "Linked list", "Area picker"];
+var requestedVariant = new URLSearchParams(location.search).get("variant") || "A";
+var navigation = Math.max(0, ["A", "B", "C", "D"].indexOf(requestedVariant));
+var steps = 0;
+var comparisonCopy = [
+  "Half wheel: enlarge to twice the width and drag sideways. More spatial context; tall wheel and sheet can compete for screen space. Groups still open named tiles.",
+  "Quarter wheel: the same enlarged wheel in a square viewport. Drag in two directions or use pan buttons. Larger targets with less context; vertical dragging competes with page scrolling.",
+  "Linked list: choose a named body beside the whole wheel. One direct selection; highlighted true position links the row to the chart. Long lists require scrolling and less spatial exploration.",
+  "Area picker: choose a numbered house, then a named body. Two explicit steps without panning; requires understanding house numbers and may contain empty areas."
+];
 var bodyName = (name) => bodySymbols[name].name;
 var miniGlyph = (name) => `<svg viewBox="0 0 100 100" aria-hidden="true"><path d="${bodySymbols[name].path}" fill="currentColor" fill-rule="evenodd"/></svg>`;
 var openPicker = (ids, mode = "bodies", aspectIds = []) => {
@@ -897,29 +923,58 @@ var facts = (i) => {
 };
 var render = () => {
   const i = active();
-  $("concept-switcher").hidden = !new URLSearchParams(location.search).has("variant");
+  $("comparison-note").textContent = comparisonCopy[navigation];
+  document.querySelector(".selection-list").hidden = navigation === 2;
+  $("comparison-list").hidden = navigation !== 2;
+  $("area-list").hidden = navigation !== 3;
+  $("comparison-list").innerHTML = bodies().map((b) => `<button id="linked-${b.name}" data-item="body-${b.name}" aria-pressed="${state.selected === "body-" + b.name}">${miniGlyph(b.name)}<span>${bodyName(b.name)}<small>${signName(b.longitude)} · House ${houseIndex(b.longitude) + 1}</small></span></button>`).join("");
+  $("area-list").innerHTML = cuspSectors().map((h) => {
+    const members = bodies().filter((b) => houseIndex(b.longitude) === h.index);
+    return `<button id="area-${h.index}" data-area="${h.index}" ${members.length ? "" : "disabled"}>House ${h.index + 1}<small>${members.length} bodies · ${h.width.toFixed(1)}° wide</small></button>`;
+  }).join("");
+  $("concept-switcher").hidden = false;
   $("chart-mode").value = chartMode;
   $("provenance").textContent = snapshot() ? `${chartContext()}. Captured library fixture: ${snapshot().input.utc}, latitude ${snapshot().input.latitude}, longitude ${snapshot().input.longitude}. ${state.scenario === "initial" ? "Captured chart positions and cusps." : "Stress fixture: body positions deliberately perturbed; cusps retained."} ${chartMode === "true-whole" ? "Twelve whole-sign houses merge Ophiuchus into Scorpio." : ""}` : "Synthetic equal-sector interaction fixture.";
-  const pan = $("drawing").scrollLeft;
+  const pan = $("drawing").scrollLeft, panY = $("drawing").scrollTop;
   $("category").value = state.category;
   $("scenario").value = state.scenario;
   $("drawing").innerHTML = wheel();
   $("drawing").classList.toggle("zoomed", zoom);
+  $("drawing").classList.toggle("quarter", zoom && navigation === 1);
   $("drawing").scrollLeft = pan;
-  $("zoom").textContent = zoom ? "Show whole wheel" : "Zoom · half wheel";
+  $("drawing").scrollTop = panY;
+  $("pan-up").hidden = $("pan-down").hidden = navigation !== 1;
+  const selectedBody = i?.kind === "Body" ? bodies().find((b) => b.name === i.body) : null;
+  if (selectedBody) {
+    const point2 = p(selectedBody.longitude, 230);
+    $("wheel").insertAdjacentHTML("beforeend", `<circle class="position-marker" cx="${point2.x}" cy="${point2.y}" r="9" fill="#f9e589" stroke="#382068" stroke-width="3" pointer-events="none"/><text x="300" y="300" text-anchor="middle" font-size="16" fill="#382068">${i.name}</text>`);
+  }
+  const modal = $("body-modal");
+  const bodyPicker = picker?.mode === "bodies";
+  if (bodyPicker) {
+    $("modal-content").innerHTML = pickerContent();
+    if (!modal.open)
+      modal.showModal();
+  } else {
+    if (modal.open)
+      modal.close();
+    $("modal-content").innerHTML = "";
+  }
+  $("zoom").textContent = zoom ? "Show whole wheel" : navigation === 1 ? "Zoom · quarter wheel" : "Zoom · half wheel";
   $("zoom").setAttribute("aria-pressed", String(zoom));
-  $("variant-name").textContent = { A: "A · Folder tiles", B: "B · Guided list", C: "C · Spotlight cards" }[variant];
-  $("panel").hidden = sheetHeight === 0 || !i && !state.choices.length && !picker;
+  $("variant-name").textContent = `${["A", "B", "C", "D"][navigation]} · ${navigationNames[navigation]}`;
+  $("panel").hidden = sheetHeight === 0 || !i && !state.choices.length && (!picker || picker.mode === "bodies");
   $("panel").style.setProperty("--sheet-height", sheetHeight + "dvh");
   $("resize-handle").setAttribute("aria-valuenow", String(sheetHeight));
   $("resize-handle").setAttribute("aria-valuetext", sheetHeight + "% of screen");
   $("panel").classList.toggle("expanded", state.expanded);
-  $("details").innerHTML = picker ? pickerContent() : state.choices.length ? `<h2 id="detail-title" tabindex="-1">Choose an aspect</h2><p>Several lines meet here.</p>${state.choices.map((id) => {
+  $("details").innerHTML = picker && picker.mode !== "bodies" ? pickerContent() : state.choices.length ? `<h2 id="detail-title" tabindex="-1">Choose an aspect</h2><p>Several lines meet here.</p>${state.choices.map((id) => {
     const a = items().find((i2) => i2.id === id);
     return `<button data-choice="${id}">${a.name}</button>`;
   }).join("")}` : i ? `<p class="eyebrow">${i.kind}</p><h2 id="detail-title" tabindex="-1">${i.name}</h2>${i.kind === "Aspect" ? "" : `<p>${reference(i)}</p>`}${facts(i)}${i.kind === "Body" ? `<button data-connections="${i.body}">Explore ${i.name}’s aspects ›</button>` : ""}<hr><p class="context">${chartContext()}</p>` : "";
   $("expand").textContent = sheetHeight >= 70 ? "Show less" : "Expand details";
   $("list").innerHTML = items().filter((i2) => i2.kind === state.category).map((i2) => `<button id="list-${i2.id}" data-item="${i2.id}" aria-pressed="${i2.id === state.selected}">${i2.name}</button>`).join("");
+  $("comparison-state").textContent = `${navigationNames[navigation]} · ${zoom ? "Zoomed" : "Whole wheel"} · ${steps} activations · Selected: ${i?.name || "none"} · Sheet: ${$("panel").hidden ? 0 : sheetHeight}% · Picker: ${picker?.mode || "closed"} · Pan: ${Math.round(pan)}, ${Math.round(panY)}`;
   $("state").textContent = `${state.scenario === "initial" ? "Initial-input fixture" : state.scenario === "edited" ? "Edited-input fixture" : "Crowded-body fixture"} · ${i ? i.kind + ": " + i.name : "No selection"} · ${state.choices.length ? "Choosing between " + state.choices.length + " aspects" : state.expanded ? "Expanded details" : "Compact details"}`;
   $("instruction").textContent = i?.kind === "Body" ? "Unrelated aspects are dimmed. Choose another target to replace this selection." : "Choose a body, sign, house, angle, or aspect. Use the named list for small or crowded targets.";
 };
@@ -937,6 +992,11 @@ var clear = () => {
   sheetHeight = 0;
   dispatch({ type: "clear" }, opener);
 };
+$("body-modal").addEventListener("cancel", (e) => {
+  e.preventDefault();
+  clear();
+});
+$("modal-close").addEventListener("click", clear);
 var selectItem = (id, origin, keyboard) => {
   picker = null;
   sheetHeight = 40;
@@ -957,6 +1017,12 @@ document.addEventListener("click", (e) => {
   }
   const target = e.target, button = target.closest("[data-item]"), choice = target.closest("[data-choice]");
   const folder = target.closest("[data-folder]"), pick = target.closest("[data-pick]"), back = target.closest("[data-picker-back]"), card = target.closest("[data-card]"), connections = target.closest("[data-connections]");
+  const area = target.closest("[data-area]");
+  if (area) {
+    opener = area.id;
+    openPicker(bodies().filter((b) => houseIndex(b.longitude) === Number(area.dataset.area)).map((b) => b.name));
+    return;
+  }
   if (folder) {
     opener = folder.id;
     openPicker(folder.dataset.folder.split(","));
@@ -1019,6 +1085,7 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     e.preventDefault();
     clear();
+    return;
   }
   const folder = e.target.closest("[data-folder]");
   if (folder && (e.key === "Enter" || e.key === " ")) {
@@ -1056,22 +1123,41 @@ $("zoom").addEventListener("click", () => {
   zoom = !zoom;
   render();
 });
+$("whole").addEventListener("click", () => {
+  zoom = false;
+  render();
+  $("drawing").scrollTo(0, 0);
+  $("whole").focus();
+});
+$("pan-up").addEventListener("click", () => $("drawing").scrollBy({ top: -140, behavior: "smooth" }));
+$("pan-down").addEventListener("click", () => $("drawing").scrollBy({ top: 140, behavior: "smooth" }));
+$("restart").addEventListener("click", () => {
+  steps = 0;
+  zoom = navigation < 2;
+  picker = null;
+  sheetHeight = 0;
+  state = { ...initial, scenario: state.scenario };
+  render();
+  $("drawing").scrollTo(0, 0);
+});
 $("pan-left").addEventListener("click", () => $("drawing").scrollBy({ left: -140, behavior: "smooth" }));
 $("pan-right").addEventListener("click", () => $("drawing").scrollBy({ left: 140, behavior: "smooth" }));
 var panDrag = null;
 $("drawing").addEventListener("pointerdown", (e) => {
   if (!zoom)
     return;
-  panDrag = { id: e.pointerId, x: e.clientX, y: e.clientY, scroll: $("drawing").scrollLeft, moved: false };
+  panDrag = { id: e.pointerId, x: e.clientX, y: e.clientY, scroll: $("drawing").scrollLeft, top: $("drawing").scrollTop, moved: false };
 });
 $("drawing").addEventListener("pointermove", (e) => {
   if (!panDrag)
     return;
   const delta = e.clientX - panDrag.x;
-  if (Math.abs(delta) > 6 && Math.abs(delta) > Math.abs(e.clientY - panDrag.y)) {
+  if (Math.abs(delta) > 6 || navigation === 1 && Math.abs(e.clientY - panDrag.y) > 6) {
     panDrag = { ...panDrag, moved: true };
     $("drawing").setPointerCapture(e.pointerId);
     $("drawing").scrollLeft = panDrag.scroll - delta;
+    if (navigation === 1)
+      $("drawing").scrollTop = panDrag.top - (e.clientY - panDrag.y);
   }
 });
 var finishPan = () => {
@@ -1118,23 +1204,37 @@ handle.addEventListener("keydown", (e) => {
   }
 });
 var changeVariant = (delta) => {
-  variant = ["A", "B", "C"][(["A", "B", "C"].indexOf(variant) + delta + 3) % 3];
+  navigation = (navigation + delta + 4) % 4;
   const url = new URL(location.href);
-  url.searchParams.set("variant", variant);
+  url.searchParams.set("variant", ["A", "B", "C", "D"][navigation]);
   history.replaceState(null, "", url);
-  spotlight = 0;
+  picker = null;
+  zoom = navigation < 2;
+  sheetHeight = 0;
+  state = { ...state, selected: null, choices: [] };
+  steps = 0;
   render();
+  $("drawing").scrollTo(0, 0);
 };
 $("previous-variant").addEventListener("click", () => changeVariant(-1));
 $("next-variant").addEventListener("click", () => changeVariant(1));
 document.addEventListener("keydown", (e) => {
-  if (e.target.closest("input,select,textarea,[contenteditable], [role=slider]"))
+  if (e.target.closest("input,select,textarea,[contenteditable],[role=slider],dialog"))
     return;
   if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
     e.preventDefault();
     changeVariant(e.key === "ArrowLeft" ? -1 : 1);
   }
 });
+var showComparisonState = () => {
+  $("comparison-state").textContent = `${navigationNames[navigation]} · ${zoom ? "Zoomed" : "Whole wheel"} · ${steps} activations · Selected: ${active()?.name || "none"} · Sheet: ${$("panel").hidden ? 0 : sheetHeight}% · Picker: ${picker?.mode || "closed"} · Pan: ${Math.round($("drawing").scrollLeft)}, ${Math.round($("drawing").scrollTop)}`;
+};
+document.addEventListener("click", () => {
+  steps++;
+  queueMicrotask(showComparisonState);
+}, true);
+$("drawing").addEventListener("scroll", showComparisonState);
+zoom = navigation < 2;
 render();
 var walks = [
   { name: "Body and aspect", intro: "Watch unrelated lines dim, then replace the body selection with an aspect.", steps: [{ label: "1. Select Sun", action: { type: "select", value: "body-SUN" } }, { label: "2. Select a Sun connection", action: { type: "select", value: "aspect-sun-moon" } }, { label: "3. Clear selection", action: { type: "clear" } }] },

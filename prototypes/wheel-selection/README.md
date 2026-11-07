@@ -1,3 +1,77 @@
+# Mobile crowded-chart comparison — throwaway artifact
+
+Current decision: [Compare mobile crowded-chart navigation for the beta](https://github.com/AstrologyEngine/web/issues/17).
+Owner review is pending. This section supersedes older operation notes below;
+the retained notes document the inherited prototype and its historical decisions.
+
+Run from this worktree with `bun run prototype:mobile`, then open
+<http://127.0.0.1:5191/prototypes/wheel-selection/prototype.html?variant=A&chart=true-whole&scenario=overflow>.
+Use `PROTOTYPE_PORT=5192 bun run prototype:mobile` if the port is occupied.
+Or open `prototype.html` directly: the generated artifact is self-contained.
+Rebuild using `bun prototypes/wheel-selection/build.ts`.
+
+Four alternatives on the same artifact, selected by `?variant=A|B|C|D` or the
+floating arrows (keyboard left/right also cycles outside form fields/dialogs):
+
+| Variant | Primary path | Strength | Weakness / consideration |
+| --- | --- | --- | --- |
+| A: Half wheel | Horizontal pan → group → named tile | Retains vertical wheel context; enlarged targets | Tall wheel and explanation sheet compete for room; horizontal search may be needed |
+| B: Quarter wheel | Two-axis pan → group → named tile | More compact crop at the same magnification | Less orientation context; vertical pan competes with page scroll |
+| C: Linked list | Named row → explanation | Direct choice with readable labels; marker shows true longitude | List scrolling and name recognition replace some spatial exploration |
+| D: Area picker | Numbered house → named tile → explanation | Bounded choices and explicit areas, without panning | Extra step; beginners must understand house numbers; empty areas are disabled |
+
+Counts above describe primary paths, not measured beginner performance. Whole
+wheel / optional zoom and the shared named-target fallback remain available.
+Combining paths remains a possible owner choice, not a fifth preselected answer.
+
+## Review exercise
+
+Use a phone-width browser. Find Sun, dismiss, then find Saturn. Restart each
+attempt to reset its activation counter. Compare whole wheel return, chart
+visibility, orientation, scroll/pan conflict, keyboard activation and dismissal.
+Repeat with `chart=true-placidus`, `chart=tropical`, and `scenario=crowded`,
+`scenario=triangle` or `scenario=overflow`. Overflow puts ten bodies in the
+narrowest house; these deliberately perturbed positions are not a real birth
+chart. Fixture source and house geometry remain visible under the guide.
+
+All variants retain the existing wheel geometry, fit heuristic, lower connector
+paint layer, named glyph tiles, aspect path and explanation sheet. Groups now
+open a native modal dialog with focus containment; details remain nonmodal and
+snap to 0/40/70%. Escape/Close restores the originating group, row or area control.
+The linked-list marker uses the true body longitude, not the displaced glyph.
+The quarter-wheel crop changes viewport clipping, not chart coordinates or
+house widths. Pan/selection state is displayed. Variant switches reset selection
+and camera, keeping fixture positions; Whole wheel keeps the current selection.
+No application route imports these files; the switcher is confined to this
+standalone local artifact and cannot enter the application production build.
+
+## Verification and limits — 2026-11-07
+
+Local headless Chromium, 390×844: all four alternatives across True Sky whole
+sign, True Sky Placidus and tropical equal-house fixtures retained all 15 bodies
+exactly once as individual targets or group members. Keyboard activation reached
+Saturn, focused its details, snapped the sheet to 70%, and Escape restored the
+origin in every combination. Native modal Escape and two-axis pointer pan were
+exercised; whole-wheel return and no horizontal page overflow were checked.
+No page exceptions occurred in that matrix. Mobile and 1280×900 desktop
+screenshots were inspected. An initial duplicate heading in a closed picker
+was corrected before the final matrix.
+
+This establishes prototype operation, not usability preference, production
+collision handling, physical touch behavior, actual screen-reader acceptance or
+astronomical accuracy. The inherited heuristic still groups bodies rather than
+promising that zoom separates every glyph. Quarter-wheel touch-action disables
+page scrolling inside its crop; this is an explicit tradeoff to review. A 70%
+sheet can obscure most of the chart; compare with 40% or dismissal. Screen space
+and step counts are observations to discuss, not grounds for an automatic winner.
+
+The question remains open until the owner reacts and chooses the beta behavior.
+Application implementation and deployment remain outside this planning task.
+
+---
+
+## Inherited prototype history (historical notes)
+
 # Wheel selection — throwaway interaction prototype
 
 Question: how should single selection, crowded targets, overlapping aspects,

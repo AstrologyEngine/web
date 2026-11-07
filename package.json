@@ -16,7 +16,8 @@
     "test:browser": "playwright test",
     "changeset": "changeset",
     "version:release": "changeset version && bun install --lockfile-only && bun run format",
-    "release:publish": "node scripts/publish-release.mjs"
+    "release:publish": "node scripts/publish-release.mjs",
+    "prototype:mobile": "bun prototypes/wheel-selection/serve.ts"
   },
   "devDependencies": {
     "@changesets/cli": "3.0.3",
