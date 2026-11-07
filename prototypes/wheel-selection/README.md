@@ -117,3 +117,35 @@ and house assignment follow the chosen sectors/cusps. Aspect candidates in
 captured layouts are derived from fixture positions. This does not validate
 a live chart calculator or settle production collision handling for arbitrarily
 small cusps, collisions across houses, or final minimum target sizes.
+
+## Fit-first glyph arrangement (supersedes proximity grouping)
+
+Owner direction: arrange bodies within their actual house; only group when
+individual glyphs cannot fit. There is no stellium membership/count criterion.
+
+`source/fit-bodies.ts` is a pure, deterministic layout function. It searches
+staggered positions on two radii in each house's annular sector. Each glyph
+reserves a 22-unit circular footprint, five units of clearance from house
+boundaries/rings, and three units between footprints. Two outer positions and
+one inner position can form the requested triangle. The score favors staying
+near true longitude and using the outer row. All body facts and connector
+origins remain unchanged.
+
+A bounded beam search keeps up to 160 arrangements per placement step, rather
+than committing to the first free slot. If it cannot place every body in a
+house, that house's bodies use one fallback group with the chosen tile picker.
+This is a practical prototype heuristic, not proof that no conceivable packing
+exists. It deliberately reserves target space as well as visible glyph space.
+
+Use `?chart=true-whole&scenario=triangle` for three bodies in a house near 30°
+wide, or `&scenario=overflow` for ten bodies in the narrowest house. These are
+explicitly synthetic perturbations of the captured layout. The scenario
+selector also retains initial, edited, and crowded cases. A pair can group if
+the house is too narrow to fit both targets; this is spatial grouping only.
+
+Browser verification across three chart layouts × four scenarios retained all
+15 bodies exactly once as individuals or picker members. The three-body cases
+placed Sun and Mercury on the outer row and Moon inward. Individual target
+centers remained at least 47 SVG units apart; overflow houses opened the tile
+picker with all ten members. Desktop/mobile screenshots were inspected and no
+page exceptions were observed. Physical-device usability remains unverified.

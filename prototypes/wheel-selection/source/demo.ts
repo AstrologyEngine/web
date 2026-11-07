@@ -1,3 +1,4 @@
+import { fitHouse } from './fit-bodies';
 import trueWhole from './true-whole.json';
 import truePlacidus from './true-placidus.json';
 // Throwaway interaction prototype, using plugin wheel artwork and geometry.
@@ -51,6 +52,13 @@ const $ = (id:string) => document.getElementById(id)!;
 const p = (l:number,r:number) => wheelPoint(l,r,snapshot()?.bodies.find(b=>b.name==='ASCENDANT_SYMBOL')!.longitude||0);
 const bodies = () => names.map((name,i) => {
  const base=snapshot()?.bodies.find(b=>b.name===name)!.longitude??positions[i];
+ if(state.scenario==='triangle'||state.scenario==='overflow'){
+  const target=state.scenario==='triangle'?cuspSectors().reduce((a,b)=>Math.abs(a.width-30)<Math.abs(b.width-30)?a:b):cuspSectors().reduce((a,b)=>a.width<b.width?a:b);
+  const count=state.scenario==='triangle'?3:10;
+  const destination=i<count?target:cuspSectors()[(target.index+1+(i-count)%11)%12];
+  return {name,longitude:(destination.start+destination.width/2+(i<count?(i-(count-1)/2)*.4:0)+360)%360};
+ }
+
  const narrow=cuspSectors().reduce((a,b)=>a.width<b.width?a:b);
  const crowded=snapshot()?(narrow.start+narrow.width/2-2.5+i)%360:73+i*1.3;
  return {name,longitude:((state.scenario==='crowded'&&i<6?crowded:base)+(state.scenario==='edited'?41:0)+360)%360};
@@ -78,12 +86,13 @@ const items = (): Item[] => [
 const active = () => items().find(i=>i.id===state.selected);
 const attrs = (i:Item) => `id="wheel-${i.id}" data-item="${i.id}" role="button" tabindex="0" aria-label="${i.name}, ${i.kind.toLowerCase()}" aria-pressed="${i.id===state.selected}"`;
 const glyph = (path:string,x:number,y:number,ink='#222') => `<svg x="${x-12}" y="${y-12}" width="24" height="24" viewBox="0 0 100 100" aria-hidden="true"><path d="${path}" fill="${ink}" fill-rule="evenodd"/></svg>`;
-// Groups stay within their actual house; no glyph is moved to a neighboring house.
-const clusters = () => [...bodies()].sort((a,b)=>a.longitude-b.longitude).reduce<ReturnType<typeof bodies>[]>((groups,b)=>{
- const last=groups.at(-1),prev=last?.at(-1);
- return prev && houseIndex(prev.longitude)===houseIndex(b.longitude) && b.longitude-prev.longitude<12
- ? [...groups.slice(0,-1),[...last!,b]] : [...groups,[b]];
-},[]);
+// Fit all bodies in each house before creating a fallback group.
+const bodyLayouts=()=>cuspSectors().flatMap(sector=>{
+ const members=bodies().filter(b=>houseIndex(b.longitude)===sector.index);
+ const fitted=fitHouse(members,sector);
+ return fitted?fitted.map(placement=>({group:[placement.body],placement})):members.length?[{group:members,placement:null}]:[];
+});
+const clusters=()=>bodyLayouts().map(layout=>layout.group);
 type Picker = {ids:string[]; aspectIds:string[]; mode:'bodies'|'aspects'; body:string|null; relation:string|null};
 let picker:Picker|null=null;
 // Owner selected A; B/C remain available as archived comparison variants.
@@ -117,8 +126,9 @@ const wheel = () => {
  ${all.filter(i=>i.kind==='House').map(i=>{const sector=cuspSectors()[i.index!],start=sector.start; const q=p(start+sector.width/2,118),a=p(start,133),b=p(start,231);return `<path ${attrs(i)} d="${annularSector(108,231,longitudeToSvgAngle(start+sector.width,snapshot()?.bodies.find(b=>b.name==='ASCENDANT_SYMBOL')!.longitude||0),longitudeToSvgAngle(start,snapshot()?.bodies.find(b=>b.name==='ASCENDANT_SYMBOL')!.longitude||0))}" transform="translate(300 300)" fill="${state.selected===i.id?'#e6e5f4':'transparent'}"/><line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#ccc" pointer-events="none"/><text x="${q.x}" y="${q.y}" text-anchor="middle" dominant-baseline="middle" pointer-events="none" font-size="13">${i.index!+1}</text>`}).join('')}
  ${lineData.map(a=>{const related=selected?.kind!=='Body'||a.pair!.includes(selected.body!);return `<g ${attrs(a)}><line class="aspect" x1="${a.a.x}" y1="${a.a.y}" x2="${a.b.x}" y2="${a.b.y}" stroke="${['Square','Opposition'].includes(a.type!)?'#c22':'#25c'}" stroke-width="${state.selected===a.id?4:1.6}" opacity="${related?0.8:0.12}"/><line data-aspect-hit="true" x1="${a.a.x}" y1="${a.a.y}" x2="${a.b.x}" y2="${a.b.y}" stroke="transparent" stroke-width="18"/></g>`}).join('')}
  ${all.filter(i=>i.kind==='Sign').map(i=>{const sector=signSectors()[i.index!],start=sector.start,q=p(start+sector.width/2,253),fill=WHEEL_THEMES.traditional.signFills![i.name];return `<g ${attrs(i)}><path d="${annularSector(231,273,longitudeToSvgAngle(start+sector.width,snapshot()?.bodies.find(b=>b.name==='ASCENDANT_SYMBOL')!.longitude||0),longitudeToSvgAngle(start,snapshot()?.bodies.find(b=>b.name==='ASCENDANT_SYMBOL')!.longitude||0))}" transform="translate(300 300)" fill="${fill}"/>${glyph(i.name==='Ophiuchus'?'M20 15H30V65Q50 95 70 65V15H80V65Q50 115 20 65ZM8 40Q30 65 50 40T92 40V50Q70 25 50 50T8 50Z':zodiacGlyphPaths[signs.indexOf(i.name)],q.x,q.y,contrastInk(fill))}</g>`}).join('')}
- ${clusters().map(group=>{
- const longitude=group.reduce((sum,b)=>sum+b.longitude,0)/group.length;
+ ${bodyLayouts().map(({group,placement})=>{
+ const groupHouse=cuspSectors()[houseIndex(group[0].longitude)];
+ const longitude=groupHouse.start+group.reduce((sum,b)=>sum+(b.longitude-groupHouse.start+360)%360,0)/group.length;
  // Whole target, badge, and focus stroke fit inside a conservative circle.
  // Reserve eight SVG units from each cusp; clamp only the visual anchor.
  const radius=184,clearance=8,sector=cuspSectors()[houseIndex(group[0].longitude)];
@@ -128,8 +138,8 @@ const wheel = () => {
  const inset=Math.asin((extent+clearance)/radius)*180/Math.PI;
  const houseStart=sector.start;
  const anchor=Math.max(houseStart+inset,Math.min(houseStart+sector.width-inset,houseStart+(longitude-houseStart+360)%360));
- const q=p(group.length>1?anchor:longitude,group.length>1?radius:188);
- if(group.length===1){const b=group[0],i=all.find(i=>i.body===b.name)!,tip=p(b.longitude,230);return `<g ${attrs(i)}><line x1="${tip.x}" y1="${tip.y}" x2="${q.x}" y2="${q.y}" stroke="#777"/><circle cx="${q.x}" cy="${q.y}" r="22" fill="transparent"/><circle cx="${q.x}" cy="${q.y}" r="16" fill="#fafafa"/>${glyph(bodySymbols[b.name].path,q.x,q.y)}</g>`;}
+ const q=placement?p(placement.longitude,placement.radius):p(anchor,radius);
+ if(group.length===1){const b=group[0],i=all.find(i=>i.body===b.name)!,tip=p(b.longitude,230);return `<g ${attrs(i)} data-layout-house="${sector.index}" data-label-longitude="${placement!.longitude}" data-label-radius="${placement!.radius}" data-label-x="${q.x}" data-label-y="${q.y}"><line x1="${tip.x}" y1="${tip.y}" x2="${q.x}" y2="${q.y}" stroke="#777"/><circle cx="${q.x}" cy="${q.y}" r="22" fill="transparent"/><circle cx="${q.x}" cy="${q.y}" r="16" fill="#fafafa"/>${glyph(bodySymbols[b.name].path,q.x,q.y)}</g>`;}
  const leaders=group.map(b=>{const tip=p(b.longitude,230);return `<line class="group-leader" x1="${tip.x}" y1="${tip.y}" x2="${q.x}" y2="${q.y}" stroke="#999" stroke-width=".8" pointer-events="none"/>`}).join('');
  return `<g id="folder-${group[0].name}" data-folder="${group.map(b=>b.name).join(',')}" data-anchor="${anchor}" data-house-start="${houseStart}" data-house-width="${sector.width}" data-compact="${compact}" data-extent="${extent}" role="button" tabindex="0" aria-label="Grouped bodies: ${group.map(b=>bodyName(b.name)).join(', ')}">${leaders}${compact?`<circle class="compact-plate" cx="${q.x}" cy="${q.y}" r="${extent}" fill="#e7e3ee" stroke="#6e617f"/><text x="${q.x}" y="${q.y}" font-size="12" text-anchor="middle" dominant-baseline="middle">${group.length}</text>`:`<rect class="group-plate" x="${q.x-25}" y="${q.y-25}" width="50" height="50" rx="12" fill="#e7e3ee" stroke="#6e617f"/>${group.slice(0,4).map((b,j)=>`<g transform="translate(${q.x+(j%2?9:-9)} ${q.y+(j>1?12:-3)}) scale(.52)">${glyph(bodySymbols[b.name].path,0,0)}</g>`).join('')}<circle class="group-count" cx="${q.x+17}" cy="${q.y-17}" r="9" fill="#65517d"/><text x="${q.x+17}" y="${q.y-17}" fill="white" font-size="10" text-anchor="middle" dominant-baseline="middle">${group.length}</text>`}</g>`;
  }).join('')}
@@ -242,6 +252,10 @@ showWalk(0);
 // Shareable review links can open the crowded folder immediately.
 if(new URLSearchParams(location.search).get('picker')==='folder'){
  state={...initial,scenario:'crowded'};
- const group=clusters().find(group=>group.some(b=>b.name==='SUN'))!;
- opener='folder-SUN';openPicker(group.map(b=>b.name));
+ const group=clusters().find(group=>group.length>1);
+ if(group){opener='folder-'+group[0].name;openPicker(group.map(b=>b.name));}else render();
+}
+const requestedScenario=new URLSearchParams(location.search).get('scenario');
+if(requestedScenario&&['initial','edited','crowded','triangle','overflow'].includes(requestedScenario)){
+ picker=null;state={...initial,scenario:requestedScenario};render();
 }
