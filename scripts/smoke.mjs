@@ -1,0 +1,10 @@
+import assert from "node:assert/strict";
+const [base, commit] = process.argv.slice(2);
+assert(base && commit, "Expected site URL and commit");
+const response = await fetch(base);
+assert.equal(response.status, 200);
+assert.match(await response.text(), /Astrology Engine/);
+const metadata = await fetch(new URL("/release.json", base));
+assert.equal(metadata.status, 200);
+assert.equal((await metadata.json()).commit, commit);
+console.log(`Verified ${base} at ${commit}`);

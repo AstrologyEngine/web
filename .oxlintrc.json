@@ -1,0 +1,4 @@
+{
+  "jsPlugins": ["@rsvelte/oxlint-plugin"],
+  "extends": ["./node_modules/@rsvelte/oxlint-plugin/recommended.json"]
+}
