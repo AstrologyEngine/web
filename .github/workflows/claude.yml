@@ -1,0 +1,45 @@
+name: Claude Code
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  issues:
+    types: [opened, assigned]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  claude:
+    if: |
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude') && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude') && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude') && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.review.author_association)) ||
+      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')) && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association))
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          show_full_output: true
+          additional_permissions: |
+            actions: read
+          claude_args: |
+            --max-turns 60
+            --permission-mode auto
+            --append-system-prompt "Never merge pull requests or push to main. When asked to make changes, push only to the current PR head branch, or a claude/ branch for issue requests, using the action's push wrapper."
+            --allowedTools "Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh issue view:*),Bash(git diff:*),Bash(git log:*),Bash(git status:*),Read,Grep,Glob,TodoWrite"
+            --disallowedTools "Bash(curl:*),Bash(wget:*),Bash(sudo:*),Bash(git push:*),Bash(git remote:*),Bash(gh pr merge:*),Bash(gh pr review:*),Bash(gh secret:*),Bash(gh repo delete:*),Bash(gh workflow:*),Read(.env),Read(.env.*),Read(**/.env),Read(**/.env.*),Read(.dev.vars),Read(.dev.vars.*),Read(**/.dev.vars),Read(**/.dev.vars.*),Read(.git/**),Read(**/.git/**)"

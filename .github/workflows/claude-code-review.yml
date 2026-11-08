@@ -1,0 +1,110 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  claude-review:
+    # Changesets release PRs only consume approved changesets and bump versions.
+    if: >-
+      !(github.event.pull_request.head.repo.full_name == github.repository &&
+        github.event.pull_request.head.ref == 'changeset-release/main' &&
+        github.event.pull_request.user.type == 'Bot')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      # Execute the control code from the event's trusted base, never from the PR head.
+      - name: Load review controls from base
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          CONTROL_FILE: ${{ runner.temp }}/astrology-review-controls.mjs
+        run: git show "${BASE_SHA}:.github/scripts/review-controls.mjs" > "$CONTROL_FILE"
+      - name: Resolve review scope
+        id: scope
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: node "${{ runner.temp }}/astrology-review-controls.mjs" scope
+      - name: Record existing reviews
+        id: baseline
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          BASELINE_FILE: ${{ runner.temp }}/claude-review-baseline.json
+        run: node "${{ runner.temp }}/astrology-review-controls.mjs" baseline
+      - name: Run Claude Code Review
+        id: review
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          allowed_bots: 'claude'
+          show_full_output: true
+          prompt: |
+            Review PR #${{ github.event.pull_request.number }} in ${{ github.repository }}
+            synchronously in this turn. Do not spawn background agents or defer work.
+            Review the fixed diff `git diff ${{ steps.scope.outputs.diff_base }} ${{ github.event.pull_request.head.sha }}`.
+            Scope: ${{ steps.scope.outputs.mode }}. For an incremental scope, only report new
+            issues in this diff. Read surrounding source as needed. Focus on correctness,
+            security, and clear simplifications; omit nits and praise. Post actionable findings
+            as inline review comments against commit ${{ github.event.pull_request.head.sha }}.
+            Finish by submitting one formal COMMENT review via the GitHub API endpoint
+            POST /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews,
+            explicitly setting commit_id to ${{ github.event.pull_request.head.sha }}, event to
+            COMMENT, and body beginning with the exact line:
+            <!-- astrology-claude-review -->
+            <!-- astrology-claude-review-run: ${{ github.run_id }}:${{ github.run_attempt }} base:${{ steps.scope.outputs.merge_base }} -->
+            Submit it even if no issues were found, saying so in the body. A plain issue
+            comment is not a review. Submit the formal review as your final operation,
+            after all findings and other work are complete, then end your turn.
+          claude_args: |
+            --max-turns 60
+            --permission-mode auto
+            --allowedTools "Bash(gh pr diff:*),Bash(gh pr view:*),Bash(git diff:*),Bash(git log:*),Read,Grep,Glob"
+            --disallowedTools "Bash(curl:*),Bash(wget:*),Bash(sudo:*),Bash(git push:*),Bash(git remote:*),Bash(gh pr merge:*),Bash(gh secret:*),Bash(gh repo delete:*),Bash(gh workflow:*),Read(.env),Read(.env.*),Read(**/.env),Read(**/.env.*),Read(.dev.vars),Read(.dev.vars.*),Read(**/.dev.vars),Read(**/.dev.vars.*),Read(.git/**),Read(**/.git/**)"
+      - name: Verify new review
+        id: verify
+        if: always() && steps.baseline.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASELINE_FILE: ${{ runner.temp }}/claude-review-baseline.json
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          MERGE_BASE: ${{ steps.scope.outputs.merge_base }}
+        run: node "${{ runner.temp }}/astrology-review-controls.mjs" verify
+      - name: Record review status
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          MODE: ${{ steps.scope.outputs.mode }}
+          REASON: ${{ steps.scope.outputs.reason }}
+          REVIEW_BASE: ${{ steps.scope.outputs.review_base }}
+          OUTCOME: ${{ steps.review.outcome }}
+          VERIFY_OUTCOME: ${{ steps.verify.outcome }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: node "${{ runner.temp }}/astrology-review-controls.mjs" status
