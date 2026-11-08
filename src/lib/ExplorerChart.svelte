@@ -103,7 +103,10 @@
     announcement = "Selection opened";
     snap = 40;
     await tick();
-    if (keyboard) heading?.focus({ preventScroll: true });
+    if (keyboard)
+      heading?.focus({
+        preventScroll: window.matchMedia("(max-width: 799px)").matches,
+      });
     revealChartTarget(target);
   }
   const selectBody = (name: BodyName, target: Element, keyboard: boolean) =>
