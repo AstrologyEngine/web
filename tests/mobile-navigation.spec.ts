@@ -144,3 +144,101 @@ test("a singleton glyph stays centered inside its narrow-house target", async ({
     });
   expect(moonSize).toBe(24);
 });
+
+for (const input of ["pointer", "keyboard"] as const) {
+  test(`a ${input} group choice keeps the selected chart target above the mobile sheet`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/app");
+    await page
+      .getByLabel("Birth details")
+      .fill("June 21, 2000 at 1pm in London");
+    await page.getByRole("button", { name: "Apply" }).click();
+    await page.getByRole("button", { name: "Zoom half wheel" }).click();
+    await page.getByRole("button", { name: "Pan wheel right" }).click();
+    const viewport = page.getByRole("region", { name: "Chart viewport" });
+    const group = page
+      .getByRole("button", { name: /Grouped bodies:.*Venus/ })
+      .first();
+    if (input === "keyboard") {
+      await group.focus();
+      await page.keyboard.press("Enter");
+    } else await group.click();
+    const pan = await viewport.evaluate((element) => element.scrollLeft);
+    const venus = page
+      .getByRole("dialog", { name: "Choose a body" })
+      .getByRole("button", { name: "Venus", exact: true });
+    if (input === "keyboard") {
+      await venus.focus();
+      await page.keyboard.press("Enter");
+    } else await venus.click();
+    await expect(
+      page.getByRole("heading", { name: "Venus", exact: true }),
+    ).toBeFocused();
+    const sheet = page.getByRole("complementary", { name: "Body details" });
+    await expect
+      .poll(async () => {
+        const target = await group.boundingBox();
+        const panel = await sheet.boundingBox();
+        return (
+          !!target &&
+          !!panel &&
+          target.y >= 0 &&
+          target.y + target.height <= panel.y
+        );
+      })
+      .toBe(true);
+    await expect(viewport).toHaveJSProperty("scrollLeft", pan);
+    await expect
+      .poll(() =>
+        page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+      )
+      .toBe(true);
+    await page.getByRole("button", { name: "Close details" }).click();
+    await expect(group).toBeFocused();
+    await expect(viewport).toHaveJSProperty("scrollLeft", pan);
+    await page.getByRole("button", { name: "Show whole wheel" }).click();
+    await expect(
+      page.getByRole("button", { name: "Zoom half wheel" }),
+    ).toBeVisible();
+  });
+}
+
+test("a selected member has its own glyph inside a shared body group", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/app");
+  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
+  await page.getByRole("button", { name: "Apply" }).click();
+  await page.getByRole("button", { name: "Zoom half wheel" }).click();
+  await page.getByRole("button", { name: "Pan wheel right" }).click();
+  const group = page
+    .getByRole("button", { name: /Grouped bodies:.*Sun.*Venus/ })
+    .first();
+  await group.click();
+  await page
+    .getByRole("dialog", { name: "Choose a body" })
+    .getByRole("button", { name: "Sun", exact: true })
+    .click();
+  const details = page.getByRole("complementary", { name: "Body details" });
+  await expect(
+    details.getByRole("heading", { name: "Sun", exact: true }),
+  ).toBeVisible();
+  await expect(details.getByText("0.4°", { exact: true })).toBeVisible();
+  await expect(group.locator("svg title")).toHaveText("Sun");
+  const sunGlyph = await group.locator("svg path").getAttribute("d");
+  await group.click();
+  await page
+    .getByRole("dialog", { name: "Choose a body" })
+    .getByRole("button", { name: "Venus", exact: true })
+    .click();
+  await expect(
+    details.getByRole("heading", { name: "Venus", exact: true }),
+  ).toBeVisible();
+  await expect(details.getByText("3.16°", { exact: true })).toBeVisible();
+  await expect(group.locator("svg title")).toHaveText("Venus");
+  expect(await group.locator("svg path").getAttribute("d")).not.toBe(sunGlyph);
+  await expect(group.locator("text")).toHaveText("3");
+});

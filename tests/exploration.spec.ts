@@ -184,3 +184,22 @@ test("an accepted birth edit clears prior selection", async ({ page }) => {
     page.getByRole("button", { name: "Sun", exact: true }),
   ).toHaveAttribute("aria-pressed", "false");
 });
+
+test("desktop keyboard selection from below the wheel reveals the details heading", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.goto("/app");
+  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
+  await page.getByRole("button", { name: "Apply" }).click();
+  await page.getByText("Choose a body by name", { exact: true }).click();
+  const sun = page
+    .locator(".body-list")
+    .getByRole("button", { name: "Sun", exact: true });
+  await sun.evaluate((element) => element.scrollIntoView({ block: "start" }));
+  await sun.focus();
+  await page.keyboard.press("Enter");
+  const heading = page.getByRole("heading", { name: "Sun", exact: true });
+  await expect(heading).toBeFocused();
+  await expect(heading).toBeInViewport();
+});
