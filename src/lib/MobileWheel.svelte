@@ -1,6 +1,10 @@
 <script lang="ts">
+  import type { Measurement } from "./measurement/client";
   import type { Snippet } from "svelte";
-  let { children }: { children: Snippet } = $props();
+  let {
+    children,
+    measurement,
+  }: { children: Snippet; measurement: Measurement | null } = $props();
   let zoomed = $state(false);
   let viewport = $state<HTMLDivElement>();
   let savedPosition = 0;
@@ -15,6 +19,8 @@
   function toggle() {
     if (zoomed && viewport) savedPosition = viewport.scrollLeft;
     zoomed = !zoomed;
+    measurement?.use("half_wheel");
+    measurement?.interaction("zoom");
     if (zoomed)
       requestAnimationFrame(() => {
         if (viewport) viewport.scrollLeft = savedPosition;
@@ -34,6 +40,7 @@
     if (!drag || drag.id !== event.pointerId || !viewport) return;
     const dx = event.clientX - drag.x;
     if (Math.abs(dx) > 6 && Math.abs(dx) > Math.abs(event.clientY - drag.y)) {
+      if (!drag.moved) measurement?.interaction("pan");
       drag.moved = true;
       viewport.setPointerCapture(event.pointerId);
       viewport.scrollLeft = drag.scroll - dx;
@@ -53,11 +60,17 @@
     {#if zoomed}
       <button
         aria-label="Pan wheel left"
-        onclick={() => viewport?.scrollBy({ left: -140 })}>←</button
+        onclick={() => {
+          measurement?.interaction("pan");
+          viewport?.scrollBy({ left: -140 });
+        }}>←</button
       >
       <button
         aria-label="Pan wheel right"
-        onclick={() => viewport?.scrollBy({ left: 140 })}>→</button
+        onclick={() => {
+          measurement?.interaction("pan");
+          viewport?.scrollBy({ left: 140 });
+        }}>→</button
       >
       <small>Drag sideways to pan</small>
     {/if}

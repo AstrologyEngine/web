@@ -9,6 +9,7 @@
     birth,
     resolve,
     onclose,
+    onstart = () => {},
   }: {
     birth: Birth | null;
     resolve: (input: {
@@ -18,6 +19,7 @@
       timeKey?: string;
     }) => Promise<Resolution>;
     onclose: (birth: Birth | null) => void;
+    onstart?: () => void;
   } = $props();
   let ready = $state(false);
   const initialBirth = untrack(() => birth);
@@ -81,6 +83,7 @@
     }
   }
   function changed() {
+    onstart();
     serial++;
     result = null;
     dateKey = undefined;
