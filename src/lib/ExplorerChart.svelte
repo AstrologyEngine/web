@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Measurement } from "./measurement/client";
   import { tick, untrack } from "svelte";
+  import { angleIds, isAngle } from "./identities";
   import type { Snapshot } from "./calculation/snapshot";
   import type { BodyName, SignName, Selection, Aspect } from "./selection";
   import { samePair, supported } from "./selection";
@@ -72,6 +73,25 @@
     )
       origin.focus();
   }
+  function revealChartTarget(target: Element) {
+    if (!window.matchMedia("(max-width: 799px)").matches) return;
+    const sheet = heading?.closest("aside");
+    const chartTarget = target.closest(".wheel")
+      ? target
+      : target
+          .closest(".explorer")
+          ?.querySelector('.wheel [aria-pressed="true"]');
+    if (!sheet || !chartTarget) return;
+    const availableBottom = sheet.getBoundingClientRect().top;
+    const bounds = chartTarget.getBoundingClientRect();
+    // Fixed sheets do not reduce the browser's scroll-into-view area. Reveal the
+    // selected target in the space above the sheet without changing wheel pan.
+    if (bounds.top < 16 || bounds.bottom > availableBottom - 16)
+      window.scrollBy({
+        top: bounds.top + bounds.height / 2 - availableBottom / 2,
+        behavior: "instant",
+      });
+  }
   async function choose(next: Selection, target: Element, keyboard: boolean) {
     if (JSON.stringify(selection) === JSON.stringify(next)) {
       measurement?.interaction("repeat");
@@ -83,10 +103,12 @@
     selection = next;
     announcement = "Selection opened";
     snap = 40;
-    if (keyboard) {
-      await tick();
-      heading?.focus();
-    }
+    await tick();
+    if (keyboard)
+      heading?.focus({
+        preventScroll: window.matchMedia("(max-width: 799px)").matches,
+      });
+    revealChartTarget(target);
   }
   const selectBody = (name: BodyName, target: Element, keyboard: boolean) =>
     choose({ kind: "body", name }, target, keyboard);
@@ -108,6 +130,23 @@
     pickerOrigin = target;
     pickerGeneration = snapshot.generation;
     pickerOpen = true;
+  }
+  function closePicker() {
+    measurement?.interaction("navigation");
+    pickerOpen = false;
+    if (
+      pickerOrigin instanceof HTMLElement ||
+      pickerOrigin instanceof SVGElement
+    )
+      pickerOrigin.focus();
+  }
+  function pickFirst(name: BodyName) {
+    measurement?.interaction("navigation");
+    first = name;
+  }
+  function backPicker() {
+    measurement?.interaction("navigation");
+    first = null;
   }
   async function pickSecond(name: BodyName) {
     if (!first) return;
@@ -174,7 +213,7 @@
     <details class="body-list">
       <summary>Choose a body by name</summary>
       <div>
-        {#each chart.bodies.filter((item) => !["ASCENDANT_SYMBOL", "MIDHEAVEN", "DESCENDANT", "IMUM_COELI"].includes(item.name)) as item (item.name)}<button
+        {#each chart.bodies.filter((item) => !isAngle(item.name)) as item (item.name)}<button
             aria-pressed={body?.name === item.name}
             onclick={(event) =>
               selectBody(item.name, event.currentTarget, event.detail === 0)}>{label(
@@ -211,7 +250,7 @@
     <details>
       <summary>Choose an angle by name</summary>
       <div>
-        {#each ["ASCENDANT_SYMBOL", "MIDHEAVEN", "DESCENDANT", "IMUM_COELI"] as name (name)}<button
+        {#each angleIds as name (name)}<button
             aria-pressed={selection?.kind === "angle" &&
               selection.name === name}
             onclick={(event) =>
@@ -252,12 +291,7 @@
     }}
     oncancel={(event) => {
       event.preventDefault();
-      pickerOpen = false;
-      if (
-        pickerOrigin instanceof HTMLElement ||
-        pickerOrigin instanceof SVGElement
-      )
-        pickerOrigin.focus();
+      closePicker();
     }}
   >
     <h2>
@@ -267,20 +301,13 @@
     </h2>
     <div class="picker-buttons">
       {#each first ? pickerSecond : pickerFirst as name (name)}<button
-          onclick={() => (first ? pickSecond(name) : (first = name))}>{label(
+          onclick={() => (first ? pickSecond(name) : pickFirst(name))}>{label(
             name,
           )}</button
         >{/each}
     </div>
-    {#if first}<button onclick={() => (first = null)}>Back</button>{/if}<button
-      onclick={() => {
-        pickerOpen = false;
-        if (
-          pickerOrigin instanceof HTMLElement ||
-          pickerOrigin instanceof SVGElement
-        )
-          pickerOrigin.focus();
-      }}>Close</button
+    {#if first}<button onclick={backPicker}>Back</button>{/if}<button
+      onclick={closePicker}>Close</button
     >
   </dialog>{/if}
 

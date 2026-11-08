@@ -1,40 +1,5 @@
 import { z } from "zod";
-const signs = [
-  "aries",
-  "taurus",
-  "gemini",
-  "cancer",
-  "leo",
-  "virgo",
-  "libra",
-  "scorpio",
-  "ophiuchus",
-  "sagittarius",
-  "capricorn",
-  "aquarius",
-  "pisces",
-] as const;
-const names = [
-  "SUN",
-  "EARTH",
-  "MOON",
-  "NORTH_NODE",
-  "SOUTH_NODE",
-  "MERCURY",
-  "VENUS",
-  "MARS",
-  "JUPITER",
-  "SATURN",
-  "URANUS",
-  "NEPTUNE",
-  "PLUTO",
-  "CHIRON",
-  "CERES",
-  "ASCENDANT_SYMBOL",
-  "MIDHEAVEN",
-  "DESCENDANT",
-  "IMUM_COELI",
-] as const;
+import { signIds as signs, chartPointIds as names } from "../identities";
 const sign = z.enum(signs),
   name = z.enum(names),
   angle = z.number().min(0).lt(360);

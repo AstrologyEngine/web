@@ -40,6 +40,7 @@
   };
   const open = () => {
     measurement?.use("settings");
+    measurement?.interaction("navigation");
     draft = structuredClone($state.snapshot(requested));
     dialogOpen = true;
   };
@@ -47,6 +48,7 @@
     if (!draft) return;
     const parsed = settingsSchema.safeParse($state.snapshot(draft));
     if (!parsed.success) return;
+    measurement?.interaction("navigation");
     const next = parsed.data;
     const changed =
       JSON.stringify(customFields(next)) !==

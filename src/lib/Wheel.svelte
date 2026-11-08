@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { isAngle, signIds } from "./identities";
   import { WHEEL_THEMES, contrastInk } from "./wheel/theme";
   import { annularSector } from "./wheel/arcPath";
   import { longitudeToSvgAngle } from "./wheel/angles";
@@ -70,17 +71,7 @@
   const point = (longitude: number, radius: number) =>
     wheelPoint(longitude, radius, asc);
   const bodies = $derived(
-    layoutBodyPositions(
-      chart.bodies.filter(
-        (b) =>
-          ![
-            "ASCENDANT_SYMBOL",
-            "MIDHEAVEN",
-            "DESCENDANT",
-            "IMUM_COELI",
-          ].includes(b.name),
-      ),
-    ),
+    layoutBodyPositions(chart.bodies.filter((b) => !isAngle(b.name))),
   );
   const groups = $derived(
     width > 0 && width < 800
@@ -118,20 +109,9 @@
     await tick();
     if (origin) selectBody(name, origin, true);
   };
-  const signs = [
-    "aries",
-    "taurus",
-    "gemini",
-    "cancer",
-    "leo",
-    "virgo",
-    "libra",
-    "scorpio",
-    "sagittarius",
-    "capricorn",
-    "aquarius",
-    "pisces",
-  ];
+  const signs: readonly string[] = signIds.filter(
+    (sign) => sign !== "ophiuchus",
+  );
   const title = (s: string) => s[0].toUpperCase() + s.slice(1);
   const aspects = $derived(
     astrology.aspects
@@ -501,11 +481,15 @@
     {#each groups as group (group.members[0].name)}
       {@const p = point(group.longitude, group.radius)}
       {#if group.members.length > 1}
+        {@const selectedMember = group.members.find(
+          (body) => body.name === selectedBody,
+        )}
+        {@const selectedSize = Math.min(20, group.extent * 1.1)}
         <g
           data-glyph
           role="button"
           tabindex="0"
-          aria-label={`Grouped bodies: ${group.members.map((b) => bodySymbols[b.name].name).join(", ")}`}
+          aria-label={`Grouped bodies: ${group.members.map((b) => bodySymbols[b.name].name).join(", ")}${selectedMember ? `. Selected ${bodySymbols[selectedMember.name].name}` : ""}`}
           aria-pressed={group.members.some((b) => b.name === selectedBody)}
           onclick={(e) =>
             openGroup(
@@ -529,12 +513,31 @@
             fill="var(--w-plate)"
             stroke="var(--w-strong)"
           />
+          {#if selectedMember}
+            <svg
+              x={p.x - selectedSize * 0.6}
+              y={p.y - selectedSize * 0.6}
+              width={selectedSize}
+              height={selectedSize}
+              viewBox="0 0 100 100"
+              aria-hidden="true"
+            >
+              <title>{bodySymbols[selectedMember.name].name}</title>
+              <path
+                d={bodySymbols[selectedMember.name].path}
+                fill="var(--w-strong)"
+                fill-rule="evenodd"
+              />
+            </svg>
+          {/if}
           <text
-            x={p.x}
-            y={p.y}
+            x={p.x + (selectedMember ? group.extent * 0.55 : 0)}
+            y={p.y + (selectedMember ? group.extent * 0.55 : 0)}
             text-anchor="middle"
             dominant-baseline="middle"
-            font-size={Math.min(13, group.extent)}
+            font-size={selectedMember
+              ? Math.min(10, group.extent * 0.55)
+              : Math.min(13, group.extent)}
             fill="var(--w-strong)">{group.members.length}</text
           >
         </g>
