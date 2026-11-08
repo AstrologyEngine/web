@@ -66,6 +66,10 @@ jobs:
           gh api "repos/$REPO/pulls/$PR" > /tmp/latest-pr.json
           test "$(jq -r .state /tmp/latest-pr.json)" = open
           test "$(jq -r .head.sha /tmp/latest-pr.json)" = "$HEAD_SHA"
+          curl --fail-with-body --silent --show-error -X POST \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/astrology-engine-web-staging/subdomain" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H 'Content-Type: application/json' \
+            --data '{"enabled":false,"previews_enabled":true}' | jq -e '.success == true'
           WRANGLER_OUTPUT_FILE_PATH=/tmp/preview.ndjson bunx wrangler preview --env staging --name "pr-$PR" --ignore-base-config
           url=$(jq -ser 'map(select(.type == "preview")) | last | .preview_urls[0] | select(startswith("https://"))' /tmp/preview.ndjson)
           immutable=$(jq -ser 'map(select(.type == "preview")) | last | .deployment_urls[0] | select(startswith("https://"))' /tmp/preview.ndjson)

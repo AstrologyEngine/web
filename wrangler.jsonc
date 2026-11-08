@@ -22,6 +22,7 @@
   },
   "env": {
     "staging": {
+      "preview_urls": true,
       "previews": {},
       "name": "astrology-engine-web-staging",
       "routes": [
