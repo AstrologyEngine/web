@@ -48,6 +48,10 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       - run: node scripts/smoke.mjs "https://$TARGET.astrologyengine.dev" "$GITHUB_SHA"
+      - run: bunx playwright install --with-deps chromium
+      - run: bun run test:browser
+        env:
+          E2E_BASE_URL: https://${{ env.TARGET }}.astrologyengine.dev
       - name: Deployment summary
         if: always()
         run: |

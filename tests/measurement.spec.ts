@@ -104,6 +104,9 @@ test("openings, repeats and both available surfaces count once per visit", async
   await page.reload();
   await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
   await page.getByRole("button", { name: "Apply" }).click();
+  await expect(page.getByRole("group", { name: /natal chart/i })).toBeVisible({
+    timeout: 30000,
+  });
   await expect
     .poll(() => events.filter((e) => e.event === "eligible").length)
     .toBe(2);

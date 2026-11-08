@@ -21,5 +21,3 @@ jobs:
       - run: bun run build
       - run: bunx wrangler deploy --env staging --dry-run
       - run: bunx wrangler deploy --env alpha --dry-run
-      - run: bunx playwright install --with-deps chromium
-      - run: bun run test:browser
