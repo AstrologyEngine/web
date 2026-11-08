@@ -24,6 +24,8 @@
     onselectHouse,
     onselectAngle,
     onselectAspects,
+    onexposeGroup = () => {},
+    onopenGroup = () => {},
   }: {
     chart: Chart;
     astrology: Astrology;
@@ -48,6 +50,8 @@
       origin: Element,
       keyboard: boolean,
     ) => void;
+    onexposeGroup?: () => void;
+    onopenGroup?: () => void;
     onselectAspects?: (
       aspects: Astrology["aspects"],
       origin: Element,
@@ -91,10 +95,14 @@
           extent: 16,
         })),
   );
+  $effect(() => {
+    if (groups.some((group) => group.members.length > 1)) onexposeGroup();
+  });
   const openGroup = (
     members: Chart["bodies"][number]["name"][],
     origin: Element,
   ) => {
+    onopenGroup();
     picker = { members, origin };
   };
   const closeGroup = async () => {

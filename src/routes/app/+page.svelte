@@ -1,5 +1,9 @@
 <script lang="ts">
   import { onMount, tick } from "svelte";
+  import {
+    createMeasurement,
+    type Measurement,
+  } from "../../lib/measurement/client";
   import BirthEdit from "../../lib/BirthEdit.svelte";
   import Explorer from "../../lib/Explorer.svelte";
   import SettingsControls from "../../lib/SettingsControls.svelte";
@@ -71,6 +75,7 @@
       })
       .passthrough(),
   ]);
+  let measurement = $state<Measurement | null>(null);
   let birth = $state<Birth | null>(null);
   let settings = $state<Settings>(initialSettings);
   let custom = $state<Custom>(customFields(initialSettings));
@@ -99,8 +104,10 @@
           JSON.stringify($state.snapshot(settings))
       ) {
         snapshot = parsed.data;
+        measurement?.chart(matchPreset(parsed.data.requestedSettings));
         error = "";
       } else {
+        measurement?.fail("calculation", "failed");
         error =
           typeof result?.message === "string"
             ? result.message
@@ -118,6 +125,7 @@
       worker = undefined;
       clearTimeout(timeout);
       loading = false;
+      measurement?.fail("calculation", "unavailable");
       error = "Calculation could not start. Please retry.";
     };
     return instance;
@@ -138,19 +146,24 @@
         worker?.terminate();
         worker = undefined;
         loading = false;
+        measurement?.fail("calculation", "timeout");
         error = "Calculation took too long. Please retry.";
       }, 30000);
     } catch {
       worker?.terminate();
       worker = undefined;
       loading = false;
+      measurement?.fail("calculation", "unavailable");
       error = "Calculation could not start. Please retry.";
     }
   };
-  onMount(() => () => {
-    generation++;
-    clearTimeout(timeout);
-    worker?.terminate();
+  onMount(() => {
+    measurement = createMeasurement();
+    return () => {
+      generation++;
+      clearTimeout(timeout);
+      worker?.terminate();
+    };
   });
   async function resolve(input: {
     sentence: string;
@@ -158,14 +171,25 @@
     locationKey?: string;
     timeKey?: string;
   }): Promise<Resolution> {
-    const response = await fetch("/api/resolve-birth", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(input),
-    });
-    const data: unknown = await response.json();
+    let data: unknown;
+    try {
+      const response = await fetch("/api/resolve-birth", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      data = await response.json();
+    } catch {
+      measurement?.fail("resolver", "unavailable");
+      throw Error("Resolver unavailable");
+    }
     const validated = resolutionSchema.safeParse(data);
-    if (!validated.success) throw Error("Invalid response");
+    if (!validated.success) {
+      measurement?.fail("resolver", "invalid");
+      throw Error("Invalid response");
+    }
+    if (validated.data.kind === "error")
+      measurement?.fail("resolver", "failed");
     return data as Resolution;
   }
   function applySettings(next: Settings, nextCustom: Custom) {
@@ -177,6 +201,7 @@
   }
   async function accept(next: Birth | null) {
     if (next) {
+      measurement?.complete();
       birth = next;
       editing = false;
       calculate(next);
@@ -194,7 +219,12 @@
   <section class="entry">
     <p class="eyebrow">YOUR NATAL CHART</p>
     <h1>{birth ? "Your birth chart" : "Start with your birth details"}</h1>
-    {#if editing}<BirthEdit {birth} {resolve} onclose={accept} />{:else}
+    {#if editing}<BirthEdit
+        {birth}
+        {resolve}
+        onclose={accept}
+        onstart={() => measurement?.start()}
+      />{:else}
       <p>{birth?.localDate} at {birth?.localTime} in {birth?.place.label}</p>
       <button bind:this={editButton} onclick={() => (editing = true)}
         >Edit birth details</button
@@ -208,6 +238,7 @@
       {custom}
       pending={loading}
       onapply={applySettings}
+      {measurement}
     />{/if}
   {#if snapshot && JSON.stringify(snapshot.requestedSettings) !== JSON.stringify(settings)}<p
       role="status"
@@ -233,7 +264,7 @@
         House system adjusted to {snapshot.systems.astrology.selectedFrame
           .house_system}.
       </p>{/if}
-    <Explorer {snapshot} birthIdentity={JSON.stringify(birth)} />
+    <Explorer {snapshot} birthIdentity={JSON.stringify(birth)} {measurement} />
   {/if}
 </main>
 

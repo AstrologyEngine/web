@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { Measurement } from "./measurement/client";
   import { systemHelp } from "./exploration-content";
   import { settingsSchema } from "./domain";
   import {
@@ -16,6 +17,7 @@
     pending,
     onapply,
     actualHouses,
+    measurement,
   }: {
     requested: Settings;
     accepted: Settings;
@@ -23,6 +25,7 @@
     pending: boolean;
     onapply: (next: Settings, custom: Custom) => void;
     actualHouses: string;
+    measurement: Measurement | null;
   } = $props();
   let draft = $state<Settings | null>(null);
   let dialogOpen = $state(false);
@@ -30,9 +33,13 @@
   let selected = $derived(matchPreset(accepted));
   let requestedName = $derived(matchPreset(requested));
   const names: Preset[] = ["Tropical", "Vedic", "True Sky", "Custom"];
-  const choose = (name: Preset) =>
+  const choose = (name: Preset) => {
+    measurement?.use("settings");
+    measurement?.interaction("navigation");
     onapply(choosePreset(name, requested, custom), custom);
+  };
   const open = () => {
+    measurement?.use("settings");
     draft = structuredClone($state.snapshot(requested));
     dialogOpen = true;
   };
@@ -71,7 +78,13 @@
   <button
     aria-expanded={helpOpen}
     aria-controls="system-help"
-    onclick={() => (helpOpen = !helpOpen)}>About this system</button
+    onclick={() => {
+      helpOpen = !helpOpen;
+      if (helpOpen) {
+        measurement?.use("system_help");
+        measurement?.open({ kind: "system_help", system: selected });
+      }
+    }}>About this system</button
   >
   {#if helpOpen}<div id="system-help" role="region" aria-label="System help">
       <p>
