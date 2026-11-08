@@ -182,7 +182,12 @@
         ><span>Astrology Engine</span></a
       >
       <button class="birth-line" onclick={() => (editing = true)}>
-        {#if birth}{birthDateLabel(birth.localDate)} at {birthTimeLabel(birth.localTime)}<span class="place">{birth.place.label}</span>{:else}Enter birth details{/if}
+        <span
+          >{birth
+            ? `${birthDateLabel(birth.localDate)} at ${birthTimeLabel(birth.localTime)}`
+            : "Enter birth details"}</span
+        >
+        {#if birth}<span class="place">{birth.place.label}</span>{/if}
         <svg viewBox="0 0 24 24" aria-hidden="true"
           ><path d="m15 5 4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15Z" /></svg
         >
