@@ -1,11 +1,18 @@
 <script lang="ts">
   import type { Measurement } from "./measurement/client";
-  import type { Snippet } from "svelte";
+  import { untrack, type Snippet } from "svelte";
   let {
     children,
     measurement,
-  }: { children: Snippet; measurement: Measurement | null } = $props();
-  let zoomed = $state(false);
+    initialZoomed = false,
+    iconToggle = false,
+  }: {
+    children: Snippet;
+    measurement: Measurement | null;
+    initialZoomed?: boolean;
+    iconToggle?: boolean;
+  } = $props();
+  let zoomed = $state(untrack(() => initialZoomed));
   let viewport = $state<HTMLDivElement>();
   let savedPosition = 0;
   let drag: {
@@ -54,9 +61,21 @@
 
 <div class="mobile-wheel">
   <div class="controls">
-    <button onclick={toggle} aria-pressed={zoomed}
-      >{zoomed ? "Show whole wheel" : "Zoom half wheel"}</button
+    <button
+      class={{ "zoom-icon": iconToggle }}
+      onclick={toggle}
+      aria-pressed={zoomed}
+      aria-label={zoomed ? "Show whole wheel" : "Zoom half wheel"}
+      title={zoomed ? "Show whole wheel" : "Zoom half wheel"}
     >
+      {#if iconToggle}
+        <svg viewBox="0 0 24 24" aria-hidden="true"
+          ><circle cx="10" cy="10" r="6.5" /><path
+            d="m15 15 5 5M7 10h6"
+          />{#if !zoomed}<path d="M10 7v6" />{/if}</svg
+        >
+      {:else}{zoomed ? "Show whole wheel" : "Zoom half wheel"}{/if}
+    </button>
     {#if zoomed}
       <button
         aria-label="Pan wheel left"
@@ -102,6 +121,23 @@
   }
   .controls {
     display: none;
+  }
+  .controls .zoom-icon {
+    border: 0;
+    background: transparent;
+    width: 44px;
+    height: 44px;
+    padding: 10px;
+    cursor: pointer;
+  }
+  .zoom-icon svg {
+    display: block;
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
   }
   @media (max-width: 799px) {
     .controls {

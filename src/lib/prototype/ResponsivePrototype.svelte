@@ -300,7 +300,10 @@
         </div>
         <div class="wheel-space">
           {#if chart && astrology}
-            <MobileWheel measurement={null}
+            <MobileWheel
+              measurement={null}
+              initialZoomed={true}
+              iconToggle={true}
               ><Wheel
                 {chart}
                 {astrology}
@@ -1164,6 +1167,11 @@
       border: 1px solid #cdc3d2;
       border-radius: 6px;
       padding: 6px 10px;
+    }
+    .wheel-space :global(.mobile-wheel button.zoom-icon) {
+      border: 0;
+      background: transparent;
+      padding: 10px;
     }
     .empty-wheel {
       width: 100%;
