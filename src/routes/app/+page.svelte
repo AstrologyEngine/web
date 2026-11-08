@@ -214,7 +214,7 @@
 </script>
 
 <svelte:head><title>Your chart | Astrology Engine</title></svelte:head>
-<main>
+<main class={{ "chart-ready": !!snapshot && !editing }}>
   <header><span>✳</span> Astrology Engine <small>BETA</small></header>
   <section class="entry">
     <p class="eyebrow">YOUR NATAL CHART</p>
@@ -307,5 +307,49 @@
       400 clamp(2.5rem, 5vw, 4rem)/1.05 Georgia,
       serif;
     letter-spacing: -0.04em;
+  }
+  @media (min-width: 800px) {
+    .chart-ready {
+      padding-top: 1rem;
+    }
+    .chart-ready header {
+      margin-bottom: 0.5rem;
+    }
+    .chart-ready .entry {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      column-gap: 1rem;
+      max-width: none;
+    }
+    .chart-ready .eyebrow {
+      margin: 0;
+    }
+    .chart-ready h1 {
+      margin: 0.25rem 0;
+      font-size: 2rem;
+    }
+    .chart-ready .entry > p {
+      grid-column: 1;
+      margin: 0;
+    }
+    .chart-ready .entry > button {
+      grid-column: 2;
+      grid-row: 1 / span 3;
+      align-self: center;
+    }
+    .chart-ready :global(.settings) {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0.75rem 0;
+    }
+    .chart-ready :global(.settings .advanced) {
+      margin-top: 0;
+    }
+    .chart-ready :global(#system-help) {
+      flex-basis: 100%;
+      order: 1;
+    }
   }
 </style>

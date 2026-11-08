@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Measurement } from "./measurement/client";
-  import { systemHelp } from "./exploration-content";
+  import { systemHelp, customTrueSkyHelp } from "./exploration-content";
   import { settingsSchema } from "./domain";
   import {
     choosePreset,
@@ -89,7 +89,7 @@
   {#if helpOpen}<div id="system-help" role="region" aria-label="System help">
       <p>
         {accepted.reference === "true-sky" && accepted.divisions === "equal"
-          ? "This custom setting uses the True Sky reference with equal sign divisions."
+          ? customTrueSkyHelp.text
           : systemHelp[accepted.reference]}
       </p>
       <p>
