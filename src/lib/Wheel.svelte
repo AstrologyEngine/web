@@ -217,6 +217,7 @@
     viewBox="-20 -20 640 640"
     role="group"
     aria-label="Interactive natal chart"
+    tabindex="-1"
     onclick={(e) => {
       if (!(e.target instanceof Element) || !e.target.closest("[data-glyph]")) {
         const svg = e.currentTarget;
@@ -375,6 +376,30 @@
         y2={b.y}
         stroke="var(--w-faint)"
       />
+      {#if onselectSign}
+        <path
+          data-glyph
+          role="button"
+          tabindex="0"
+          aria-label={`${title(sign.sign)} sign region`}
+          aria-pressed={selectedSign === sign.sign}
+          d={annularSector(
+            231,
+            273,
+            longitudeToSvgAngle(sign.start_degrees + sign.width_degrees, asc),
+            longitudeToSvgAngle(sign.start_degrees, asc),
+          )}
+          transform="translate(300 300)"
+          fill="transparent"
+          onclick={(e) => onselectSign?.(sign.sign, e.currentTarget, false)}
+          onkeydown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onselectSign?.(sign.sign, e.currentTarget, true);
+            }
+          }}
+        />
+      {/if}
       <g
         data-glyph
         role="button"
