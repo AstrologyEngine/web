@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { isAngle, signIds } from "./identities";
   import { WHEEL_THEMES, contrastInk } from "./wheel/theme";
   import { annularSector } from "./wheel/arcPath";
   import { longitudeToSvgAngle } from "./wheel/angles";
@@ -70,17 +71,7 @@
   const point = (longitude: number, radius: number) =>
     wheelPoint(longitude, radius, asc);
   const bodies = $derived(
-    layoutBodyPositions(
-      chart.bodies.filter(
-        (b) =>
-          ![
-            "ASCENDANT_SYMBOL",
-            "MIDHEAVEN",
-            "DESCENDANT",
-            "IMUM_COELI",
-          ].includes(b.name),
-      ),
-    ),
+    layoutBodyPositions(chart.bodies.filter((b) => !isAngle(b.name))),
   );
   const groups = $derived(
     width > 0 && width < 800
@@ -118,20 +109,9 @@
     await tick();
     if (origin) selectBody(name, origin, true);
   };
-  const signs = [
-    "aries",
-    "taurus",
-    "gemini",
-    "cancer",
-    "leo",
-    "virgo",
-    "libra",
-    "scorpio",
-    "sagittarius",
-    "capricorn",
-    "aquarius",
-    "pisces",
-  ];
+  const signs: readonly string[] = signIds.filter(
+    (sign) => sign !== "ophiuchus",
+  );
   const title = (s: string) => s[0].toUpperCase() + s.slice(1);
   const aspects = $derived(
     astrology.aspects

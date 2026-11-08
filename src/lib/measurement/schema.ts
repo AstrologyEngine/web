@@ -1,57 +1,15 @@
 import { z } from "zod";
-const body = z.enum([
-  "SUN",
-  "EARTH",
-  "MOON",
-  "NORTH_NODE",
-  "SOUTH_NODE",
-  "MERCURY",
-  "VENUS",
-  "MARS",
-  "JUPITER",
-  "SATURN",
-  "URANUS",
-  "NEPTUNE",
-  "PLUTO",
-  "CHIRON",
-  "CERES",
-  "ASCENDANT_SYMBOL",
-  "MIDHEAVEN",
-  "DESCENDANT",
-  "IMUM_COELI",
-]);
-const sign = z.enum([
-  "aries",
-  "taurus",
-  "gemini",
-  "cancer",
-  "leo",
-  "virgo",
-  "libra",
-  "scorpio",
-  "ophiuchus",
-  "sagittarius",
-  "capricorn",
-  "aquarius",
-  "pisces",
-]);
+import { chartPointIds, signIds, aspectTypes, isAngle } from "../identities";
+const body = z.enum(chartPointIds);
+const sign = z.enum(signIds);
 const system = z.enum(["Tropical", "Vedic", "True Sky", "Custom"]);
 const identity = z.discriminatedUnion("kind", [
   z
     .strictObject({ kind: z.literal("body"), name: body })
-    .refine(
-      (value) =>
-        !["ASCENDANT_SYMBOL", "MIDHEAVEN", "DESCENDANT", "IMUM_COELI"].includes(
-          value.name,
-        ),
-    ),
+    .refine((value) => !isAngle(value.name)),
   z
     .strictObject({ kind: z.literal("angle"), name: body })
-    .refine((value) =>
-      ["ASCENDANT_SYMBOL", "MIDHEAVEN", "DESCENDANT", "IMUM_COELI"].includes(
-        value.name,
-      ),
-    ),
+    .refine((value) => isAngle(value.name)),
   z.strictObject({ kind: z.literal("sign"), name: sign }),
   z.strictObject({
     kind: z.literal("house"),
@@ -61,15 +19,7 @@ const identity = z.discriminatedUnion("kind", [
     kind: z.literal("aspect"),
     first: body,
     second: body,
-    aspectType: z.enum([
-      "Conjunction",
-      "Semisextile",
-      "Sextile",
-      "Square",
-      "Trine",
-      "Quincunx",
-      "Opposition",
-    ]),
+    aspectType: z.enum(aspectTypes),
   }),
   z.strictObject({ kind: z.literal("system_help"), system }),
 ]);

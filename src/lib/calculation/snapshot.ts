@@ -2,42 +2,9 @@ import { z } from "zod";
 import { birthSchema, settingsSchema } from "../domain";
 import { chartSchema } from "./chart";
 import slices from "./slices.json";
-const body = z.enum([
-  "SUN",
-  "EARTH",
-  "MOON",
-  "NORTH_NODE",
-  "SOUTH_NODE",
-  "MERCURY",
-  "VENUS",
-  "MARS",
-  "JUPITER",
-  "SATURN",
-  "URANUS",
-  "NEPTUNE",
-  "PLUTO",
-  "CHIRON",
-  "CERES",
-  "ASCENDANT_SYMBOL",
-  "MIDHEAVEN",
-  "DESCENDANT",
-  "IMUM_COELI",
-]);
-const sign = z.enum([
-  "aries",
-  "taurus",
-  "gemini",
-  "cancer",
-  "leo",
-  "virgo",
-  "libra",
-  "scorpio",
-  "ophiuchus",
-  "sagittarius",
-  "capricorn",
-  "aquarius",
-  "pisces",
-]);
+import { chartPointIds, signIds, aspectTypes } from "../identities";
+const body = z.enum(chartPointIds);
+const sign = z.enum(signIds);
 const hash = z.string().regex(/^[0-9a-f]{64}$/);
 export const astrologySchema = z.strictObject({
   selectedFrame: chartSchema,
@@ -46,15 +13,7 @@ export const astrologySchema = z.strictObject({
     z.strictObject({
       planetA: body,
       planetB: body,
-      type: z.enum([
-        "Conjunction",
-        "Semisextile",
-        "Sextile",
-        "Square",
-        "Trine",
-        "Quincunx",
-        "Opposition",
-      ]),
+      type: z.enum(aspectTypes),
       angle: z.number().min(0).max(180),
       orb: z.number().nonnegative(),
       status: z.enum(["applying", "separating"]),
