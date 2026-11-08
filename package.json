@@ -8,6 +8,7 @@
     "sync": "svelte-kit sync",
     "check": "rsvelte-check --tsgo --tsconfig ./tsconfig.json",
     "check:ts": "node node_modules/@typescript/native/bin/tsc --noEmit",
+    "check:content": "bun scripts/editorial/review-packet.ts --check",
     "lint": "oxlint .",
     "format": "rsvelte-fmt .",
     "format:check": "rsvelte-fmt --check .",

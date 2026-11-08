@@ -1,12 +1,28 @@
 import type { Chart } from "./calculation/chart";
 
 type BodyName = Chart["bodies"][number]["name"];
+export type BodyTarget = Exclude<
+  BodyName,
+  "ASCENDANT_SYMBOL" | "MIDHEAVEN" | "DESCENDANT" | "IMUM_COELI"
+>;
+export type EditorialReview =
+  | { editorialStatus: "pending-review"; reviewer: null; outcome: null }
+  | {
+      editorialStatus: "reviewed";
+      reviewer: string;
+      outcome: "approved" | "revision-requested";
+      notes: string;
+    };
+export const pendingReview = (): EditorialReview => ({
+  editorialStatus: "pending-review",
+  reviewer: null,
+  outcome: null,
+});
 export type ReferenceContent = {
   insight: string;
   keywords: string[];
-  editorialStatus: "pending-review";
-};
-const meanings: Partial<Record<BodyName, [string, string[]]>> = {
+} & EditorialReview;
+export const meanings: Record<BodyTarget, [string, string[]]> = {
   SUN: [
     "The Sun describes your sense of identity and vitality.",
     ["identity", "vitality"],
@@ -68,14 +84,32 @@ const meanings: Partial<Record<BodyName, [string, string[]]>> = {
     ["grounding", "experience"],
   ],
 };
+// Each displayed body has an explicit, independently editable review record.
+export const bodyReviews: Record<BodyTarget, EditorialReview> = {
+  SUN: pendingReview(),
+  EARTH: pendingReview(),
+  MOON: pendingReview(),
+  NORTH_NODE: pendingReview(),
+  SOUTH_NODE: pendingReview(),
+  MERCURY: pendingReview(),
+  VENUS: pendingReview(),
+  MARS: pendingReview(),
+  JUPITER: pendingReview(),
+  SATURN: pendingReview(),
+  URANUS: pendingReview(),
+  NEPTUNE: pendingReview(),
+  PLUTO: pendingReview(),
+  CHIRON: pendingReview(),
+  CERES: pendingReview(),
+};
 export const bodyReference = (name: BodyName): ReferenceContent => {
-  const [insight, keywords] = meanings[name] ?? [
-    "This point offers a perspective on your chart.",
-    ["perspective"],
-  ];
-  return { insight, keywords, editorialStatus: "pending-review" };
+  if (!Object.hasOwn(meanings, name))
+    throw new Error(`No body reference for ${name}`);
+  const key = name as BodyTarget;
+  const [insight, keywords] = meanings[key];
+  return { insight, keywords, ...bodyReviews[key] };
 };
 export const bridgingReference = {
   text: "This placement is in the final degree of its sign, a point often associated with transition and emphasis.",
-  editorialStatus: "pending-review" as const,
+  ...pendingReview(),
 };

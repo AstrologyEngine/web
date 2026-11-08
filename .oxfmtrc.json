@@ -1,1 +1,7 @@
-{ "ignorePatterns": ["static/engine/**", "static/atlas/**"] }
+{
+  "ignorePatterns": [
+    "static/engine/**",
+    "static/atlas/**",
+    "docs/editorial/natal-chart-review.md"
+  ]
+}
