@@ -38,3 +38,16 @@ CLOUDFLARE_API_TOKEN. No credentials belong in files or issue comments.
 
 Deployment concurrency is per target; staging rechecks main before publishing.
 `/release.json` identifies the deployed commit and package version.
+
+## Pull request previews
+
+Same-repository PRs deploy public named Workers Previews under staging. GitHub
+Deployments links to the stable PR URL; the entire Playwright suite tests the
+immutable deployment URL after checking its release SHA. Fork previews are skipped.
+Closing or merging deletes the Preview and inactivates GitHub deployments;
+reopening recreates it. The shared staging Worker remains running.
+
+Use `bun run test:browser` locally, or set `E2E_BASE_URL` to test a hosted site
+without starting Vite. New tests in `tests/` are included automatically. Staging
+and alpha run the suite after deployment. Preview E2E failures fail the preview
+check; reports and failure traces are uploaded as workflow artifacts.
