@@ -1,5 +1,7 @@
 <script lang="ts">
   import { onMount, tick } from "svelte";
+  import { page } from "$app/state";
+  import DesktopPrototype from "../../lib/prototype/DesktopPrototype.svelte";
   import {
     createMeasurement,
     type Measurement,
@@ -214,59 +216,69 @@
 </script>
 
 <svelte:head><title>Your chart | Astrology Engine</title></svelte:head>
-<main class={{ "chart-ready": !!snapshot && !editing }}>
-  <header><span>✳</span> Astrology Engine <small>BETA</small></header>
-  <section class="entry">
-    <p class="eyebrow">YOUR NATAL CHART</p>
-    <h1>{birth ? "Your birth chart" : "Start with your birth details"}</h1>
-    {#if editing}<BirthEdit
-        {birth}
-        {resolve}
-        onclose={accept}
-        onstart={() => measurement?.start()}
-      />{:else}
-      <p>{birth?.localDate} at {birth?.localTime} in {birth?.place.label}</p>
-      <button bind:this={editButton} onclick={() => (editing = true)}
-        >Edit birth details</button
+{#if import.meta.env.DEV && page.url.searchParams.has("variant")}
+  <DesktopPrototype />
+{:else}
+  <main class={{ "chart-ready": !!snapshot && !editing }}>
+    <header><span>✳</span> Astrology Engine <small>BETA</small></header>
+    <section class="entry">
+      <p class="eyebrow">YOUR NATAL CHART</p>
+      <h1>{birth ? "Your birth chart" : "Start with your birth details"}</h1>
+      {#if editing}<BirthEdit
+          {birth}
+          {resolve}
+          onclose={accept}
+          onstart={() => measurement?.start()}
+        />{:else}
+        <p>{birth?.localDate} at {birth?.localTime} in {birth?.place.label}</p>
+        <button bind:this={editButton} onclick={() => (editing = true)}
+          >Edit birth details</button
+        >
+      {/if}
+    </section>
+    {#if snapshot}<SettingsControls
+        actualHouses={snapshot.systems.astrology!.selectedFrame.house_system}
+        requested={settings}
+        accepted={snapshot.requestedSettings}
+        {custom}
+        pending={loading}
+        onapply={applySettings}
+        {measurement}
+      />{/if}
+    {#if snapshot && JSON.stringify(snapshot.requestedSettings) !== JSON.stringify(settings)}<p
+        role="status"
+      >Showing {matchPreset(snapshot.requestedSettings)} chart{loading
+          ? ` while updating to ${matchPreset(settings)}`
+          : "; requested settings have not been applied"}.</p>{/if}
+    {#if loading}<p role="status">
+        Calculating your chart…{snapshot ? " Showing your previous chart." : ""}
+      </p>{/if}
+    {#if error}
+      <p role="alert">{error}</p>
+      <button onclick={() => birth && calculate(birth)}
+        >Retry calculation</button
       >
     {/if}
-  </section>
-  {#if snapshot}<SettingsControls
-      actualHouses={snapshot.systems.astrology!.selectedFrame.house_system}
-      requested={settings}
-      accepted={snapshot.requestedSettings}
-      {custom}
-      pending={loading}
-      onapply={applySettings}
-      {measurement}
-    />{/if}
-  {#if snapshot && JSON.stringify(snapshot.requestedSettings) !== JSON.stringify(settings)}<p
-      role="status"
-    >Showing {matchPreset(snapshot.requestedSettings)} chart{loading
-        ? ` while updating to ${matchPreset(settings)}`
-        : "; requested settings have not been applied"}.</p>{/if}
-  {#if loading}<p role="status">
-      Calculating your chart…{snapshot ? " Showing your previous chart." : ""}
-    </p>{/if}
-  {#if error}
-    <p role="alert">{error}</p>
-    <button onclick={() => birth && calculate(birth)}>Retry calculation</button>
-  {/if}
-  {#if snapshot && birth && (snapshot.birth.utc !== birth.utc || snapshot.birth.place.id !== birth.place.id)}<p
-      role="status"
-    >
-      Showing the previous chart for {snapshot.birth.localDate} at {snapshot.birth
-        .localTime}
-      in {snapshot.birth.place.label}.
-    </p>{/if}
-  {#if snapshot?.systems.astrology}
-    {#if snapshot.systems.astrology.selectedFrame.requested_house_system !== snapshot.systems.astrology.selectedFrame.house_system}<p>
-        House system adjusted to {snapshot.systems.astrology.selectedFrame
-          .house_system}.
+    {#if snapshot && birth && (snapshot.birth.utc !== birth.utc || snapshot.birth.place.id !== birth.place.id)}<p
+        role="status"
+      >
+        Showing the previous chart for {snapshot.birth.localDate} at {snapshot.birth
+          .localTime}
+        in {snapshot.birth.place.label}.
       </p>{/if}
-    <Explorer {snapshot} birthIdentity={JSON.stringify(birth)} {measurement} />
-  {/if}
-</main>
+    {#if snapshot?.systems.astrology}
+      {#if snapshot.systems.astrology.selectedFrame.requested_house_system !== snapshot.systems.astrology.selectedFrame.house_system}<p>
+          House system adjusted to {snapshot.systems.astrology.selectedFrame
+            .house_system}.
+        </p>{/if}
+      <Explorer
+        {snapshot}
+        birthIdentity={JSON.stringify(birth)}
+        {measurement}
+      />
+    {/if}
+  </main>
+{/if}
 
 <style>
   :global(body) {
