@@ -1,1 +1,1 @@
-{}
+{ "ignorePatterns": ["static/engine/**", "static/atlas/**"] }
