@@ -51,3 +51,5 @@ Owner requested C with a subtle handle and compact, tall, hidden snaps. Chromium
 Owner amendment: drag direction determines the next snap, independent of release proximity. A meaningful upward drag goes tall; a downward drag moves one state lower (tall → compact → hidden). The 5px movement threshold distinguishes a drag from a tap.
 
 Owner amendment: the responsive prototype starts in half-wheel mode. A borderless SVG magnifying glass replaces the text zoom toggle: minus shows the whole wheel, plus returns to half-wheel. Accessible labels and a 44px target remain. [Current default view](C-zoom-default.webp). Chromium verified initial half-wheel, both toggle directions, SVG-only content and computed 0px border / transparent background.
+
+Owner amendment: remove the pan arrow buttons from the responsive prototype. The borderless zoom icon now overlays the upper-right of the wheel viewport; its controls occupy no layout height. Horizontal drag remains the pan interaction. Chromium verified zero pan buttons, absolute-positioned controls and identical wrapper/viewport top coordinates; both zoom directions still work. [Current overlay control](C-overlay-zoom.webp).

@@ -59,7 +59,7 @@
   }
 </script>
 
-<div class="mobile-wheel">
+<div class={["mobile-wheel", { "icon-navigation": iconToggle }]}>
   <div class="controls">
     <button
       class={{ "zoom-icon": iconToggle }}
@@ -76,7 +76,7 @@
         >
       {:else}{zoomed ? "Show whole wheel" : "Zoom half wheel"}{/if}
     </button>
-    {#if zoomed}
+    {#if zoomed && !iconToggle}
       <button
         aria-label="Pan wheel left"
         onclick={() => {
@@ -150,6 +150,17 @@
     .controls button {
       min-height: 44px;
     }
+    .icon-navigation {
+      position: relative;
+    }
+    .icon-navigation .controls {
+      position: absolute;
+      top: 0;
+      right: 0;
+      z-index: 2;
+      margin: 0;
+    }
+
     .viewport {
       overflow-x: auto;
       max-width: 100%;
