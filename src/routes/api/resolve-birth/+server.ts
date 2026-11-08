@@ -1,3 +1,4 @@
+import { env } from "cloudflare:workers";
 import { json } from "@sveltejs/kit";
 import {
   resolveBirth,
@@ -6,7 +7,7 @@ import {
 import type { RequestHandler } from "./$types";
 
 const headers = { "Cache-Control": "no-store" };
-export const POST: RequestHandler = async ({ request, fetch }) => {
+export const POST: RequestHandler = async ({ request }) => {
   try {
     const reader = request.body?.getReader();
     if (!reader)
@@ -58,9 +59,14 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
         },
         { status: 400, headers },
       );
-    return json(await resolveBirth(input.data, (path) => fetch(path)), {
-      headers,
-    });
+    return json(
+      await resolveBirth(input.data, (path) =>
+        env.ASSETS.fetch(new URL(path, request.url)),
+      ),
+      {
+        headers,
+      },
+    );
   } catch {
     return json(
       {
