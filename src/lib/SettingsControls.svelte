@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { systemHelp } from "./exploration-content";
   import { settingsSchema } from "./domain";
   import {
     choosePreset,
@@ -14,15 +15,18 @@
     custom,
     pending,
     onapply,
+    actualHouses,
   }: {
     requested: Settings;
     accepted: Settings;
     custom: Custom;
     pending: boolean;
     onapply: (next: Settings, custom: Custom) => void;
+    actualHouses: string;
   } = $props();
   let draft = $state<Settings | null>(null);
   let dialogOpen = $state(false);
+  let helpOpen = $state(false);
   let selected = $derived(matchPreset(accepted));
   let requestedName = $derived(matchPreset(requested));
   const names: Preset[] = ["Tropical", "Vedic", "True Sky", "Custom"];
@@ -64,6 +68,25 @@
       >
     {/each}
   </div>
+  <button
+    aria-expanded={helpOpen}
+    aria-controls="system-help"
+    onclick={() => (helpOpen = !helpOpen)}>About this system</button
+  >
+  {#if helpOpen}<div id="system-help" role="region" aria-label="System help">
+      <p>
+        {accepted.reference === "true-sky" && accepted.divisions === "equal"
+          ? "This custom setting uses the True Sky reference with equal sign divisions."
+          : systemHelp[accepted.reference]}
+      </p>
+      <p>
+        Signs: {accepted.divisions}{accepted.divisions === "constellation"
+          ? accepted.ophiuchus
+            ? " · Ophiuchus included"
+            : " · Ophiuchus excluded"
+          : ""}. Actual houses: {actualHouses}.
+      </p>
+    </div>{/if}
   <button class="advanced" onclick={open}
     >Advanced settings: {selected} · {accepted.houses === "whole-sign"
       ? "Whole Sign"
