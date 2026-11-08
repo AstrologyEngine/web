@@ -49,11 +49,15 @@ Screenshots: [A empty](A-empty.webp), [A system](A-system.webp), [A selected](A-
 
 ## Selected desktop contract
 
+Before implementing the desktop layout or adapting it for responsive work, inspect **variant A** in [DesktopPrototype.svelte](../../../src/lib/prototype/DesktopPrototype.svelte). The reference branch is `prototype/desktop-explorer-layouts`; approved UI checkpoint: `2eb34b7fca7e37932356ad95fe8c92a50333395e`. Read the [canonical decision](https://github.com/AstrologyEngine/web/issues/35#issuecomment-6727352529) alongside the source and updated screenshots below. A is the approved composition; B/C and the earlier A screenshots preserve the comparison history.
+
+
 The owner chose A — Chart toolbar and requested these refinements before moving on:
 
 - Hide prototype controls by default, including variant keyboard shortcuts. `review=1` explicitly restores the throwaway harness.
 - Keep the details sidebar visible while scrolling the secondary tables. Tables occupy the wheel’s column, leaving the right-hand rail continuous.
 - Extend the sidebar from below the 80px birth header to the bottom of the viewport. Header and sidebar remain sticky; long explanation content scrolls within the rail.
+- Center **Vedic** over the wheel using equal-width zodiac segments. Help and Advanced extend to the right, so the overall control line is intentionally off center.
 - Preserve the existing permanent-pane, no-close-button and stable-wheel behavior.
 
 Verified in the browser at 1440×1000 (sidebar y=80, height=920, bottom=1000) and 1280×800 (y=80, height=720, bottom=800), both before and after scrolling the tables into view. No browser page errors; hidden variant keyboard shortcuts remained inactive. Svelte, lint, formatting and official Svelte autofixer checks passed.
