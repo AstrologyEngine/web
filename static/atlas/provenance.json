@@ -1,0 +1,12 @@
+{
+  "source": "https://download.geonames.org/export/dump/",
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "GeoNames",
+  "rows": 232360,
+  "sha256": "97ad9db7f831e4251da1a5592656c2a612f9b5f93b5f6366c65543189f03e853",
+  "inputs": {
+    "cities500.txt": "c510a1149992347e4fe63d94d163304a21506c44642e1124b993b583cd25734c",
+    "admin1CodesASCII.txt": "b115e0ba627f963f66786d498b18ede29f84b08c82851b176619fc4deea31164",
+    "countryInfo.txt": "34895dbc79f50a05758bbabe5b5545567e7dd6c7f6e45cb79087a54790c0d97a"
+  }
+}

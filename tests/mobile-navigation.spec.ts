@@ -1,0 +1,244 @@
+import { expect, test } from "@playwright/test";
+
+test("a phone visitor enlarges, pans and returns to the whole wheel", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/app");
+  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
+  await page.getByRole("button", { name: "Apply" }).click();
+  await page.getByRole("button", { name: "Zoom half wheel" }).click();
+  await expect(
+    page.getByRole("button", { name: "Show whole wheel" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Pan wheel right" }).click();
+  const viewport = page.getByRole("region", { name: "Chart viewport" });
+  await expect(viewport).toHaveJSProperty("scrollLeft", 140);
+  await viewport.scrollIntoViewIfNeeded();
+  const rect = await viewport.boundingBox();
+  if (!rect) throw new Error("Chart viewport is missing");
+  await page.mouse.move(rect.x + rect.width * 0.7, rect.y + 50);
+  await page.mouse.down();
+  await page.mouse.move(rect.x + rect.width * 0.4, rect.y + 50, { steps: 4 });
+  await page.mouse.up();
+  await expect
+    .poll(() => viewport.evaluate((element) => element.scrollLeft))
+    .toBeGreaterThan(140);
+  const panned = await viewport.evaluate((element) => element.scrollLeft);
+  await page.getByRole("button", { name: "Show whole wheel" }).click();
+  await page.getByRole("button", { name: "Zoom half wheel" }).click();
+  await expect(viewport).toHaveJSProperty("scrollLeft", panned);
+  await page.getByRole("button", { name: "Show whole wheel" }).click();
+  await expect(page.getByRole("group", { name: /natal chart/i })).toBeVisible();
+});
+
+test("controlled crowded positions in a calculated narrow house open a named picker", async ({
+  page,
+}) => {
+  // Fixture concentrates six bodies into the narrowest calculated house; its cusps are unchanged.
+  await page.route("**/calculation-worker.js", async (route) => {
+    const response = await route.fetch();
+    const patch = `const post = self.postMessage.bind(self); self.postMessage = message => { if (message.result?.ok) { const c = message.result.snapshot.systems.astrology.selectedFrame; const spans = c.cusps.map((start, i) => ({start, width: (c.cusps[(i + 1) % 12] - start + 360) % 360})); const h = spans.reduce((a,b) => a.width < b.width ? a : b); c.bodies.filter(b => ['SUN','MOON','MERCURY','VENUS','MARS','JUPITER'].includes(b.name)).forEach((b,i) => b.longitude = (h.start + h.width * (0.4 + i * 0.03)) % 360); } post(message); };\n`;
+    await route.fulfill({ response, body: patch + (await response.text()) });
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/app");
+  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
+  await page.getByRole("button", { name: "Apply" }).click();
+  await page.getByRole("button", { name: "True Sky", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "True Sky", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(
+    page.getByRole("button", { name: /True Sky.*Placidus houses/ }),
+  ).toBeVisible();
+  const group = page
+    .getByRole("button", { name: /Grouped bodies:.*Sun/ })
+    .first();
+  await page.getByRole("button", { name: "Zoom half wheel" }).click();
+  await page.getByRole("button", { name: "Pan wheel right" }).click();
+  await group.focus();
+  await page.keyboard.press("Enter");
+  const picker = page.getByRole("dialog", { name: "Choose a body" });
+  await expect(picker).toBeVisible();
+  const viewport = page.getByRole("region", { name: "Chart viewport" });
+  const position = await viewport.evaluate((element) => element.scrollLeft);
+  await page.keyboard.press("Escape");
+  await expect(group).toBeFocused();
+  await page.keyboard.press("Enter");
+  await picker.getByRole("button", { name: "Sun", exact: true }).click();
+  await expect(viewport).toHaveJSProperty("scrollLeft", position);
+  await expect(
+    page.getByRole("heading", { name: "Sun", exact: true }),
+  ).toBeVisible();
+  await expect(group).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "Close details" }).click();
+  await expect(group).toBeFocused();
+  await expect(viewport).toHaveJSProperty("scrollLeft", position);
+  await expect
+    .poll(() =>
+      page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+    )
+    .toBe(true);
+});
+
+test("a singleton glyph stays centered inside its narrow-house target", async ({
+  page,
+}) => {
+  // Controlled geometry at the worker boundary: a four-degree first house contains only Sun.
+  // Other houses retain enough room for the usual 24-unit singleton glyphs.
+  await page.route("**/calculation-worker.js", async (route) => {
+    const response = await route.fetch();
+    const patch = `const post = self.postMessage.bind(self); self.postMessage = message => { if (message.result?.ok) { const c = message.result.snapshot.systems.astrology.selectedFrame; const start = c.cusps[0]; c.cusps[1] = (start + 4) % 360; c.bodies.filter(b => !['ASCENDANT_SYMBOL','MIDHEAVEN','DESCENDANT','IMUM_COELI'].includes(b.name)).forEach((b,i) => b.longitude = (start + (b.name === 'SUN' ? 2 : 60 + i * 20)) % 360); } post(message); };\n`;
+    await route.fulfill({ response, body: patch + (await response.text()) });
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/app");
+  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
+  await page.getByRole("button", { name: "Apply" }).click();
+  const sun = page.getByRole("button", { name: "Sun", exact: true });
+  await expect(sun).toBeVisible();
+  await expect
+    .poll(async () => Number(await sun.locator("circle").getAttribute("r")))
+    .toBeLessThan(10);
+  const geometry = await sun.evaluate((target) => {
+    const circle = target.querySelector("circle")!.getBoundingClientRect();
+    const svg = target.querySelector("svg")!;
+    const glyph = svg.getBoundingClientRect();
+    const cssWidth = getComputedStyle(svg).width;
+    return {
+      // With no CSS override, SVG uses its width presentation attribute.
+      renderedWidth:
+        cssWidth === "auto"
+          ? svg.width.baseVal.value
+          : Number.parseFloat(cssWidth),
+      centerOffsetX: Math.abs(
+        glyph.x + glyph.width / 2 - circle.x - circle.width / 2,
+      ),
+      centerOffsetY: Math.abs(
+        glyph.y + glyph.height / 2 - circle.y - circle.height / 2,
+      ),
+      glyphWidth: glyph.width,
+      glyphHeight: glyph.height,
+      targetDiameter: circle.width,
+    };
+  });
+  expect(geometry.renderedWidth).toBeLessThan(14);
+  expect(geometry.centerOffsetX).toBeLessThan(0.1);
+  expect(geometry.centerOffsetY).toBeLessThan(0.1);
+  expect(geometry.glyphWidth).toBeLessThanOrEqual(
+    geometry.targetDiameter + 0.1,
+  );
+  expect(geometry.glyphHeight).toBeLessThanOrEqual(
+    geometry.targetDiameter + 0.1,
+  );
+  // A roomy singleton keeps the plugin's normal glyph size.
+  const moonSize = await page
+    .getByRole("button", { name: "Moon", exact: true })
+    .locator("svg")
+    .evaluate((svg: SVGSVGElement) => {
+      const width = getComputedStyle(svg).width;
+      return width === "auto"
+        ? svg.width.baseVal.value
+        : Number.parseFloat(width);
+    });
+  expect(moonSize).toBe(24);
+});
+
+for (const input of ["pointer", "keyboard"] as const) {
+  test(`a ${input} group choice keeps the selected chart target above the mobile sheet`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/app");
+    await page
+      .getByLabel("Birth details")
+      .fill("June 21, 2000 at 1pm in London");
+    await page.getByRole("button", { name: "Apply" }).click();
+    await page.getByRole("button", { name: "Zoom half wheel" }).click();
+    await page.getByRole("button", { name: "Pan wheel right" }).click();
+    const viewport = page.getByRole("region", { name: "Chart viewport" });
+    const group = page
+      .getByRole("button", { name: /Grouped bodies:.*Venus/ })
+      .first();
+    if (input === "keyboard") {
+      await group.focus();
+      await page.keyboard.press("Enter");
+    } else await group.click();
+    const pan = await viewport.evaluate((element) => element.scrollLeft);
+    const venus = page
+      .getByRole("dialog", { name: "Choose a body" })
+      .getByRole("button", { name: "Venus", exact: true });
+    if (input === "keyboard") {
+      await venus.focus();
+      await page.keyboard.press("Enter");
+    } else await venus.click();
+    await expect(
+      page.getByRole("heading", { name: "Venus", exact: true }),
+    ).toBeFocused();
+    const sheet = page.getByRole("complementary", { name: "Body details" });
+    await expect
+      .poll(async () => {
+        const target = await group.boundingBox();
+        const panel = await sheet.boundingBox();
+        return (
+          !!target &&
+          !!panel &&
+          target.y >= 0 &&
+          target.y + target.height <= panel.y
+        );
+      })
+      .toBe(true);
+    await expect(viewport).toHaveJSProperty("scrollLeft", pan);
+    await expect
+      .poll(() =>
+        page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+      )
+      .toBe(true);
+    await page.getByRole("button", { name: "Close details" }).click();
+    await expect(group).toBeFocused();
+    await expect(viewport).toHaveJSProperty("scrollLeft", pan);
+    await page.getByRole("button", { name: "Show whole wheel" }).click();
+    await expect(
+      page.getByRole("button", { name: "Zoom half wheel" }),
+    ).toBeVisible();
+  });
+}
+
+test("a selected member has its own glyph inside a shared body group", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/app");
+  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
+  await page.getByRole("button", { name: "Apply" }).click();
+  await page.getByRole("button", { name: "Zoom half wheel" }).click();
+  await page.getByRole("button", { name: "Pan wheel right" }).click();
+  const group = page
+    .getByRole("button", { name: /Grouped bodies:.*Sun.*Venus/ })
+    .first();
+  await group.click();
+  await page
+    .getByRole("dialog", { name: "Choose a body" })
+    .getByRole("button", { name: "Sun", exact: true })
+    .click();
+  const details = page.getByRole("complementary", { name: "Body details" });
+  await expect(
+    details.getByRole("heading", { name: "Sun", exact: true }),
+  ).toBeVisible();
+  await expect(details.getByText("0.4°", { exact: true })).toBeVisible();
+  await expect(group.locator("svg title")).toHaveText("Sun");
+  const sunGlyph = await group.locator("svg path").getAttribute("d");
+  await group.click();
+  await page
+    .getByRole("dialog", { name: "Choose a body" })
+    .getByRole("button", { name: "Venus", exact: true })
+    .click();
+  await expect(
+    details.getByRole("heading", { name: "Venus", exact: true }),
+  ).toBeVisible();
+  await expect(details.getByText("3.16°", { exact: true })).toBeVisible();
+  await expect(group.locator("svg title")).toHaveText("Venus");
+  expect(await group.locator("svg path").getAttribute("d")).not.toBe(sunGlyph);
+  await expect(group.locator("text")).toHaveText("3");
+});

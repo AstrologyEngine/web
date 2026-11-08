@@ -7,3 +7,4 @@ test-results/
 static/release.json
 .env*
 .dev.vars*
+static/calculation-worker.js
