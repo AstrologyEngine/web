@@ -63,9 +63,14 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           test -n "$CLOUDFLARE_API_TOKEN"
-          bunx wrangler preview --env staging --name "pr-$PR" --ignore-base-config --json > /tmp/preview.json
-          echo "url=$(jq -er '.preview_urls[0]' /tmp/preview.json)" >> "$GITHUB_OUTPUT"
-          echo "immutable=$(jq -er '.deployment_urls[0]' /tmp/preview.json)" >> "$GITHUB_OUTPUT"
+          gh api "repos/$REPO/pulls/$PR" > /tmp/latest-pr.json
+          test "$(jq -r .state /tmp/latest-pr.json)" = open
+          test "$(jq -r .head.sha /tmp/latest-pr.json)" = "$HEAD_SHA"
+          WRANGLER_OUTPUT_FILE_PATH=/tmp/preview.ndjson bunx wrangler preview --env staging --name "pr-$PR" --ignore-base-config
+          url=$(jq -ser 'map(select(.type == "preview")) | last | .preview_urls[0] | select(startswith("https://"))' /tmp/preview.ndjson)
+          immutable=$(jq -ser 'map(select(.type == "preview")) | last | .deployment_urls[0] | select(startswith("https://"))' /tmp/preview.ndjson)
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "immutable=$immutable" >> "$GITHUB_OUTPUT"
       - name: Verify readiness
         if: steps.upload.outputs.immutable != ''
         run: node scripts/smoke.mjs '${{ steps.upload.outputs.immutable }}' "$HEAD_SHA"
