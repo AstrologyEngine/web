@@ -1,0 +1,5 @@
+# Birth resolver provenance
+
+The server resolver adapts the website birth parser, location matching and atlas from `jacksteamdev/astrology-engine-website` commit `e00a2f9e10aa5b4f338875bc306166bfb939903c`. The source and atlas were extracted from its immutable GitHub archive and compared byte-for-byte to the research archive. This private reuse follows the user's approved implementation specification; the source archive contains no root license grant and this note does not assert one.
+
+The atlas is GeoNames, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); attribution and input hashes are preserved in `static/atlas/provenance.json`. `bun scripts/birth/manifest.ts` hashes each shipped compressed shard and writes the exact manifest and its SHA-256 into the server module. The server verifies byte count, hash and row schema before use. The Temporal polyfill is pinned; timezone data comes from the host's Intl runtime, which does not expose a tzdb version on Workers. The recorded timezone data identifier says so explicitly.
