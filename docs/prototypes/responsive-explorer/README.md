@@ -1,6 +1,6 @@
 # Responsive Explorer sheet review
 
-Throwaway alternatives for [Prototype mid-size and mobile layouts around the selected desktop direction](https://github.com/AstrologyEngine/web/issues/36). **Owner choice pending.** This is a decision prototype; production implementation remains in the dependent delivery tickets.
+Throwaway alternatives for [Prototype mid-size and mobile layouts around the selected desktop direction](https://github.com/AstrologyEngine/web/issues/36). **Owner direction: C is closest; refine with a subtle drag handle and compact / tall / hidden snaps. Refined prototype review pending.** This is a decision prototype; production implementation remains in the dependent delivery tickets.
 
 ## Run and compare
 
@@ -14,7 +14,7 @@ Open http://127.0.0.1:5196/app?variant=A&review=1. Enter birth details, or use t
 | B — Tall reading sheet | 360px wide, header to bottom | 72% viewport height | More continuous reading, fewer internal scrolls | Covers most of the mobile chart |
 | C — Expandable peek | 320px wide, 46% viewport height, bottom inset 24px | 27% viewport height | More chart stays visible | Only the beginning of an explanation fits before expansion or scrolling |
 
-All sheets are nonmodal. Select another visible glyph to replace the details; they do not resize the wheel. More expands to header-to-bottom at mid-size and 78% viewport height on mobile. Less returns to the variant's default. Close and Escape dismiss and return focus to the opener. A downward swipe on the sheet toolbar also dismisses. Long explanations scroll inside the sheet. Outside clicks do not dismiss. Keyboard selection moves focus to the sheet; pointer selection keeps chart interaction available. These are explicit prototype behaviors for owner review, not settled product decisions.
+All sheets are nonmodal. Select another visible glyph to replace the details; they do not resize the wheel. The subtle top handle tracks vertical pointer drag continuously and snaps to the nearest of hidden, compact, and tall on release. C retains its 27% mobile / 46% mid-size compact size; tall is 78% mobile / header-to-bottom at mid-size. Tap the handle to toggle compact/tall; Arrow Up/Right expands, Arrow Down/Left steps tall to compact to hidden; Home hides and End expands. Pointer cancellation restores the starting snap. Opening a hidden sheet starts compact. Close and Escape dismiss and return focus to the opener. Dragging the handle down far enough snaps hidden. Long explanations scroll inside the sheet. Outside clicks do not dismiss. Keyboard selection moves focus to the sheet; pointer selection keeps chart interaction available. These are explicit prototype behaviors for owner review, not settled product decisions.
 
 Desktop remains approved A — Chart toolbar, with the permanent 340px sticky rail spanning chart and tables, no close button, and Vedic centered over the wheel. The [approved desktop reference](https://github.com/AstrologyEngine/web/issues/35#issuecomment-6727352529) at `2eb34b7fca7e37932356ad95fe8c92a50333395e` is the source. This prototype starts from current main `1baf702`, carrying over its reference component and development birth adapter without replacing later production changes.
 
@@ -30,7 +30,7 @@ Desktop remains approved A — Chart toolbar, with the permanent 340px sticky ra
 1. Inspect the empty-wheel birth modal at narrow and wide sizes. Required initial entry cannot be dismissed; later editing returns to the chart.
 2. Load the computed example. Select a house, sign, planet or angle; grouped body markers open the existing picker. Compare each sheet size with actual explanation text.
 3. Toggle half-wheel mode, pan horizontally, open details, close them and confirm pan is preserved.
-4. Open system details with `?`; compare A/B/C and More/Less. Enable long text and scroll inside the pane.
+4. Open system details with `?`; compare A/B/C and drag the handle through all three snap states. Enable long text and scroll inside the pane.
 5. With keyboard, focus a glyph and press Enter. Escape returns focus. Repeat with `?` and inspect the close button and toolbar swipe.
 6. Resize through 799/800 and 1119/1120; inspect the full wheel, compact birth header, and sticky desktop rail while scrolling to tables.
 
@@ -43,3 +43,7 @@ Svelte check, lint, changed-file formatting, official Svelte autofixer (no issue
 Calculations remain Tropical / Whole Sign. Zodiac controls preview the selected explanation and placement; actual system and house changes are other tickets. Tables preview placement, not complete table interactions. No analytics delivery is claimed. All state is in memory; the prototype and birth adapter are development-only.
 
 Captures: [A mobile](A-mobile.webp), [A mid-size](A-mid.webp), [B mobile](B-mobile.webp), [B mid-size](B-mid.webp), [C mobile](C-mobile.webp), [C mid-size](C-mid.webp), [expanded glyph details](C-glyph-expanded.webp), [desktop reference preserved](desktop.webp).
+
+## C refinement evidence
+
+Owner requested C with a subtle handle and compact, tall, hidden snaps. Chromium pointer drags verified compact → tall → compact → hidden, compact reopening, keyboard tall/hidden, and continuous bottom-anchored resizing at 390×844 and 834×1112. No page errors. [Refined compact sheet](C-handle-compact.webp), [refined tall sheet](C-handle-tall.webp). Earlier captures preserve comparison history and show the prior More/Less toolbar. Final breakpoint and refined prototype approval remain pending.

@@ -37,22 +37,80 @@
   let advanced = $state(false);
   let long = $state(false);
   let selection = $state<Selection | null>(null);
-  let sheetOpen = $state(false);
-  let expanded = $state(false);
+  type SheetSnap = "hidden" | "compact" | "tall";
+  let snap = $state<SheetSnap>("hidden");
+  let sheetOpen = $derived(snap !== "hidden");
+  let expanded = $derived(snap === "tall");
+  let dragHeight = $state<number | null>(null);
+  let dragBottom = $state(0);
+  let drag: {
+    id: number;
+    y: number;
+    height: number;
+    startSnap: SheetSnap;
+  } | null = null;
+  let suppressHandleClick = false;
   let sheet: HTMLElement;
   let origin: Element | null = null;
-  let touchStart = 0;
+
   const dismiss = () => {
-    sheetOpen = false;
+    snap = "hidden";
     if (origin instanceof HTMLElement || origin instanceof SVGElement)
       origin.focus({ preventScroll: true });
+  };
+  const snapHeights = () => {
+    const mobile = window.matchMedia("(max-width: 799px)").matches;
+    const compact = mobile
+      ? innerHeight * (variant === "A" ? 0.4 : variant === "B" ? 0.72 : 0.27)
+      : variant === "C"
+        ? innerHeight * 0.46
+        : innerHeight - (variant === "A" ? 128 : 80);
+    return {
+      hidden: 0,
+      compact,
+      tall: mobile ? innerHeight * 0.78 : innerHeight - 80,
+    };
+  };
+  const startResize = (event: PointerEvent) => {
+    if (!event.isPrimary || event.button !== 0) return;
+    dragBottom = innerHeight - sheet.getBoundingClientRect().bottom;
+    drag = {
+      id: event.pointerId,
+      y: event.clientY,
+      height: sheet.getBoundingClientRect().height,
+      startSnap: snap,
+    };
+    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+    suppressHandleClick = false;
+  };
+  const moveResize = (event: PointerEvent) => {
+    if (!drag || drag.id !== event.pointerId) return;
+    const delta = drag.y - event.clientY;
+    if (Math.abs(delta) > 5) suppressHandleClick = true;
+    dragHeight = Math.max(0, Math.min(snapHeights().tall, drag.height + delta));
+  };
+  const finishResize = (event: PointerEvent, cancelled = false) => {
+    if (!drag || drag.id !== event.pointerId) return;
+    if (cancelled) snap = drag.startSnap;
+    else if (suppressHandleClick) {
+      const height = dragHeight ?? drag.height;
+      const heights = snapHeights();
+      snap = (["hidden", "compact", "tall"] as const).reduce((best, next) =>
+        Math.abs(heights[next] - height) < Math.abs(heights[best] - height)
+          ? next
+          : best,
+      );
+      if (snap === "hidden") dismiss();
+    }
+    drag = null;
+    dragHeight = null;
   };
   const show = async (event?: MouseEvent) => {
     origin =
       event?.currentTarget instanceof Element
         ? event.currentTarget
         : document.activeElement;
-    sheetOpen = true;
+    if (snap === "hidden") snap = "compact";
     sheet?.querySelector(".pane-content")?.scrollTo(0, 0);
     await tick();
     if (event?.detail === 0) sheet?.focus({ preventScroll: true });
@@ -61,7 +119,7 @@
     selection = next;
     sheet?.querySelector(".pane-content")?.scrollTo(0, 0);
     origin = target;
-    sheetOpen = true;
+    if (snap === "hidden") snap = "compact";
     if (keyboard) void tick().then(() => sheet?.focus({ preventScroll: true }));
   };
   let worker: Worker;
@@ -153,6 +211,7 @@
       dismiss();
       return;
     }
+    if (event.defaultPrevented) return;
     const target = event.target;
     if (
       !reviewing ||
@@ -214,6 +273,7 @@
   data-sheet={variant}
   data-open={sheetOpen}
   data-expanded={expanded}
+  data-snap={snap}
 >
   <section class="workspace" aria-label="Natal Chart Explorer">
     <header class="masthead">
@@ -301,25 +361,60 @@
       <aside
         bind:this={sheet}
         class="reading-pane"
+        style:height={dragHeight === null ? undefined : `${dragHeight}px`}
+        style:top={dragHeight === null ? undefined : "auto"}
+        style:bottom={dragHeight === null ? undefined : `${dragBottom}px`}
         aria-label="Chart explanation"
         tabindex="-1"
       >
-        <div
-          class="sheet-toolbar"
-          onpointerdown={(event) => (touchStart = event.clientY)}
-          onpointerup={(event) => {
-            if (event.clientY - touchStart > 55) dismiss();
-          }}
-          role="group"
-          aria-label="Sheet controls"
-        >
+        <div class="sheet-toolbar">
           <button
-            aria-label={expanded ? "Reduce details" : "Expand details"}
-            onclick={() => (expanded = !expanded)}
-            >{expanded ? "Less" : "More"}</button
+            class="resize-handle"
+            role="slider"
+            aria-label="Resize chart details"
+            aria-valuemin="0"
+            aria-valuemax="2"
+            aria-valuenow={snap === "hidden" ? 0 : snap === "compact" ? 1 : 2}
+            aria-valuetext={snap}
+            aria-orientation="vertical"
+            onpointerdown={startResize}
+            onpointermove={moveResize}
+            onpointerup={(event) => finishResize(event)}
+            onpointercancel={(event) => finishResize(event, true)}
+            onclick={() => {
+              if (suppressHandleClick) {
+                suppressHandleClick = false;
+                return;
+              }
+              snap = snap === "tall" ? "compact" : "tall";
+            }}
+            onkeydown={(event) => {
+              if (
+                [
+                  "ArrowUp",
+                  "ArrowRight",
+                  "ArrowDown",
+                  "ArrowLeft",
+                  "Home",
+                  "End",
+                ].includes(event.key)
+              ) {
+                event.preventDefault();
+                if (event.key === "Home") dismiss();
+                else if (["ArrowUp", "ArrowRight", "End"].includes(event.key))
+                  snap = "tall";
+                else if (snap === "tall") snap = "compact";
+                else dismiss();
+              }
+            }}><span></span></button
           >
-          <span>Chart details</span>
-          <button aria-label="Close details" onclick={dismiss}>Close</button>
+          <button
+            class="sheet-close"
+            aria-label="Close details"
+            onclick={dismiss}
+            ><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg
+            ></button
+          >
         </div>
         <div class="pane-content">
           {#if advanced}
@@ -1127,6 +1222,46 @@
       width: calc(100vw - 24px);
       max-height: 90dvh;
     }
+  }
+  .sheet-toolbar {
+    position: relative;
+    padding: 0;
+    border: 0;
+    flex-shrink: 0;
+  }
+  .sheet-toolbar .resize-handle {
+    flex: 1;
+    height: 36px;
+    min-height: 36px;
+    border: 0;
+    border-radius: 0;
+    touch-action: none;
+    cursor: ns-resize;
+    display: grid;
+    place-items: center;
+  }
+  .sheet-toolbar .resize-handle span {
+    display: block;
+    width: 36px;
+    height: 4px;
+    border-radius: 2px;
+    background: #b7a8bf;
+  }
+  .sheet-toolbar .sheet-close {
+    position: absolute;
+    right: 4px;
+    top: 0;
+    width: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    padding: 10px;
+  }
+  .sheet-close svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
   }
   @media (max-width: 799px) {
     .reading-pane {
