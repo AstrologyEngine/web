@@ -81,3 +81,66 @@ test("controlled crowded positions in a calculated narrow house open a named pic
     )
     .toBe(true);
 });
+
+test("a singleton glyph stays centered inside its narrow-house target", async ({
+  page,
+}) => {
+  // Controlled geometry at the worker boundary: a four-degree first house contains only Sun.
+  // Other houses retain enough room for the usual 24-unit singleton glyphs.
+  await page.route("**/calculation-worker.js", async (route) => {
+    const response = await route.fetch();
+    const patch = `const post = self.postMessage.bind(self); self.postMessage = message => { if (message.result?.ok) { const c = message.result.snapshot.systems.astrology.selectedFrame; const start = c.cusps[0]; c.cusps[1] = (start + 4) % 360; c.bodies.filter(b => !['ASCENDANT_SYMBOL','MIDHEAVEN','DESCENDANT','IMUM_COELI'].includes(b.name)).forEach((b,i) => b.longitude = (start + (b.name === 'SUN' ? 2 : 60 + i * 20)) % 360); } post(message); };\n`;
+    await route.fulfill({ response, body: patch + (await response.text()) });
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/app");
+  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
+  await page.getByRole("button", { name: "Apply" }).click();
+  const sun = page.getByRole("button", { name: "Sun", exact: true });
+  await expect(sun).toBeVisible();
+  await expect
+    .poll(async () => Number(await sun.locator("circle").getAttribute("r")))
+    .toBeLessThan(10);
+  const geometry = await sun.evaluate((target) => {
+    const circle = target.querySelector("circle")!.getBoundingClientRect();
+    const svg = target.querySelector("svg")!;
+    const glyph = svg.getBoundingClientRect();
+    const cssWidth = getComputedStyle(svg).width;
+    return {
+      // With no CSS override, SVG uses its width presentation attribute.
+      renderedWidth:
+        cssWidth === "auto"
+          ? svg.width.baseVal.value
+          : Number.parseFloat(cssWidth),
+      centerOffsetX: Math.abs(
+        glyph.x + glyph.width / 2 - circle.x - circle.width / 2,
+      ),
+      centerOffsetY: Math.abs(
+        glyph.y + glyph.height / 2 - circle.y - circle.height / 2,
+      ),
+      glyphWidth: glyph.width,
+      glyphHeight: glyph.height,
+      targetDiameter: circle.width,
+    };
+  });
+  expect(geometry.renderedWidth).toBeLessThan(14);
+  expect(geometry.centerOffsetX).toBeLessThan(0.1);
+  expect(geometry.centerOffsetY).toBeLessThan(0.1);
+  expect(geometry.glyphWidth).toBeLessThanOrEqual(
+    geometry.targetDiameter + 0.1,
+  );
+  expect(geometry.glyphHeight).toBeLessThanOrEqual(
+    geometry.targetDiameter + 0.1,
+  );
+  // A roomy singleton keeps the plugin's normal glyph size.
+  const moonSize = await page
+    .getByRole("button", { name: "Moon", exact: true })
+    .locator("svg")
+    .evaluate((svg: SVGSVGElement) => {
+      const width = getComputedStyle(svg).width;
+      return width === "auto"
+        ? svg.width.baseVal.value
+        : Number.parseFloat(width);
+    });
+  expect(moonSize).toBe(24);
+});
