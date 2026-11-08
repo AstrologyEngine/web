@@ -1,9 +1,9 @@
 import type { SignName, BodyName, Aspect } from "./selection";
-import type { ReferenceContent } from "./reference-content";
+import { pendingReview, type ReferenceContent } from "./reference-content";
 const ref = (insight: string, ...keywords: string[]): ReferenceContent => ({
   insight,
   keywords,
-  editorialStatus: "pending-review",
+  ...pendingReview(),
 });
 export const signs: Record<SignName, ReferenceContent> = {
   aries: ref(
@@ -215,3 +215,29 @@ export const systemHelp = {
   "true-sky":
     "True Sky uses constellation-based divisions and can include Ophiuchus.",
 } as const;
+
+// Definitions and lookup conventions are independently awaiting editorial review.
+export const systemHelpReview = {
+  tropical: pendingReview(),
+  "fagan-bradley": pendingReview(),
+  "true-sky": pendingReview(),
+} as const;
+export const customTrueSkyHelp = {
+  text: "This custom setting uses the True Sky reference with equal sign divisions.",
+  ...pendingReview(),
+};
+export const rulerReview = {
+  aries: pendingReview(),
+  taurus: pendingReview(),
+  gemini: pendingReview(),
+  cancer: pendingReview(),
+  leo: pendingReview(),
+  virgo: pendingReview(),
+  libra: pendingReview(),
+  scorpio: pendingReview(),
+  ophiuchus: pendingReview(),
+  sagittarius: pendingReview(),
+  capricorn: pendingReview(),
+  aquarius: pendingReview(),
+  pisces: pendingReview(),
+} satisfies Record<SignName, ReturnType<typeof pendingReview>>;
