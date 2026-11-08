@@ -202,6 +202,7 @@
     {/if}
   </section>
   {#if snapshot}<SettingsControls
+      actualHouses={snapshot.systems.astrology!.selectedFrame.house_system}
       requested={settings}
       accepted={snapshot.requestedSettings}
       {custom}
