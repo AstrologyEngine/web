@@ -12,9 +12,22 @@ test("a phone visitor enlarges, pans and returns to the whole wheel", async ({
     page.getByRole("button", { name: "Show whole wheel" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Pan wheel right" }).click();
-  await expect(
-    page.getByRole("region", { name: "Chart viewport" }),
-  ).toHaveJSProperty("scrollLeft", 140);
+  const viewport = page.getByRole("region", { name: "Chart viewport" });
+  await expect(viewport).toHaveJSProperty("scrollLeft", 140);
+  await viewport.scrollIntoViewIfNeeded();
+  const rect = await viewport.boundingBox();
+  if (!rect) throw new Error("Chart viewport is missing");
+  await page.mouse.move(rect.x + rect.width * 0.7, rect.y + 50);
+  await page.mouse.down();
+  await page.mouse.move(rect.x + rect.width * 0.4, rect.y + 50, { steps: 4 });
+  await page.mouse.up();
+  await expect
+    .poll(() => viewport.evaluate((element) => element.scrollLeft))
+    .toBeGreaterThan(140);
+  const panned = await viewport.evaluate((element) => element.scrollLeft);
+  await page.getByRole("button", { name: "Show whole wheel" }).click();
+  await page.getByRole("button", { name: "Zoom half wheel" }).click();
+  await expect(viewport).toHaveJSProperty("scrollLeft", panned);
   await page.getByRole("button", { name: "Show whole wheel" }).click();
   await expect(page.getByRole("group", { name: /natal chart/i })).toBeVisible();
 });
