@@ -24,6 +24,7 @@
       : "A",
   );
   let index = $derived(variants.indexOf(variant));
+  let reviewing = $derived(page.url.searchParams.get("review") === "1");
   let birth = $state<Birth | null>(null);
   let snapshot = $state<Snapshot | null>(null);
   let editing = $state(true);
@@ -120,6 +121,7 @@
   onkeydown={(event) => {
     const target = event.target;
     if (
+      !reviewing ||
       editing ||
       (target instanceof Element &&
         target.closest("input, textarea, select, [contenteditable]"))
@@ -389,32 +391,34 @@
     </h2>
     <p>A date, time and birthplace locate your chart in the sky.</p>
     <BirthEdit {birth} resolve={resolveBirthInput} onclose={accept} />
-    <button class="example" onclick={() => void example()}
-      >Use example for layout review</button
-    >
+    {#if reviewing}<button class="example" onclick={() => void example()}>Use
+    example for layout review</button>{/if}
     {#if error}<p role="alert">{error}</p>{/if}
   </dialog>
 {/if}
 
-<footer class="review-bar" aria-label="Prototype review controls">
-  <div class="switcher">
-    <button aria-label="Previous layout" onclick={() => cycle(-1)}>←</button
-    ><strong>{variant} · {names[index]}</strong><button
-      aria-label="Next layout"
-      onclick={() => cycle(1)}>→</button
-    >
-  </div>
-  <div class="review-actions">
-    <button onclick={reset}>Empty state</button><button
-      onclick={() => void example()}>Example chart</button
-    ><button aria-pressed={long} onclick={() => (long = !long)}
-      >Long details</button
-    >
-  </div>
-  <p>
-    Desktop prototype · Chart: Tropical · System controls preview placement only
-  </p>
-</footer>
+{#if reviewing}
+  <footer class="review-bar" aria-label="Prototype review controls">
+    <div class="switcher">
+      <button aria-label="Previous layout" onclick={() => cycle(-1)}>←</button
+      ><strong>{variant} · {names[index]}</strong><button
+        aria-label="Next layout"
+        onclick={() => cycle(1)}>→</button
+      >
+    </div>
+    <div class="review-actions">
+      <button onclick={reset}>Empty state</button><button
+        onclick={() => void example()}>Example chart</button
+      ><button aria-pressed={long} onclick={() => (long = !long)}
+        >Long details</button
+      >
+    </div>
+    <p>
+      Desktop prototype · Chart: Tropical · System controls preview placement
+      only
+    </p>
+  </footer>
+{/if}
 
 <style>
   :global(body:has(.desktop-prototype)) {
@@ -429,6 +433,7 @@
     max-width: none;
     margin: 0;
     padding: 0;
+    height: auto;
     --line: #ded9d0;
     --accent: #644678;
     --muted: #686273;
@@ -718,6 +723,39 @@
     padding: 10px;
     font-variant-numeric: tabular-nums;
   }
+  /* Selected desktop direction: the rail spans chart and tables. */
+  [data-variant="A"] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    grid-template-rows: 80px calc(100dvh - 80px) auto;
+  }
+  [data-variant="A"] .workspace,
+  [data-variant="A"] .composition {
+    display: contents;
+  }
+  [data-variant="A"] .masthead {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  [data-variant="A"] .chart-stage {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  [data-variant="A"] .reading-pane {
+    grid-column: 2;
+    grid-row: 2 / span 2;
+    position: sticky;
+    top: 80px;
+    height: calc(100dvh - 80px);
+    align-self: start;
+  }
+  [data-variant="A"] .tables {
+    grid-column: 1;
+    grid-row: 3;
+  }
   [data-variant="B"] {
     --stage: min(100dvh - 160px, 70vw);
   }
@@ -860,6 +898,9 @@
     color: #d8cfe0;
   }
   @media (max-width: 1050px) {
+    [data-variant="A"] {
+      grid-template-columns: minmax(0, 1fr) 320px;
+    }
     .masthead {
       padding: 0 20px;
       grid-template-columns: 1fr 2fr;

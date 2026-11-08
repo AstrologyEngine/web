@@ -1,12 +1,12 @@
 # Desktop Explorer layout review
 
-Throwaway alternatives for [Prototype desktop Explorer layouts with the wheel as the primary visual](https://github.com/AstrologyEngine/web/issues/35). No owner choice has been recorded. This branch is a primary source for the layout decision, not a production implementation.
+Throwaway alternatives for [Prototype desktop Explorer layouts with the wheel as the primary visual](https://github.com/AstrologyEngine/web/issues/35). Owner selected **A — Chart toolbar**, with prototype controls hidden and a sticky sidebar extending to the viewport bottom while chart tables scroll. This branch is a primary source for the layout decision, not a production implementation.
 
 ## Run
 
 From this worktree: `bun install --frozen-lockfile`, then `bun run dev --host 127.0.0.1 --port 5195`.
 
-Open `/app?variant=A`, `/app?variant=B`, or `/app?variant=C`. The floating bottom bar and left/right arrow keys switch variants without discarding the in-memory chart. The modal initially requires birth details; “Use example for layout review” computes June 21, 2000, 1pm, London using the existing resolver, atlas and engine. The centered birth line reopens the editor. Reloading clears the chart.
+Open `/app?variant=A` for the selected composition. Prototype controls and their keyboard shortcuts are hidden by default. Append `&review=1` to restore the comparison bar, arrow-key switching and example loader. The modal initially requires birth details; enter a date, time and birthplace, then apply. In review mode, “Use example for layout review” computes June 21, 2000, 1pm, London using the existing resolver, atlas and engine. The centered birth line reopens the editor. Reloading clears the chart.
 
 ## Comparison
 
@@ -47,4 +47,17 @@ Validation: Svelte check (zero errors/warnings), lint, official Svelte autofixer
 
 Screenshots: [A empty](A-empty.webp), [A system](A-system.webp), [A selected](A-selected.webp), [A long](A-long.webp); [B empty](B-empty.webp), [B system](B-system.webp), [B selected](B-selected.webp), [B long](B-long.webp); [C empty](C-empty.webp), [C system](C-system.webp), [C selected](C-selected.webp), [C long](C-long.webp), [C at 1280×800](C-1280.webp).
 
-Owner decision pending: choose A, B, C, or describe a combination. Keep the prototype ticket open and dependent visual tickets blocked until that decision is recorded.
+## Selected desktop contract
+
+The owner chose A — Chart toolbar and requested these refinements before moving on:
+
+- Hide prototype controls by default, including variant keyboard shortcuts. `review=1` explicitly restores the throwaway harness.
+- Keep the details sidebar visible while scrolling the secondary tables. Tables occupy the wheel’s column, leaving the right-hand rail continuous.
+- Extend the sidebar from below the 80px birth header to the bottom of the viewport. Header and sidebar remain sticky; long explanation content scrolls within the rail.
+- Preserve the existing permanent-pane, no-close-button and stable-wheel behavior.
+
+Verified in the browser at 1440×1000 (sidebar y=80, height=920, bottom=1000) and 1280×800 (y=80, height=720, bottom=800), both before and after scrolling the tables into view. No browser page errors; hidden variant keyboard shortcuts remained inactive. Svelte, lint, formatting and official Svelte autofixer checks passed.
+
+Updated captures: [selected A, full-height sidebar](A-selected-full-height.webp), [selected A, tables with sticky sidebar](A-selected-tables-sticky.webp). Earlier A/B/C captures above preserve the alternatives as originally reviewed; their harness and geometry predate these refinements.
+
+This records the chosen composition and amendments. Production delivery remains in the map’s implementation tickets.
