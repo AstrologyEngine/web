@@ -7,189 +7,189 @@ const ref = (insight: string, ...keywords: string[]): ReferenceContent => ({
 });
 export const signs: Record<SignName, ReferenceContent> = {
   aries: ref(
-    "Aries approaches life through initiative and direct action.",
+    "Aries symbolizes the impulse to begin, take a risk and act directly.",
     "initiative",
     "courage",
   ),
   taurus: ref(
-    "Taurus seeks stability, pleasure and tangible value.",
+    "Taurus symbolizes steadiness, physical comfort and the patient cultivation of what matters.",
     "steadiness",
-    "sensibility",
+    "comfort",
   ),
   gemini: ref(
-    "Gemini explores through curiosity and exchange.",
+    "Gemini symbolizes curiosity, conversation and the exploration of different perspectives.",
     "curiosity",
     "communication",
   ),
   cancer: ref(
-    "Cancer responds through care, belonging and emotional awareness.",
+    "Cancer symbolizes emotional attachment, protection and the need for belonging.",
     "care",
     "belonging",
   ),
   leo: ref(
-    "Leo expresses creativity and a desire to shine.",
+    "Leo symbolizes creative expression, generosity and the wish to be seen.",
     "creativity",
     "expression",
   ),
   virgo: ref(
-    "Virgo finds meaning in discernment and useful attention.",
+    "Virgo symbolizes careful observation, practical service and the refinement of skills.",
     "discernment",
     "service",
   ),
   libra: ref(
-    "Libra seeks balance and connection with others.",
+    "Libra symbolizes cooperation, fairness and the weighing of different needs.",
     "balance",
     "relationship",
   ),
   scorpio: ref(
-    "Scorpio explores depth, trust and transformation.",
+    "Scorpio symbolizes emotional depth, questions of trust and the process of letting go.",
     "depth",
     "transformation",
   ),
   ophiuchus: ref(
-    "Ophiuchus is a constellation included in some True Sky charts.",
+    "Ophiuchus is a constellation crossed by the Sun’s apparent path and included in this app’s True Sky preset.",
     "constellation",
-    "discovery",
+    "Sun’s path",
   ),
   sagittarius: ref(
-    "Sagittarius seeks understanding through exploration.",
+    "Sagittarius symbolizes exploration, the search for meaning and the testing of beliefs.",
     "exploration",
     "meaning",
   ),
   capricorn: ref(
-    "Capricorn works toward lasting goals with patience.",
+    "Capricorn symbolizes responsibility, patient ambition and work toward lasting goals.",
     "commitment",
     "structure",
   ),
   aquarius: ref(
-    "Aquarius considers new possibilities and the wider community.",
+    "Aquarius symbolizes independent thought, collective ideals and alternatives to established ways.",
     "innovation",
     "community",
   ),
   pisces: ref(
-    "Pisces approaches experience with imagination and empathy.",
+    "Pisces symbolizes imagination, compassion and openness to experiences beyond clear boundaries.",
     "imagination",
     "empathy",
   ),
 };
 export const houses: ReferenceContent[] = [
   ref(
-    "The first house concerns identity and how you meet the world.",
-    "identity",
-    "beginnings",
+    "The first house represents self-presentation, physical presence and how you enter new situations.",
+    "presence",
+    "self-presentation",
   ),
   ref(
-    "The second house concerns resources, values and material security.",
+    "The second house represents personal resources, possessions and what you rely on for security.",
     "resources",
-    "values",
+    "security",
   ),
   ref(
-    "The third house concerns learning, communication and your immediate surroundings.",
+    "The third house represents everyday learning, communication, siblings and nearby surroundings.",
     "learning",
     "communication",
   ),
   ref(
-    "The fourth house concerns home, roots and foundations.",
+    "The fourth house represents home, family roots and the foundations of private life.",
     "home",
     "roots",
   ),
   ref(
-    "The fifth house concerns creativity, play and self-expression.",
+    "The fifth house represents creativity, play, romance and relationships with children.",
     "creativity",
     "play",
   ),
   ref(
-    "The sixth house concerns daily routines, work and care.",
+    "The sixth house represents daily work, practical responsibilities and routines of care.",
     "routine",
     "care",
   ),
   ref(
-    "The seventh house concerns close partnerships and one-to-one relationships.",
+    "The seventh house represents one-to-one commitments, including partnerships and agreements.",
     "partnership",
     "relationship",
   ),
   ref(
-    "The eighth house concerns shared resources and transformation.",
-    "sharing",
-    "transformation",
+    "The eighth house represents shared resources, obligations and experiences of loss or change.",
+    "shared resources",
+    "change",
   ),
   ref(
-    "The ninth house concerns exploration, beliefs and broader understanding.",
+    "The ninth house represents higher learning, travel and the beliefs that shape a wider worldview.",
     "exploration",
     "belief",
   ),
   ref(
-    "The tenth house concerns public life, vocation and direction.",
+    "The tenth house represents vocation, reputation and responsibilities in public life.",
     "vocation",
-    "direction",
+    "reputation",
   ),
   ref(
-    "The eleventh house concerns community, friendship and shared aims.",
+    "The eleventh house represents friendships, groups and hopes pursued with others.",
     "community",
     "aspiration",
   ),
   ref(
-    "The twelfth house concerns reflection, solitude and the unseen.",
-    "reflection",
-    "rest",
+    "The twelfth house represents solitude, retreat and parts of life kept out of public view.",
+    "solitude",
+    "retreat",
   ),
 ];
 export const angles: Partial<Record<BodyName, ReferenceContent>> = {
   ASCENDANT_SYMBOL: ref(
-    "The Ascendant marks the eastern horizon and your approach to new experiences.",
-    "arrival",
+    "The Ascendant is where the zodiac meets the eastern horizon, symbolizing how you first meet the world.",
+    "eastern horizon",
     "approach",
   ),
   MIDHEAVEN: ref(
-    "The Midheaven marks the upper meridian and themes of public direction.",
-    "direction",
+    "The Midheaven marks the zodiac’s upper meridian crossing and symbolizes vocation and public visibility.",
+    "meridian",
     "public life",
   ),
   DESCENDANT: ref(
-    "The Descendant marks the western horizon and themes of partnership.",
+    "The Descendant is where the zodiac meets the western horizon, symbolizing encounters and partnerships.",
+    "western horizon",
     "partnership",
-    "encounter",
   ),
   IMUM_COELI: ref(
-    "The Imum Coeli marks the lower meridian and themes of roots and home.",
+    "The Imum Coeli is the point opposite the Midheaven, symbolizing home, roots and private foundations.",
     "roots",
     "foundation",
   ),
 };
 export const aspectContent: Record<Aspect["type"], ReferenceContent> = {
   Conjunction: ref(
-    "A conjunction brings two chart factors together.",
+    "A conjunction places two chart factors near the same zodiac position, symbolically combining their themes.",
     "union",
     "focus",
   ),
   Semisextile: ref(
-    "A semisextile places two chart factors in a subtle relationship.",
+    "A semisextile places two chart factors about 30° apart, interpreted here as a subtle need to accommodate differences.",
     "adjustment",
     "awareness",
   ),
   Sextile: ref(
-    "A sextile connects two chart factors through opportunity and cooperation.",
+    "A sextile places two chart factors about 60° apart, symbolizing opportunities for cooperation.",
     "opportunity",
     "cooperation",
   ),
   Square: ref(
-    "A square connects two chart factors through tension that invites action.",
+    "A square places two chart factors about 90° apart, symbolizing friction between themes that call for attention.",
     "tension",
     "action",
   ),
   Trine: ref(
-    "A trine connects two chart factors through a sense of ease.",
+    "A trine places two chart factors about 120° apart, symbolizing ease and mutual support.",
     "flow",
     "ease",
   ),
   Quincunx: ref(
-    "A quincunx connects two chart factors through a need for adjustment.",
+    "A quincunx places two chart factors about 150° apart, symbolizing themes that can be difficult to reconcile.",
     "adjustment",
     "adaptation",
   ),
   Opposition: ref(
-    "An opposition connects two chart factors across a polarity.",
-    "polarity",
+    "An opposition places two chart factors about 180° apart, symbolizing contrasting needs held in relationship.",
+    "contrast",
     "balance",
   ),
 };
@@ -209,11 +209,11 @@ export const rulers: Partial<Record<SignName, [string, string]>> = {
 };
 export const systemHelp = {
   tropical:
-    "Tropical astrology measures signs from the seasonal equinoxes and solstices.",
+    "Tropical astrology divides the zodiac into twelve equal signs, beginning at the March equinox point.",
   "fagan-bradley":
-    "This Vedic preset uses the Fagan–Bradley sidereal reference and equal signs; Vedic traditions use more than one convention.",
+    "The preset labeled Vedic uses twelve equal signs with the Fagan–Bradley sidereal reference, a Western sidereal convention distinct from those commonly used in Vedic astrology.",
   "true-sky":
-    "True Sky uses constellation-based divisions and can include Ophiuchus.",
+    "True Sky uses unequal, constellation-based divisions following the Chimenti convention, with Ophiuchus available as an optional thirteenth sector.",
 } as const;
 
 // Definitions and lookup conventions are independently awaiting editorial review.
@@ -223,7 +223,7 @@ export const systemHelpReview = {
   "true-sky": pendingReview(),
 } as const;
 export const customTrueSkyHelp = {
-  text: "This custom setting uses the True Sky reference with equal sign divisions.",
+  text: "This custom setting uses the True Sky starting point with twelve equal signs instead of constellation-based divisions.",
   ...pendingReview(),
 };
 export const rulerReview = {
