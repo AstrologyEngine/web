@@ -8,7 +8,23 @@
   import type { Chart } from "./calculation/chart";
   import type { Astrology } from "./calculation/snapshot";
   const theme = WHEEL_THEMES.traditional;
-  let { chart, astrology }: { chart: Chart; astrology: Astrology } = $props();
+  let {
+    chart,
+    astrology,
+    selectedBody = null,
+    onselect = () => {},
+    onblank = () => {},
+  }: {
+    chart: Chart;
+    astrology: Astrology;
+    selectedBody?: Chart["bodies"][number]["name"] | null;
+    onselect?: (
+      name: Chart["bodies"][number]["name"],
+      origin: Element,
+      keyboard: boolean,
+    ) => void;
+    onblank?: () => void;
+  } = $props();
   let selected = $state<{ name: string; x: number; y: number } | null>(null);
   const asc = $derived(
     chart.bodies.find((b) => b.name === "ASCENDANT_SYMBOL")!.longitude,
@@ -87,8 +103,25 @@
       })
       .filter((a) => a !== null),
   );
-  const select = (name: string, x: number, y: number) =>
-    (selected = { name, x, y });
+  const select = (name: string, x: number, y: number) => {
+    onblank();
+    selected = selected?.name === name ? null : { name, x, y };
+  };
+  const selectBody = (
+    name: Chart["bodies"][number]["name"],
+    origin: Element,
+    keyboard: boolean,
+  ) => {
+    selected = null;
+    onselect(name, origin, keyboard);
+  };
+  $effect(() => {
+    if (selectedBody) selected = null;
+  });
+  const clear = () => {
+    selected = null;
+    onblank();
+  };
   const keySelect = (e: KeyboardEvent, name: string, x: number, y: number) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
@@ -98,12 +131,10 @@
 </script>
 
 <svelte:window
-  onclick={(e) => {
-    if (!(e.target instanceof Element) || !e.target.closest("[data-glyph]"))
+  onkeydown={(event) => {
+    if (event.key === "Escape" && !event.defaultPrevented && selected) {
       selected = null;
-  }}
-  onkeydown={(e) => {
-    if (e.key === "Escape") selected = null;
+    }
   }}
 />
 <div
@@ -112,11 +143,19 @@
     .ink.faint};--w-hard:{theme.aspect.hard};--w-soft:{theme.aspect
     .soft};--w-plate:{theme.plate}"
 >
+  <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
   <svg
     class="chart-root"
     viewBox="-20 -20 640 640"
     role="group"
     aria-label="Interactive natal chart"
+    onclick={(e) => {
+      if (!(e.target instanceof Element) || !e.target.closest("[data-glyph]"))
+        clear();
+    }}
+    onkeydown={(e) => {
+      if (e.target === e.currentTarget && e.key === "Escape") clear();
+    }}
   >
     <g aria-hidden="true">
       <circle
@@ -264,9 +303,14 @@
         role="button"
         tabindex="0"
         aria-label={name}
-        aria-pressed={selected?.name === name}
-        onclick={() => select(name, p.x, p.y)}
-        onkeydown={(e) => keySelect(e, name, p.x, p.y)}
+        aria-pressed={selectedBody === body.name}
+        onclick={(e) => selectBody(body.name, e.currentTarget, false)}
+        onkeydown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            selectBody(body.name, e.currentTarget, true);
+          }
+        }}
       >
         <circle cx={p.x} cy={p.y} r="22" fill="transparent" /><circle cx={p.x} cy={p.y} r="16" fill="var(--w-wash)" />
         <svg
