@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Route } from "@playwright/test";
 import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -86,7 +86,8 @@ test("openings, repeats and both available surfaces count once per visit", async
       ),
     )
     .toBe(true);
-  await page.route("**/api/resolve-birth", (route) => route.abort());
+  const abortResolver = (route: Route) => route.abort();
+  await page.route("**/api/resolve-birth", abortResolver);
   await page.getByRole("button", { name: "Edit birth details" }).click();
   await page
     .getByLabel("Birth details")
@@ -96,11 +97,7 @@ test("openings, repeats and both available surfaces count once per visit", async
       events.some((e) => e.event === "failure" && e.system === "Vedic"),
     )
     .toBe(true);
-  await page.unrouteAll({ behavior: "wait" });
-  await page.route("**/api/measurement", async (route) => {
-    events.push(route.request().postDataJSON());
-    await route.fulfill({ status: 204 });
-  });
+  await page.unroute("**/api/resolve-birth", abortResolver);
   await page.reload();
   await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
   await page.getByRole("button", { name: "Apply" }).click();
@@ -110,6 +107,13 @@ test("openings, repeats and both available surfaces count once per visit", async
   await expect
     .poll(() => events.filter((e) => e.event === "eligible").length)
     .toBe(2);
+  expect(
+    new Set(
+      events
+        .filter((event) => event.event === "eligible")
+        .map((event) => event.visitId),
+    ).size,
+  ).toBe(2);
   const folder = mkdtempSync(join(tmpdir(), "measurement-test-"));
   try {
     const file = join(folder, "synthetic.json");
