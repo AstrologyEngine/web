@@ -22,64 +22,64 @@ export type ReferenceContent = {
 } & EditorialReview;
 export const meanings: Record<BodyTarget, [string, string[]]> = {
   SUN: [
-    "The Sun describes your sense of identity and vitality.",
-    ["identity", "vitality"],
+    "The Sun symbolizes identity, purpose and the wish to express yourself.",
+    ["identity", "purpose"],
   ],
   MOON: [
-    "The Moon speaks to emotional needs and habitual responses.",
-    ["feelings", "instinct"],
+    "The Moon symbolizes emotional needs, familiar habits and what feels comforting.",
+    ["emotions", "comfort"],
   ],
   MERCURY: [
-    "Mercury describes how you think and communicate.",
+    "Mercury symbolizes learning, reasoning and the exchange of ideas.",
     ["thought", "communication"],
   ],
   VENUS: [
-    "Venus describes how you relate, appreciate and find pleasure.",
+    "Venus symbolizes affection, attraction and what you value or enjoy.",
     ["connection", "values"],
   ],
   MARS: [
-    "Mars describes how you act and pursue what matters to you.",
+    "Mars symbolizes initiative, desire and the way you assert yourself.",
     ["action", "drive"],
   ],
   JUPITER: [
-    "Jupiter describes how you seek growth and meaning.",
+    "Jupiter symbolizes growth through exploration, belief and a search for meaning.",
     ["growth", "meaning"],
   ],
   SATURN: [
-    "Saturn describes responsibility, limits and sustained effort.",
+    "Saturn symbolizes boundaries, responsibility and what takes time to build.",
     ["discipline", "structure"],
   ],
   URANUS: [
-    "Uranus describes change, independence and originality.",
+    "Uranus symbolizes independence, experimentation and breaks with familiar patterns.",
     ["change", "freedom"],
   ],
   NEPTUNE: [
-    "Neptune describes imagination, ideals and sensitivity.",
+    "Neptune symbolizes imagination, longing and the blurred line between ideals and illusion.",
     ["imagination", "ideals"],
   ],
   PLUTO: [
-    "Pluto describes transformation and encounters with power.",
-    ["transformation", "depth"],
+    "Pluto symbolizes power, control and profound processes of change.",
+    ["power", "transformation"],
   ],
   CHIRON: [
-    "Chiron describes themes of vulnerability and healing.",
-    ["healing", "vulnerability"],
+    "Chiron symbolizes vulnerability and the understanding that can grow from difficult experiences.",
+    ["vulnerability", "understanding"],
   ],
   CERES: [
-    "Ceres describes themes of care and nourishment.",
+    "Ceres symbolizes nurturing, nourishment and the experience of giving or receiving care.",
     ["care", "nourishment"],
   ],
   NORTH_NODE: [
-    "The North Node describes a direction of development.",
-    ["growth", "direction"],
+    "The North Node marks the point where the Moon crosses the Sun’s apparent path northward, interpreted here as a symbol of development.",
+    ["lunar node", "development"],
   ],
   SOUTH_NODE: [
-    "The South Node describes familiar patterns and strengths.",
-    ["experience", "familiarity"],
+    "The South Node marks the point where the Moon crosses the Sun’s apparent path southward, interpreted here as a symbol of familiar patterns.",
+    ["lunar node", "familiarity"],
   ],
   EARTH: [
-    "Earth represents grounding and embodied experience.",
-    ["grounding", "experience"],
+    "Earth is shown here as a symbolic point opposite the Sun, rather than a planet observed from Earth.",
+    ["Earth point", "opposite Sun"],
   ],
 };
 // Each displayed body has an explicit, independently editable review record.
@@ -108,6 +108,6 @@ export const bodyReference = (name: BodyName): ReferenceContent => {
   return { insight, keywords, ...bodyReviews[key] };
 };
 export const bridgingReference = {
-  text: "This placement is in the final degree of its sign, a point often associated with transition and emphasis.",
+  text: "This placement is in the final degree of its sign, offered here as a symbolic prompt to reflect on transition within that sign.",
   ...pendingReview(),
 };
