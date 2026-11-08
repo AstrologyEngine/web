@@ -2,6 +2,13 @@
   import { onMount, tick } from "svelte";
   import BirthEdit from "../../lib/BirthEdit.svelte";
   import Wheel from "../../lib/Wheel.svelte";
+  import SettingsControls from "../../lib/SettingsControls.svelte";
+  import {
+    customFields,
+    matchPreset,
+    type Custom,
+    type Settings,
+  } from "../../lib/settings";
   import { birthSchema, initialSettings } from "../../lib/domain";
   import { snapshotSchema } from "../../lib/calculation/snapshot";
   import type { Snapshot } from "../../lib/calculation/snapshot";
@@ -65,6 +72,8 @@
       .passthrough(),
   ]);
   let birth = $state<Birth | null>(null);
+  let settings = $state<Settings>(initialSettings);
+  let custom = $state<Custom>(customFields(initialSettings));
   let snapshot = $state<Snapshot | null>(null);
   let editing = $state(true);
   let loading = $state(false);
@@ -80,7 +89,15 @@
       clearTimeout(timeout);
       const result = event.data?.result;
       const parsed = result?.ok && snapshotSchema.safeParse(result.snapshot);
-      if (parsed && parsed.success && parsed.data.generation === generation) {
+      if (
+        parsed &&
+        parsed.success &&
+        parsed.data.generation === generation &&
+        JSON.stringify(parsed.data.birth) ===
+          JSON.stringify($state.snapshot(birth)) &&
+        JSON.stringify(parsed.data.requestedSettings) ===
+          JSON.stringify($state.snapshot(settings))
+      ) {
         snapshot = parsed.data;
         error = "";
       } else {
@@ -115,7 +132,7 @@
       worker.postMessage({
         generation,
         birth: birthSchema.parse(value),
-        settings: initialSettings,
+        settings: $state.snapshot(settings),
       });
       timeout = setTimeout(() => {
         worker?.terminate();
@@ -151,6 +168,13 @@
     if (!validated.success) throw Error("Invalid response");
     return data as Resolution;
   }
+  function applySettings(next: Settings, nextCustom: Custom) {
+    const changed =
+      JSON.stringify($state.snapshot(settings)) !== JSON.stringify(next);
+    settings = next;
+    custom = nextCustom;
+    if (changed && birth) calculate(birth);
+  }
   async function accept(next: Birth | null) {
     if (next) {
       birth = next;
@@ -177,6 +201,18 @@
       >
     {/if}
   </section>
+  {#if snapshot}<SettingsControls
+      requested={settings}
+      accepted={snapshot.requestedSettings}
+      {custom}
+      pending={loading}
+      onapply={applySettings}
+    />{/if}
+  {#if snapshot && JSON.stringify(snapshot.requestedSettings) !== JSON.stringify(settings)}<p
+      role="status"
+    >Showing {matchPreset(snapshot.requestedSettings)} chart{loading
+        ? ` while updating to ${matchPreset(settings)}`
+        : "; requested settings have not been applied"}.</p>{/if}
   {#if loading}<p role="status">
       Calculating your chart…{snapshot ? " Showing your previous chart." : ""}
     </p>{/if}
