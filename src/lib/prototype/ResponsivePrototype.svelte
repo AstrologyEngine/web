@@ -93,13 +93,8 @@
     if (!drag || drag.id !== event.pointerId) return;
     if (cancelled) snap = drag.startSnap;
     else if (suppressHandleClick) {
-      const height = dragHeight ?? drag.height;
-      const heights = snapHeights();
-      snap = (["hidden", "compact", "tall"] as const).reduce((best, next) =>
-        Math.abs(heights[next] - height) < Math.abs(heights[best] - height)
-          ? next
-          : best,
-      );
+      const upward = event.clientY < drag.y;
+      snap = upward ? "tall" : drag.startSnap === "tall" ? "compact" : "hidden";
       if (snap === "hidden") dismiss();
     }
     drag = null;
