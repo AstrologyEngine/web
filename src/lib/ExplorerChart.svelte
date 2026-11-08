@@ -72,6 +72,25 @@
     )
       origin.focus();
   }
+  function revealChartTarget(target: Element) {
+    if (!window.matchMedia("(max-width: 799px)").matches) return;
+    const sheet = heading?.closest("aside");
+    const chartTarget = target.closest(".wheel")
+      ? target
+      : target
+          .closest(".explorer")
+          ?.querySelector('.wheel [aria-pressed="true"]');
+    if (!sheet || !chartTarget) return;
+    const availableBottom = sheet.getBoundingClientRect().top;
+    const bounds = chartTarget.getBoundingClientRect();
+    // Fixed sheets do not reduce the browser's scroll-into-view area. Reveal the
+    // selected target in the space above the sheet without changing wheel pan.
+    if (bounds.top < 16 || bounds.bottom > availableBottom - 16)
+      window.scrollBy({
+        top: bounds.top + bounds.height / 2 - availableBottom / 2,
+        behavior: "instant",
+      });
+  }
   async function choose(next: Selection, target: Element, keyboard: boolean) {
     if (JSON.stringify(selection) === JSON.stringify(next)) {
       measurement?.interaction("repeat");
@@ -83,10 +102,9 @@
     selection = next;
     announcement = "Selection opened";
     snap = 40;
-    if (keyboard) {
-      await tick();
-      heading?.focus();
-    }
+    await tick();
+    if (keyboard) heading?.focus({ preventScroll: true });
+    revealChartTarget(target);
   }
   const selectBody = (name: BodyName, target: Element, keyboard: boolean) =>
     choose({ kind: "body", name }, target, keyboard);
