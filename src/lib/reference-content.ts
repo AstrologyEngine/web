@@ -1,10 +1,8 @@
 import type { Chart } from "./calculation/chart";
+import { bodyIds } from "./identities";
 
 type BodyName = Chart["bodies"][number]["name"];
-export type BodyTarget = Exclude<
-  BodyName,
-  "ASCENDANT_SYMBOL" | "MIDHEAVEN" | "DESCENDANT" | "IMUM_COELI"
->;
+export type BodyTarget = (typeof bodyIds)[number];
 export type EditorialReview =
   | { editorialStatus: "pending-review"; reviewer: null; outcome: null }
   | {
