@@ -744,6 +744,20 @@
     grid-column: 1;
     grid-row: 2;
   }
+  [data-variant="A"] .chart-controls .controls {
+    position: relative;
+  }
+  [data-variant="A"] .presets {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  [data-variant="A"] .chart-controls .icon {
+    position: absolute;
+    left: calc(100% + 7px);
+  }
+  [data-variant="A"] .chart-controls .more {
+    left: calc(100% + 46px);
+  }
   [data-variant="A"] .reading-pane {
     grid-column: 2;
     grid-row: 2 / span 2;
