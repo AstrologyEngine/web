@@ -208,6 +208,7 @@ test("pointer aspect picker limits choices to lines near the click", async ({
   await page.getByRole("button", { name: "Apply" }).click();
   const chart = page.getByRole("group", { name: /natal chart/i });
   await expect(chart).toBeVisible();
+  await chart.scrollIntoViewIfNeeded();
   const point = await chart.evaluate((svg) => {
     const lines = [
       ...svg.querySelectorAll(
@@ -257,4 +258,69 @@ test("pointer aspect picker limits choices to lines near the click", async ({
   await expect(picker.locator(".picker-buttons button")).toHaveCount(2);
   await picker.locator(".picker-buttons button").first().click();
   await expect(picker.locator(".picker-buttons button")).toHaveCount(1);
+});
+
+test("direct house and angle targets open mobile details", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/app");
+  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
+  await page.getByRole("button", { name: "Apply" }).click();
+  const chart = page.getByRole("group", { name: /natal chart/i });
+  const house = chart.getByRole("button", { name: "House 1", exact: true });
+  await house.focus();
+  await page.keyboard.press("Enter");
+  await expect(
+    page.getByRole("complementary", { name: "House details" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Close details" }).click();
+  await expect(house).toBeFocused();
+  const angle = chart.getByRole("button", { name: "Ascendant", exact: true });
+  await angle.focus();
+  await page.keyboard.press("Enter");
+  await expect(
+    page.getByRole("complementary", { name: "Angle details" }),
+  ).toBeVisible();
+});
+
+test("Ophiuchus house cusp does not invent a ruler", async ({ page }) => {
+  // Controlled cusp positions exercise wording and do not establish astronomical accuracy.
+  await page.route("**/calculation-worker.js", async (route) => {
+    const response = await route.fetch();
+    const patch = `const post = self.postMessage.bind(self); self.postMessage = message => { if (message.result?.ok) { const c = message.result.snapshot.systems.astrology.selectedFrame; const sector = c.zodiac_sectors.find(s => s.sign === 'ophiuchus'); if (sector) { const target = sector.start_degrees + sector.width_degrees / 2; const delta = target - c.cusps[0]; c.cusps = c.cusps.map(value => (value + delta + 360) % 360); } } post(message); };\n`;
+    await route.fulfill({ response, body: patch + (await response.text()) });
+  });
+  await page.goto("/app");
+  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
+  await page.getByRole("button", { name: "Apply" }).click();
+  await page.getByRole("button", { name: "True Sky", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "True Sky", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await page
+    .getByRole("group", { name: /natal chart/i })
+    .getByRole("button", { name: "House 1", exact: true })
+    .focus();
+  await page.keyboard.press("Enter");
+  const house = page.getByRole("complementary", { name: "House details" });
+  await expect(house.getByText("Ophiuchus", { exact: true })).toBeVisible();
+  await expect(
+    house.getByText("No established ruler", { exact: true }),
+  ).toBeVisible();
+});
+
+test("Escape closes the aspect picker without dismissing birth editing", async ({
+  page,
+}) => {
+  await page.goto("/app");
+  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
+  await page.getByRole("button", { name: "Apply" }).click();
+  await page.getByRole("button", { name: "Edit birth details" }).click();
+  await page
+    .getByRole("button", { name: "Explore aspects", exact: true })
+    .click();
+  await page.keyboard.press("Escape");
+  await expect(
+    page.getByRole("dialog", { name: "Choose an aspect" }),
+  ).toHaveCount(0);
+  await expect(page.getByLabel("Birth details")).toBeVisible();
 });

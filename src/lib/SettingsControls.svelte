@@ -80,7 +80,8 @@
           : systemHelp[accepted.reference]}
       </p>
       <p>
-        Signs: {accepted.divisions}{accepted.divisions === "constellation"
+        Signs: {accepted.divisions}{accepted.divisions ===
+        "constellation"
           ? accepted.ophiuchus
             ? " · Ophiuchus included"
             : " · Ophiuchus excluded"

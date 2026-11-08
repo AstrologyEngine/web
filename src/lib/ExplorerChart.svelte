@@ -234,6 +234,9 @@
 {#if pickerOpen}<dialog
     aria-label="Choose an aspect"
     {@attach setupDialog}
+    onkeydown={(event) => {
+      if (event.key === "Escape") event.stopPropagation();
+    }}
     oncancel={(event) => {
       event.preventDefault();
       pickerOpen = false;
