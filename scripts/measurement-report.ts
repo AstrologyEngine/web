@@ -26,7 +26,7 @@ const extract = (value: unknown): void => {
   if (
     typeof value === "string" &&
     value.length < 1000000 &&
-    /^[\[{]/.test(value.trim())
+    (value.trim().startsWith("[") || value.trim().startsWith("{"))
   ) {
     try {
       extract(JSON.parse(value));
