@@ -40,7 +40,8 @@ test("mobile details can be resized, dismissed and leave the chart available", a
   await page.goto("/app");
   await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
   await page.getByRole("button", { name: "Apply" }).click();
-  await page.getByRole("button", { name: "Sun", exact: true }).click();
+  await page.getByText("Choose a body by name").click();
+  await page.getByRole("button", { name: "Sun", exact: true }).last().click();
   const sheet = page.getByRole("complementary", { name: "Body details" });
   await expect
     .poll(() =>

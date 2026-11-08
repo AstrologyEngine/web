@@ -4,6 +4,7 @@
   import type { BodyName, SignName, Selection, Aspect } from "./selection";
   import { samePair, supported } from "./selection";
   import Wheel from "./Wheel.svelte";
+  import MobileWheel from "./MobileWheel.svelte";
   import Details from "./Details.svelte";
   import ReferenceDetails from "./ReferenceDetails.svelte";
   import { bodySymbols } from "./wheel/body-symbols";
@@ -132,13 +133,30 @@
   }}
 />
 <div class={["explorer", { "with-details": !!selection }]}>
-  <Wheel
-    {chart}
-    {astrology}
-    selectedBody={body?.name ?? null}
-    onselect={selectBody}
-    onblank={() => dismiss()}
-  />
+  <MobileWheel
+    ><Wheel
+      {chart}
+      {astrology}
+      selectedBody={body?.name ?? null}
+      selectedSign={selection?.kind === "sign" ? selection.name : null}
+      selectedHouse={selection?.kind === "house" ? selection.number : null}
+      selectedAngle={selection?.kind === "angle" ? selection.name : null}
+      onselect={selectBody}
+      onselectSign={selectSign}
+      onselectHouse={selectHouse}
+      onselectAngle={selectAngle}
+      onselectAspects={(near, target) =>
+        openPicker(
+          near,
+          target,
+          body &&
+            near.some((a) => a.planetA === body.name || a.planetB === body.name)
+            ? body.name
+            : null,
+        )}
+      onblank={() => dismiss()}
+    /></MobileWheel
+  >
   <div class="alternatives">
     <details class="body-list">
       <summary>Choose a body by name</summary>
@@ -172,8 +190,8 @@
             aria-pressed={selection?.kind === "house" &&
               selection.number === index + 1}
             onclick={(event) =>
-              selectHouse(index + 1, event.currentTarget, event.detail === 0)}>House {index +
-                1}</button
+              selectHouse(index + 1, event.currentTarget, event.detail === 0)}>House
+              {index + 1}</button
           >{/each}
       </div>
     </details>
