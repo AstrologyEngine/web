@@ -43,7 +43,7 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
-          bunx wrangler preview delete --env staging --name "pr-$PR" --skip-confirmation
+          node scripts/preview-cleanup.mjs
           gh api "repos/$REPO/deployments?environment=pr-$PR" --paginate --jq '.[].id' | while read -r id; do
             gh api -X POST "repos/$REPO/deployments/$id/statuses" -f state=inactive
           done
@@ -107,7 +107,7 @@ jobs:
         run: |
           state=$(gh api "repos/$REPO/pulls/$PR" --jq .state)
           if [ "$state" = closed ]; then
-            bunx wrangler preview delete --env staging --name "pr-$PR" --skip-confirmation
+            node scripts/preview-cleanup.mjs
             gh api "repos/$REPO/deployments?environment=pr-$PR" --paginate --jq '.[].id' | while read -r id; do
               gh api -X POST "repos/$REPO/deployments/$id/statuses" -f state=inactive
             done
