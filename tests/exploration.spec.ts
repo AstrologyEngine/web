@@ -41,6 +41,19 @@ test("mobile details can be resized, dismissed and leave the chart available", a
   await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
   await page.getByRole("button", { name: "Apply" }).click();
   await page.getByRole("button", { name: "Sun", exact: true }).click();
+  const sheet = page.getByRole("complementary", { name: "Body details" });
+  await expect
+    .poll(() =>
+      page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+    )
+    .toBe(true);
+  await expect
+    .poll(() =>
+      sheet
+        .locator(".scroll")
+        .evaluate((element) => element.scrollHeight > element.clientHeight),
+    )
+    .toBe(true);
   const resize = page.getByRole("slider", { name: "Resize details" });
   await expect(resize).toHaveAttribute("aria-valuenow", "40");
   await resize.focus();
@@ -108,4 +121,65 @@ test("reselecting, blank chart space, and Close clear the selected body", async 
   await sun.click();
   await page.getByRole("button", { name: "Close details" }).click();
   await expect(sun).toHaveAttribute("aria-pressed", "false");
+});
+
+test("a sign highlight clears when a body replaces it", async ({ page }) => {
+  await page.goto("/app");
+  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
+  await page.getByRole("button", { name: "Apply" }).click();
+  const chart = page.getByRole("group", { name: /natal chart/i });
+  const aries = chart.getByRole("button", { name: "Aries", exact: true });
+  await aries.click();
+  await expect(aries).toHaveAttribute("aria-pressed", "true");
+  await chart.getByRole("button", { name: "Sun", exact: true }).click();
+  await expect(aries).toHaveAttribute("aria-pressed", "false");
+  await expect(
+    page.getByRole("heading", { name: "Sun", exact: true }),
+  ).toBeVisible();
+});
+
+test("controlled final-degree note follows accepted systems and is suppressed in True Sky", async ({
+  page,
+}) => {
+  // This worker fixture sets Sun progress to 29.25 degrees and a compatible sign width in each accepted frame.
+  await page.route("**/calculation-worker.js", async (route) => {
+    const response = await route.fetch();
+    const patch = `const originalPostMessage = self.postMessage.bind(self); self.postMessage = (message) => { if (message.result?.ok) { const sun = message.result.snapshot.systems.astrology.selectedFrame.bodies.find(b => b.name === "SUN"); sun.sign.width_degrees = Math.max(30.5, sun.sign.width_degrees); sun.sign.degrees_in_sign = 29.25; } originalPostMessage(message); };\n`;
+    await route.fulfill({ response, body: patch + (await response.text()) });
+  });
+  await page.goto("/app");
+  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
+  await page.getByRole("button", { name: "Apply" }).click();
+  await page.getByRole("button", { name: "Sun", exact: true }).click();
+  const details = page.getByRole("complementary", { name: "Body details" });
+  await expect(details.getByText(/final degree of its sign/i)).toBeVisible();
+  await page.getByRole("button", { name: "Vedic", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Vedic", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(details.getByText(/final degree of its sign/i)).toBeVisible();
+  await page.getByRole("button", { name: "True Sky", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "True Sky", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(details.getByText(/final degree of its sign/i)).toHaveCount(0);
+  await expect(details.getByRole("heading", { name: "Sun" })).toBeVisible();
+});
+
+test("an accepted birth edit clears prior selection", async ({ page }) => {
+  await page.goto("/app");
+  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
+  await page.getByRole("button", { name: "Apply" }).click();
+  await page.getByRole("button", { name: "Sun", exact: true }).click();
+  await page.getByRole("button", { name: "Edit birth details" }).click();
+  await page
+    .getByLabel("Birth details")
+    .fill("January 2, 1980 at 3pm in London");
+  await page.getByRole("button", { name: "Apply" }).click();
+  await expect(
+    page.getByRole("complementary", { name: "Body details" }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Sun", exact: true }),
+  ).toHaveAttribute("aria-pressed", "false");
 });

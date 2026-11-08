@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, tick } from "svelte";
   import BirthEdit from "../../lib/BirthEdit.svelte";
-  import Wheel from "../../lib/Wheel.svelte";
+  import Explorer from "../../lib/Explorer.svelte";
   import SettingsControls from "../../lib/SettingsControls.svelte";
   import {
     customFields,
@@ -232,10 +232,7 @@
         House system adjusted to {snapshot.systems.astrology.selectedFrame
           .house_system}.
       </p>{/if}
-    <Wheel
-      chart={snapshot.systems.astrology.selectedFrame}
-      astrology={snapshot.systems.astrology}
-    />
+    <Explorer {snapshot} birthIdentity={JSON.stringify(birth)} />
   {/if}
 </main>
 

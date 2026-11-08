@@ -103,8 +103,25 @@
       })
       .filter((a) => a !== null),
   );
-  const select = (name: string, x: number, y: number) =>
-    (selected = { name, x, y });
+  const select = (name: string, x: number, y: number) => {
+    onblank();
+    selected = selected?.name === name ? null : { name, x, y };
+  };
+  const selectBody = (
+    name: Chart["bodies"][number]["name"],
+    origin: Element,
+    keyboard: boolean,
+  ) => {
+    selected = null;
+    onselect(name, origin, keyboard);
+  };
+  $effect(() => {
+    if (selectedBody) selected = null;
+  });
+  const clear = () => {
+    selected = null;
+    onblank();
+  };
   const keySelect = (e: KeyboardEvent, name: string, x: number, y: number) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
@@ -113,6 +130,13 @@
   };
 </script>
 
+<svelte:window
+  onkeydown={(event) => {
+    if (event.key === "Escape" && !event.defaultPrevented && selected) {
+      selected = null;
+    }
+  }}
+/>
 <div
   class="wheel"
   style="--w-strong:{theme.ink.strong};--w-mid:{theme.ink.mid};--w-faint:{theme
@@ -127,10 +151,10 @@
     aria-label="Interactive natal chart"
     onclick={(e) => {
       if (!(e.target instanceof Element) || !e.target.closest("[data-glyph]"))
-        onblank();
+        clear();
     }}
     onkeydown={(e) => {
-      if (e.target === e.currentTarget && e.key === "Escape") onblank();
+      if (e.target === e.currentTarget && e.key === "Escape") clear();
     }}
   >
     <g aria-hidden="true">
@@ -280,11 +304,11 @@
         tabindex="0"
         aria-label={name}
         aria-pressed={selectedBody === body.name}
-        onclick={(e) => onselect(body.name, e.currentTarget, false)}
+        onclick={(e) => selectBody(body.name, e.currentTarget, false)}
         onkeydown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
-            onselect(body.name, e.currentTarget, true);
+            selectBody(body.name, e.currentTarget, true);
           }
         }}
       >
