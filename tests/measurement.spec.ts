@@ -74,6 +74,33 @@ test("openings, repeats and both available surfaces count once per visit", async
     page.getByRole("button", { name: "Vedic", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
   expect(events.filter((e) => e.event === "chart_usable")).toHaveLength(1);
+  await page.getByRole("button", { name: "About this system" }).click();
+  await page.getByRole("button", { name: "About this system" }).click();
+  await expect
+    .poll(() =>
+      events.some(
+        (e) =>
+          e.event === "feature_use" &&
+          e.feature === "system_help" &&
+          e.system === "Vedic",
+      ),
+    )
+    .toBe(true);
+  await page.route("**/api/resolve-birth", (route) => route.abort());
+  await page.getByRole("button", { name: "Edit birth details" }).click();
+  await page
+    .getByLabel("Birth details")
+    .fill("January 2, 1980 at 3pm in London");
+  await expect
+    .poll(() =>
+      events.some((e) => e.event === "failure" && e.system === "Vedic"),
+    )
+    .toBe(true);
+  await page.unrouteAll({ behavior: "wait" });
+  await page.route("**/api/measurement", async (route) => {
+    events.push(route.request().postDataJSON());
+    await route.fulfill({ status: 204 });
+  });
   await page.reload();
   await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
   await page.getByRole("button", { name: "Apply" }).click();
@@ -97,8 +124,17 @@ test("openings, repeats and both available surfaces count once per visit", async
     );
     expect(report.funnel.eligible).toBe(2);
     expect(report.funnel.opened).toBe(1);
-    expect(report.totalOpens).toBe(3);
-    expect(report.distinctExplanationsAcrossVisits).toBe(2);
+    expect(report.totalOpens).toBe(4);
+    expect(report.distinctExplanationsAcrossVisits).toBe(3);
+    expect(
+      report.conversionByEligibilityContext["desktop/Tropical"].eligible,
+    ).toBe(2);
+    expect(
+      report.featureActivityByEventContext["desktop/Vedic"].system_help.uses,
+    ).toBe(1);
+    expect(
+      report.reliabilityByEventContext["desktop/Vedic"]["resolver/unavailable"],
+    ).toBeGreaterThan(0);
     expect(report.deduplicatedEvents).toBe(events.length);
     const firstVisit = events.find(
       (event) => event.event === "first_insight",

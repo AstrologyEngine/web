@@ -79,41 +79,59 @@ const featureStats = Object.fromEntries(
     },
   ]),
 );
-const segment: Record<
+const conversionByEligibilityContext: Record<
   string,
-  {
-    visits: number;
-    eligible: number;
-    opened: number;
-    starts: number;
-    completed: number;
-    usable: number;
-    failures: number;
-  }
+  { eligible: number; opened: number }
 > = {};
 for (const items of visits.values()) {
-  const context = items.find((e) => e.event === "eligible") ?? items[0]!;
+  const context = items.find((e) => e.event === "eligible");
+  if (!context) continue;
   const key = `${context.device}/${context.system ?? "unavailable"}`;
-  const row = (segment[key] ??= {
-    visits: 0,
+  const row = (conversionByEligibilityContext[key] ??= {
     eligible: 0,
     opened: 0,
-    starts: 0,
-    completed: 0,
-    usable: 0,
-    failures: 0,
   });
-  row.visits++;
-  if (items.some((e) => e.event === "eligible")) row.eligible++;
-  if (
-    items.some((e) => e.event === "eligible") &&
-    items.some((e) => e.event === "explanation_open")
-  )
-    row.opened++;
-  if (items.some((e) => e.event === "entry_started")) row.starts++;
-  if (items.some((e) => e.event === "entry_completed")) row.completed++;
-  if (items.some((e) => e.event === "chart_usable")) row.usable++;
-  if (items.some((e) => e.event === "failure")) row.failures++;
+  row.eligible++;
+  if (items.some((e) => e.event === "explanation_open")) row.opened++;
+}
+const featureActivityByEventContext: Record<
+  string,
+  Record<
+    string,
+    {
+      exposures: number;
+      uses: number;
+      exposedVisits: number;
+      usingVisits: number;
+    }
+  >
+> = {};
+const reliabilityByEventContext: Record<string, Record<string, number>> = {};
+const featureVisits = new Map<string, Set<string>>();
+for (const event of events.values()) {
+  const context = `${event.device}/${event.system ?? "unavailable"}`;
+  if (event.event === "failure") {
+    const category = `${event.stage}/${event.category}`;
+    const row = (reliabilityByEventContext[context] ??= {});
+    row[category] = (row[category] ?? 0) + 1;
+  }
+  if (event.event === "exposure" || event.event === "feature_use") {
+    const row = ((featureActivityByEventContext[context] ??= {})[
+      event.feature
+    ] ??= { exposures: 0, uses: 0, exposedVisits: 0, usingVisits: 0 });
+    const visitKey = JSON.stringify([context, event.feature, event.event]);
+    const seen = featureVisits.get(visitKey) ?? new Set<string>();
+    const fresh = !seen.has(event.visitId);
+    seen.add(event.visitId);
+    featureVisits.set(visitKey, seen);
+    if (event.event === "exposure") {
+      row.exposures++;
+      if (fresh) row.exposedVisits++;
+    } else {
+      row.uses++;
+      if (fresh) row.usingVisits++;
+    }
+  }
 }
 const failureCounts: Record<string, number> = {};
 const interactionCounts: Record<string, number> = {};
@@ -192,7 +210,9 @@ console.log(
       firstInsightMs: firstTimes,
       chartUsableMs: chartTimes,
       failureCounts,
-      segment,
+      conversionByEligibilityContext,
+      featureActivityByEventContext,
+      reliabilityByEventContext,
       note: "Observed within-visit lower bounds; incomplete delivery and sampling can bias results.",
     },
     null,
