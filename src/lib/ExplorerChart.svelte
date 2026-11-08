@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { Measurement } from "./measurement/client";
   import { tick, untrack } from "svelte";
   import type { Snapshot } from "./calculation/snapshot";
   import type { BodyName, SignName, Selection, Aspect } from "./selection";
@@ -8,7 +9,10 @@
   import Details from "./Details.svelte";
   import ReferenceDetails from "./ReferenceDetails.svelte";
   import { bodySymbols } from "./wheel/body-symbols";
-  let { snapshot }: { snapshot: Snapshot } = $props();
+  let {
+    snapshot,
+    measurement,
+  }: { snapshot: Snapshot; measurement: Measurement | null } = $props();
   let selection = $state<Selection | null>(null);
   let origin: Element | null = null;
   let heading = $state<HTMLHeadingElement>();
@@ -70,10 +74,12 @@
   }
   async function choose(next: Selection, target: Element, keyboard: boolean) {
     if (JSON.stringify(selection) === JSON.stringify(next)) {
+      measurement?.interaction("repeat");
       dismiss(keyboard);
       return;
     }
     origin = target;
+    measurement?.open(next);
     selection = next;
     announcement = "Selection opened";
     snap = 40;
@@ -95,6 +101,8 @@
     target: Element,
     fromBody: BodyName | null = null,
   ) {
+    measurement?.use("aspect_picker");
+    measurement?.interaction("navigation");
     candidates = list;
     first = fromBody;
     pickerOrigin = target;
@@ -133,7 +141,7 @@
   }}
 />
 <div class={["explorer", { "with-details": !!selection }]}>
-  <MobileWheel
+  <MobileWheel {measurement}
     ><Wheel
       {chart}
       {astrology}
@@ -145,6 +153,11 @@
       onselectSign={selectSign}
       onselectHouse={selectHouse}
       onselectAngle={selectAngle}
+      onexposeGroup={() => measurement?.expose("body_picker")}
+      onopenGroup={() => {
+        measurement?.use("body_picker");
+        measurement?.interaction("navigation");
+      }}
       onselectAspects={(near, target) =>
         openPicker(
           near,
