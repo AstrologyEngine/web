@@ -594,12 +594,10 @@
   }
   svg {
     display: block;
+  }
+  .chart-root {
     width: 100%;
     height: auto;
-  }
-  svg svg {
-    width: 24px;
-    height: 24px;
   }
   g[role="button"] {
     cursor: pointer;
