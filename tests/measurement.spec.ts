@@ -188,13 +188,36 @@ test("the collection endpoint rejects non-allowlisted payloads and is no-store",
       });
     const invalid = await send({ ...base, sentence: "private text" });
     const valid = await send(base);
+    const identity = { ...base, event: "explanation_open" };
+    const bodyAngle = await send({
+      ...identity,
+      identity: { kind: "body", name: "ASCENDANT_SYMBOL" },
+    });
+    const angleBody = await send({
+      ...identity,
+      identity: { kind: "angle", name: "SUN" },
+    });
+    const actualAngle = await send({
+      ...identity,
+      identity: { kind: "angle", name: "ASCENDANT_SYMBOL" },
+    });
     return {
+      bodyAngle: bodyAngle.status,
+      angleBody: angleBody.status,
+      actualAngle: actualAngle.status,
       invalid: invalid.status,
       valid: valid.status,
       cache: valid.headers.get("cache-control"),
     };
   });
-  expect(result).toEqual({ invalid: 400, valid: 204, cache: "no-store" });
+  expect(result).toEqual({
+    invalid: 400,
+    valid: 204,
+    cache: "no-store",
+    bodyAngle: 400,
+    angleBody: 400,
+    actualAngle: 204,
+  });
 });
 
 test("resolver network failure records a safe category", async ({ page }) => {
@@ -216,5 +239,43 @@ test("resolver network failure records a safe category", async ({ page }) => {
       ),
     )
     .toBe(true);
+  expect(JSON.stringify(events)).not.toMatch(/2000|London|1pm/i);
+});
+
+test("picker and settings navigation count as interactions without opening explanations", async ({
+  page,
+}) => {
+  const events: Record<string, unknown>[] = [];
+  await page.route("**/api/measurement", async (route) => {
+    events.push(route.request().postDataJSON());
+    await route.fulfill({ status: 204 });
+  });
+  await page.goto("/app");
+  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
+  await page.getByRole("button", { name: "Apply" }).click();
+  await page
+    .getByRole("button", { name: "Explore aspects", exact: true })
+    .click();
+  const picker = page.getByRole("dialog", { name: "Choose an aspect" });
+  await picker.getByRole("button", { name: "Sun", exact: true }).click();
+  await picker.getByRole("button", { name: "Back" }).click();
+  await picker.getByRole("button", { name: "Close", exact: true }).click();
+  await page.getByRole("button", { name: /Advanced settings/ }).click();
+  await page
+    .getByRole("dialog", { name: "Advanced settings" })
+    .getByRole("button", { name: "Apply" })
+    .click();
+  await expect
+    .poll(
+      () =>
+        events.filter(
+          (event) =>
+            event.event === "interaction" && event.category === "navigation",
+        ).length,
+    )
+    .toBe(6);
+  expect(
+    events.filter((event) => event.event === "explanation_open"),
+  ).toHaveLength(0);
   expect(JSON.stringify(events)).not.toMatch(/2000|London|1pm/i);
 });

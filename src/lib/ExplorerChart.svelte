@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Measurement } from "./measurement/client";
   import { tick, untrack } from "svelte";
+  import { angleIds, isAngle } from "./identities";
   import type { Snapshot } from "./calculation/snapshot";
   import type { BodyName, SignName, Selection, Aspect } from "./selection";
   import { samePair, supported } from "./selection";
@@ -130,6 +131,23 @@
     pickerGeneration = snapshot.generation;
     pickerOpen = true;
   }
+  function closePicker() {
+    measurement?.interaction("navigation");
+    pickerOpen = false;
+    if (
+      pickerOrigin instanceof HTMLElement ||
+      pickerOrigin instanceof SVGElement
+    )
+      pickerOrigin.focus();
+  }
+  function pickFirst(name: BodyName) {
+    measurement?.interaction("navigation");
+    first = name;
+  }
+  function backPicker() {
+    measurement?.interaction("navigation");
+    first = null;
+  }
   async function pickSecond(name: BodyName) {
     if (!first) return;
     const aspect = candidates.find((a) => samePair(a, first!, name));
@@ -195,7 +213,7 @@
     <details class="body-list">
       <summary>Choose a body by name</summary>
       <div>
-        {#each chart.bodies.filter((item) => !["ASCENDANT_SYMBOL", "MIDHEAVEN", "DESCENDANT", "IMUM_COELI"].includes(item.name)) as item (item.name)}<button
+        {#each chart.bodies.filter((item) => !isAngle(item.name)) as item (item.name)}<button
             aria-pressed={body?.name === item.name}
             onclick={(event) =>
               selectBody(item.name, event.currentTarget, event.detail === 0)}>{label(
@@ -232,7 +250,7 @@
     <details>
       <summary>Choose an angle by name</summary>
       <div>
-        {#each ["ASCENDANT_SYMBOL", "MIDHEAVEN", "DESCENDANT", "IMUM_COELI"] as name (name)}<button
+        {#each angleIds as name (name)}<button
             aria-pressed={selection?.kind === "angle" &&
               selection.name === name}
             onclick={(event) =>
@@ -273,12 +291,7 @@
     }}
     oncancel={(event) => {
       event.preventDefault();
-      pickerOpen = false;
-      if (
-        pickerOrigin instanceof HTMLElement ||
-        pickerOrigin instanceof SVGElement
-      )
-        pickerOrigin.focus();
+      closePicker();
     }}
   >
     <h2>
@@ -288,20 +301,13 @@
     </h2>
     <div class="picker-buttons">
       {#each first ? pickerSecond : pickerFirst as name (name)}<button
-          onclick={() => (first ? pickSecond(name) : (first = name))}>{label(
+          onclick={() => (first ? pickSecond(name) : pickFirst(name))}>{label(
             name,
           )}</button
         >{/each}
     </div>
-    {#if first}<button onclick={() => (first = null)}>Back</button>{/if}<button
-      onclick={() => {
-        pickerOpen = false;
-        if (
-          pickerOrigin instanceof HTMLElement ||
-          pickerOrigin instanceof SVGElement
-        )
-          pickerOrigin.focus();
-      }}>Close</button
+    {#if first}<button onclick={backPicker}>Back</button>{/if}<button
+      onclick={closePicker}>Close</button
     >
   </dialog>{/if}
 
