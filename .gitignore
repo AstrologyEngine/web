@@ -8,3 +8,4 @@ static/release.json
 .env*
 .dev.vars*
 static/calculation-worker.js
+.DS_Store
