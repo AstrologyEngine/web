@@ -300,10 +300,7 @@
         </div>
         <div class="wheel-space">
           {#if chart && astrology}
-            <MobileWheel
-              measurement={null}
-              initialZoomed={true}
-              iconToggle={true}
+            <MobileWheel measurement={null} initialZoomed={true} gestures={true}
               ><Wheel
                 {chart}
                 {astrology}
@@ -1153,7 +1150,7 @@
     .wheel-space {
       container-type: normal;
       align-items: flex-start;
-      padding: 20px 12px;
+      padding: 0 12px;
     }
     .wheel-space :global(.mobile-wheel) {
       width: 100%;
