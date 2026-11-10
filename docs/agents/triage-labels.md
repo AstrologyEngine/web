@@ -1,6 +1,9 @@
 # Triage labels
 
 Use these label strings whenever a skill names a canonical triage role.
+Labels belong to the private issue tracker `AstrologyEngine/web-issues`.
+Always specify `--repo AstrologyEngine/web-issues` when listing, creating,
+or applying issue labels; do not infer the tracker from the code checkout.
 
 | Role            | Tracker label   | Meaning                                 |
 | --------------- | --------------- | --------------------------------------- |
