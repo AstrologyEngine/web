@@ -17,7 +17,22 @@
   import { birthDateLabel, birthTimeLabel } from "../birth-display";
   import type { resolveBirth } from "../server/birth/resolve";
   type Birth = ReturnType<typeof birthSchema.parse>;
-  const variants = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
+  const variants = [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+    "N",
+  ];
   const names = [
     "Mineral spectrum",
     "Botanical elements",
@@ -31,6 +46,8 @@
     "Celestial · jewel rainbow",
     "Celestial · mineral glow",
     "Celestial · soft jewel",
+    "Hero purple · tonal rainbow",
+    "Hero purple · luminous rainbow",
   ];
   const systems = ["Tropical", "Vedic", "True Sky"];
   let palette = $derived(

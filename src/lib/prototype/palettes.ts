@@ -188,3 +188,37 @@ paletteThemes.L = celestial(
     "#9d3f5b",
   ]),
 );
+
+// OKLCH hue cycle at the hero purple lightness/chroma; Sagittarius is the exact anchor.
+paletteThemes.M = make([
+  "#734b13",
+  "#5f560f",
+  "#445e28",
+  "#1c6345",
+  "#02625f",
+  "#025f74",
+  "#2d5783",
+  "#4c4e84",
+  "#594a7f",
+  "#644678",
+  "#744063",
+  "#7d3f49",
+  "#7c432d",
+]);
+
+// Brighter companion: same hero-purple hue anchor, lifted lightness and chroma.
+paletteThemes.N = make([
+  "#c47e00",
+  "#a19011",
+  "#71a03c",
+  "#18a972",
+  "#10a49f",
+  "#109fc1",
+  "#4593e1",
+  "#8183e2",
+  "#977bda",
+  "#aa74ce",
+  "#c76aa9",
+  "#d5677a",
+  "#d56e47",
+]);

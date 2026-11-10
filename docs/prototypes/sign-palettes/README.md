@@ -63,3 +63,11 @@ Owner found I/J too saturated and requested an independent website-theme dial, a
 The second review dial now changes **Website: Warm light / Starry dark**, independently of the wheel-palette dial. URL state is `variant=K&theme=dark` or `theme=light`; default website theme is dark. Geometry stays fixed between modes. Palette changes preserve the website theme; website-theme changes preserve every sign fill while updating the page background, chart ink, plate, and aspect tones. Existing palette names retain comparison history; the website dial now overrides their earlier shell associations. This is a development review control, not a finalized production light/dark UX or persisted OS-preference setting.
 
 Chromium verified independence in both directions and captured K/L in both modes at desktop/mobile. No page errors or horizontal overflow. Svelte/lint/build pass, official autofixer reports no issues, detector empty. Production integration, physical devices and final palette approval remain pending.
+
+## Purple-keyed light-mode rainbow
+
+Owner is leaning toward G/I for dark mode (preference, not final acceptance). G is plausible for light mode; requested a rainbow related to the purple hero headline.
+
+Added **M — Hero purple / tonal rainbow**, with Sagittarius exactly #644678 and other hues rotated at the anchor's OKLCH lightness (0.448) and chroma (0.0866). Out-of-gamut colors reduce chroma while preserving lightness/hue. Added **N — Hero purple / luminous rainbow**, using the same anchor hue with lifted lightness (0.65) and chroma (0.14), so the purple sector is a brighter relative rather than an exact hex match. The circular hue progression is rotated to the purple anchor; sign/element colors are not intended as semantic assignments. Both retain all 13 fills including Ophiuchus. Minimum glyph contrast: M 7.19:1, N 6.05:1.
+
+Review `/?variant=M&theme=light` and `/?variant=N&theme=light`; G/I are preserved and website mode stays independent. Desktop/mobile both-mode captures, no Chromium page errors/overflow, Svelte/lint/build pass, official autofixer no issues and detector empty. Palette choice remains pending.
