@@ -2,7 +2,7 @@
 
 ### Issue tracker
 
-Issues and specs live in GitHub Issues for `AstrologyEngine/web`.
+Issues and specs live in the private GitHub issue tracker `AstrologyEngine/web-issues`.
 See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
