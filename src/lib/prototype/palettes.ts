@@ -128,3 +128,35 @@ paletteThemes.F = {
   plate: "#f6f9fc",
   ink: { strong: "#233b50", mid: "#52687a", faint: "#ccd9e3" },
 };
+
+// Front-page comparisons: vivid sign colors on the legacy warm-paper shell.
+paletteThemes.G = make([
+  "#e95d4e",
+  "#e99c4e",
+  "#e9d24e",
+  "#abe94e",
+  "#4ee98f",
+  "#4ee9d4",
+  "#4ec5e9",
+  "#4e87e9",
+  "#975ceb",
+  "#a255ea",
+  "#dc4ee9",
+  "#e94eb5",
+  "#e94e7d",
+]);
+paletteThemes.H = make([
+  "#af2b1d",
+  "#a7611b",
+  "#817115",
+  "#537d14",
+  "#158443",
+  "#157f71",
+  "#197c9a",
+  "#1d52af",
+  "#5a1daf",
+  "#681daf",
+  "#a31daf",
+  "#af1d7e",
+  "#af1d49",
+]);

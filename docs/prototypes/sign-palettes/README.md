@@ -43,3 +43,7 @@ The shell previews retain the approved layout and typography hierarchy; they are
 Gemini was black in C because automatic relative-luminance contrast selects black on its lighter ochre fill. D/E/F constrain the entire fill range so all signs use the same glyph ink. Minimum glyph contrast: D 10.31:1, E 6.34:1, F 5.96:1, all 13 fills included.
 
 Review `/app?variant=D|E|F` and `/?variant=D|E|F`. The arrows now cycle all six options, preserving chart and selection. Selected-state captures use `review=0` so the prototype harness does not cover the compact sheet. Svelte check/lint pass; official autofixer reports no issues. Browser captures cover the same computed chart, selected states at desktop/mid/mobile, and homepage/app desktop/mobile. Device/Safari/color-vision simulation and production delivery remain outside the evidence recorded here.
+
+## Front-page saturation pass
+
+Owner found the previous palettes washed out and clarified that the front page is the priority. Added **G — Vivid spectrum** (bright, saturated rainbow with black glyphs) and **H — Jewel spectrum** (deeper saturated rainbow with white glyphs). Both use the warm legacy shell and preserve A/C's rainbow progression. Review the front page first: `/?variant=G` and `/?variant=H`. Screenshots include both routes at desktop/mobile. Chromium reported no page errors or horizontal overflow; Svelte check/lint/build and the mechanical detector pass. No owner choice recorded.
