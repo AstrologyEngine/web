@@ -1,6 +1,9 @@
 # Domain docs
 
-This repository uses a single-context layout.
+This repository uses a single-context layout. Domain documentation stays in the
+`AstrologyEngine/web` code repository; issues and specs live in the private
+`AstrologyEngine/web-issues` tracker. Use full GitHub URLs when linking between
+code, decisions, and tracker issues.
 
 ## Before exploring
 
