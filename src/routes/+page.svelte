@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { page } from "$app/state";
+  import ResponsivePrototype from "../lib/prototype/ResponsivePrototype.svelte";
   import { resolve } from "$app/paths";
   import { zodiacGlyphPaths } from "../lib/wheel/zodiac-glyphs";
   import { planetGlyphPaths } from "../lib/wheel/planet-glyphs";
@@ -12,104 +14,108 @@
   />
 </svelte:head>
 
-<main>
-  <header>
-    <span class="brand-mark" aria-hidden="true">✳</span> Astrology Engine
-    <span class="beta">BETA</span>
-  </header>
-  <div class="hero">
-    <section class="intro">
-      <p class="eyebrow">A LITTLE CURIOSITY GOES A LONG WAY</p>
-      <h1>Explore your<br />birth chart.</h1>
-      <p class="description">
-        There’s more to your chart than your Sun sign. Discover the planets,
-        signs and houses that make up your unique sky, one piece at a time.
-      </p>
-      <a class="cta" href={resolve("/app")}
-        >Start exploring <span aria-hidden="true">↗</span></a
-      >
-      <p class="note">Your chart begins with your birth details.</p>
-    </section>
-    <figure>
-      <div class="sample-label">
-        <span>01 / THE WHEEL</span><span>SAMPLE CHART</span>
-      </div>
-      <svg
-        viewBox="0 0 420 420"
-        role="img"
-        aria-label="Sample chart showing Aries, Taurus and Gemini, planets, and houses 1 through 3"
-      >
-        <path
-          d="M20 400 A380 380 0 0 1 70.9 210 L122.9 240 A320 320 0 0 0 80 400Z"
-          fill="#e15947"
-        />
-        <path
-          d="M70.9 210 A380 380 0 0 1 210 70.9 L240 122.9 A320 320 0 0 0 122.9 240Z"
-          fill="#d58f3b"
-        />
-        <path
-          d="M210 70.9 A380 380 0 0 1 400 20 L400 80 A320 320 0 0 0 240 122.9Z"
-          fill="#c9dd47"
-        />
-        <g fill="none" stroke="#d0d0d0" stroke-width="1">
-          <path
-            d="M20 400 A380 380 0 0 1 400 20 M80 400 A320 320 0 0 1 400 80 M215 400 A185 185 0 0 1 400 215 M250 400 A150 150 0 0 1 400 250"
-          />
-          <path
-            d="M20 400H250 M70.9 210L122.9 240 M210 70.9L240 122.9 M400 20V250 M239.8 307.5L280 330.7 M307.5 239.8L330.7 280"
-          />
-        </g>
-        <g fill="#1f1f1f">
-          <path
-            d={zodiacGlyphPaths[0]}
-            transform="translate(38 298) scale(.29)"
-          />
-          <path
-            d={zodiacGlyphPaths[1]}
-            transform="translate(124 130) scale(.29)"
-          />
-          <path
-            d={zodiacGlyphPaths[2]}
-            transform="translate(297 38) scale(.29)"
-          />
-          <path
-            d={planetGlyphPaths[0]}
-            transform="translate(114 308) scale(.25)"
-          />
-          <path
-            d={planetGlyphPaths[1]}
-            transform="translate(183 210) scale(.25)"
-          />
-          <path
-            d={planetGlyphPaths[2]}
-            transform="translate(300 116) scale(.25)"
-          />
-        </g>
-        <g
-          fill="#4a4a4a"
-          font-size="15"
-          font-family="system-ui, sans-serif"
-          text-anchor="middle"
-          ><text x="236" y="373">1</text><text x="282" y="290">2</text><text
-            x="373"
-            y="239">3</text
-          ></g
+{#if import.meta.env.DEV && page.url.searchParams.has("variant")}
+  <ResponsivePrototype landing />
+{:else}
+  <main>
+    <header>
+      <span class="brand-mark" aria-hidden="true">✳</span> Astrology Engine
+      <span class="beta">BETA</span>
+    </header>
+    <div class="hero">
+      <section class="intro">
+        <p class="eyebrow">A LITTLE CURIOSITY GOES A LONG WAY</p>
+        <h1>Explore your<br />birth chart.</h1>
+        <p class="description">
+          There’s more to your chart than your Sun sign. Discover the planets,
+          signs and houses that make up your unique sky, one piece at a time.
+        </p>
+        <a class="cta" href={resolve("/app")}
+          >Start exploring <span aria-hidden="true">↗</span></a
         >
-        <g fill="none" stroke-width="1.3" opacity=".65"
-          ><path d="M255 369L347 269" stroke="#2255cc" /><path
-            d="M291 291L379 254"
-            stroke="#cc2222"
-          /></g
+        <p class="note">Your chart begins with your birth details.</p>
+      </section>
+      <figure>
+        <div class="sample-label">
+          <span>01 / THE WHEEL</span><span>SAMPLE CHART</span>
+        </div>
+        <svg
+          viewBox="0 0 420 420"
+          role="img"
+          aria-label="Sample chart showing Aries, Taurus and Gemini, planets, and houses 1 through 3"
         >
-      </svg>
-      <figcaption>
-        A small glimpse of the bigger picture. This sample isn’t your personal
-        chart.
-      </figcaption>
-    </figure>
-  </div>
-  <footer>ASTROLOGY ENGINE <span>MADE FOR THE CURIOUS ✳</span></footer>
-</main>
+          <path
+            d="M20 400 A380 380 0 0 1 70.9 210 L122.9 240 A320 320 0 0 0 80 400Z"
+            fill="#e15947"
+          />
+          <path
+            d="M70.9 210 A380 380 0 0 1 210 70.9 L240 122.9 A320 320 0 0 0 122.9 240Z"
+            fill="#d58f3b"
+          />
+          <path
+            d="M210 70.9 A380 380 0 0 1 400 20 L400 80 A320 320 0 0 0 240 122.9Z"
+            fill="#c9dd47"
+          />
+          <g fill="none" stroke="#d0d0d0" stroke-width="1">
+            <path
+              d="M20 400 A380 380 0 0 1 400 20 M80 400 A320 320 0 0 1 400 80 M215 400 A185 185 0 0 1 400 215 M250 400 A150 150 0 0 1 400 250"
+            />
+            <path
+              d="M20 400H250 M70.9 210L122.9 240 M210 70.9L240 122.9 M400 20V250 M239.8 307.5L280 330.7 M307.5 239.8L330.7 280"
+            />
+          </g>
+          <g fill="#1f1f1f">
+            <path
+              d={zodiacGlyphPaths[0]}
+              transform="translate(38 298) scale(.29)"
+            />
+            <path
+              d={zodiacGlyphPaths[1]}
+              transform="translate(124 130) scale(.29)"
+            />
+            <path
+              d={zodiacGlyphPaths[2]}
+              transform="translate(297 38) scale(.29)"
+            />
+            <path
+              d={planetGlyphPaths[0]}
+              transform="translate(114 308) scale(.25)"
+            />
+            <path
+              d={planetGlyphPaths[1]}
+              transform="translate(183 210) scale(.25)"
+            />
+            <path
+              d={planetGlyphPaths[2]}
+              transform="translate(300 116) scale(.25)"
+            />
+          </g>
+          <g
+            fill="#4a4a4a"
+            font-size="15"
+            font-family="system-ui, sans-serif"
+            text-anchor="middle"
+            ><text x="236" y="373">1</text><text x="282" y="290">2</text><text
+              x="373"
+              y="239">3</text
+            ></g
+          >
+          <g fill="none" stroke-width="1.3" opacity=".65"
+            ><path d="M255 369L347 269" stroke="#2255cc" /><path
+              d="M291 291L379 254"
+              stroke="#cc2222"
+            /></g
+          >
+        </svg>
+        <figcaption>
+          A small glimpse of the bigger picture. This sample isn’t your personal
+          chart.
+        </figcaption>
+      </figure>
+    </div>
+    <footer>ASTROLOGY ENGINE <span>MADE FOR THE CURIOUS ✳</span></footer>
+  </main>
+{/if}
 
 <style>
   :global(*) {

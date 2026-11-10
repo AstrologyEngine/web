@@ -11,7 +11,12 @@
   import { tick } from "svelte";
   import type { Chart } from "./calculation/chart";
   import type { Astrology } from "./calculation/snapshot";
-  const theme = WHEEL_THEMES.traditional;
+  import { page } from "$app/state";
+  import { paletteThemes } from "./prototype/palettes";
+  const theme = $derived(
+    paletteThemes[page.url.searchParams.get("variant") ?? "A"] ??
+      WHEEL_THEMES.traditional,
+  );
   let {
     chart,
     astrology,

@@ -102,6 +102,12 @@ export const contrastInk = (hexFill: string): string => {
   const [r, g, b] = [0, 2, 4].map(
     (i) => Number.parseInt(full.slice(i, i + 2), 16) / 255,
   );
-  const luminance = 0.299 * r! + 0.587 * g! + 0.114 * b!;
-  return luminance > 0.45 ? "#1f2937" : "#f8fafc";
+  const linear = [r!, g!, b!].map((v) =>
+    v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4,
+  );
+  const luminance =
+    0.2126 * linear[0]! + 0.7152 * linear[1]! + 0.0722 * linear[2]!;
+  return (luminance + 0.05) / 0.05 >= 1.05 / (luminance + 0.05)
+    ? "#000000"
+    : "#ffffff";
 };
