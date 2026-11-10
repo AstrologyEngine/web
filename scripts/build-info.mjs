@@ -1,9 +1,11 @@
-import { execFileSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 const version = JSON.parse(readFileSync("package.json", "utf8")).version;
-const commit = execFileSync("git", ["rev-parse", "HEAD"], {
+const git = spawnSync("git", ["rev-parse", "HEAD"], {
   encoding: "utf8",
-}).trim();
+  stdio: ["ignore", "pipe", "ignore"],
+});
+const commit = git.status === 0 ? git.stdout.trim() : null;
 mkdirSync("static", { recursive: true });
 writeFileSync(
   "static/release.json",
