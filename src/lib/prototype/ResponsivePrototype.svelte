@@ -17,7 +17,7 @@
   import { birthDateLabel, birthTimeLabel } from "../birth-display";
   import type { resolveBirth } from "../server/birth/resolve";
   type Birth = ReturnType<typeof birthSchema.parse>;
-  const variants = ["A", "B", "C", "D", "E", "F", "G", "H"];
+  const variants = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
   const names = [
     "Mineral spectrum",
     "Botanical elements",
@@ -27,6 +27,8 @@
     "Plum enamel · blue paper",
     "Vivid spectrum",
     "Jewel spectrum",
+    "Celestial · vivid rainbow",
+    "Celestial · jewel rainbow",
   ];
   const systems = ["Tropical", "Vedic", "True Sky"];
   let palette = $derived(
@@ -35,6 +37,7 @@
       : "D",
   );
   const variant = "C";
+  const celestial = $derived(palette === "I" || palette === "J");
   let index = $derived(variants.indexOf(palette));
   let reviewing = $derived(
     import.meta.env.DEV && page.url.searchParams.get("review") !== "0",
@@ -277,13 +280,17 @@
 {/snippet}
 
 {#if landing}
-  <main class="palette-landing" data-palette={palette}>
+  <main class="palette-landing" class:celestial data-palette={palette}>
     <header>Astrology Engine</header>
     <section>
-      <h1>Explore your<br />birth chart.</h1>
+      <h1>
+        {#if celestial}An astrology library for <em>calculating charts.</em
+          >{:else}Explore your<br />birth chart.{/if}
+      </h1>
       <p>
-        Discover the planets, signs and houses that make up your unique sky, one
-        piece at a time.
+        {#if celestial}Build chart apps and add astrology features to your
+          product.{:else}Discover the planets, signs and houses that make up
+          your unique sky, one piece at a time.{/if}
       </p>
       <a href={resolve(`/app?variant=${palette}`)}>Start exploring →</a>
     </section>
@@ -1415,5 +1422,65 @@
         translate: var(--sheet-entry, 100% 0);
       }
     }
+  }
+  :global(body:has([data-palette="I"])),
+  :global(body:has([data-palette="J"])) {
+    --shell-paper: #0c1223;
+    --shell-surface: #141c30;
+    --shell-ink: #f0e9dc;
+    --shell-accent: #ddbd79;
+    --shell-line: #46516b;
+    color-scheme: dark;
+  }
+  .palette-landing.celestial {
+    background:
+      linear-gradient(90deg, #0c122350, #0c122315),
+      url("/prototype-legacy/night-landscape.jpg") center top / cover;
+  }
+  .celestial header {
+    font:
+      600 2rem Georgia,
+      serif;
+    padding: 20px 0 35px;
+    border-bottom: 1px solid #46516b;
+  }
+  .celestial section {
+    width: 39%;
+    margin-top: 8vh;
+  }
+  .celestial h1 {
+    font-size: clamp(2.8rem, 4.4vw, 4.6rem);
+  }
+  .celestial h1 em {
+    color: #ddbd79;
+    font-style: normal;
+  }
+  .celestial .hero-wheel {
+    width: 58vw;
+    left: 43vw;
+    top: 21vh;
+  }
+  @media (max-width: 799px) {
+    .celestial section {
+      width: 95%;
+      margin-top: 25px;
+    }
+    .celestial .hero-wheel {
+      width: 115vw;
+      left: -7.5vw;
+      top: 58vh;
+    }
+    .celestial {
+      min-height: 130dvh;
+    }
+  }
+  :global(body:has([data-palette="I"]) .review-bar),
+  :global(body:has([data-palette="J"]) .review-bar) {
+    background: #141c30;
+    color: #f0e9dc;
+  }
+  :global(body:has([data-palette="I"]) .review-bar button),
+  :global(body:has([data-palette="J"]) .review-bar button) {
+    color: #f0e9dc;
   }
 </style>

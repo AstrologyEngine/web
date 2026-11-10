@@ -160,3 +160,12 @@ paletteThemes.H = make([
   "#af1d7e",
   "#af1d49",
 ]);
+
+const celestial = (base: AstroChartTheme): AstroChartTheme => ({
+  ...base,
+  ink: { strong: "#ddbd79", mid: "#b9bed0", faint: "#46516b" },
+  plate: "#0c1223",
+  aspect: { hard: "#e68a84", soft: "#84b9df", neutral: "#b9bed0" },
+});
+paletteThemes.I = celestial(paletteThemes.G!);
+paletteThemes.J = celestial(paletteThemes.H!);

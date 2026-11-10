@@ -47,3 +47,11 @@ Review `/app?variant=D|E|F` and `/?variant=D|E|F`. The arrows now cycle all six 
 ## Front-page saturation pass
 
 Owner found the previous palettes washed out and clarified that the front page is the priority. Added **G — Vivid spectrum** (bright, saturated rainbow with black glyphs) and **H — Jewel spectrum** (deeper saturated rainbow with white glyphs). Both use the warm legacy shell and preserve A/C's rainbow progression. Review the front page first: `/?variant=G` and `/?variant=H`. Screenshots include both routes at desktop/mobile. Chromium reported no page errors or horizontal overflow; Svelte check/lint/build and the mechanical detector pass. No owner choice recorded.
+
+## Corrected reference: actual celestial legacy homepage
+
+The owner clarified that “legacy front page” means the dark, starry homepage, confirmed by a screenshot of astrologyengine.dev. The local web-legacy checkout was 75 commits behind its tracked origin/main; earlier warm-paper comparisons used that stale working-tree source. The corrected reference is web-legacy `origin/main` at `e00a2f9e10aa5b4f338875bc306166bfb939903c`: `src/lib/homepage/celestial.css`, `TransitChart.svelte`, and `static/celestial/night-landscape.jpg`.
+
+**I — Celestial vivid rainbow** and **J — Celestial jewel rainbow** pair the G/H sign fills with midnight #0c1223, ivory #f0e9dc, gold #ddbd79, and the actual legacy landscape asset. Planet/angle ink is gold, secondary ink is pale slate, and the plate is midnight. Homepage review uses a full wheel beside the source headline to assess this visual setting, rather than the warm-paper oversized-wheel context. This is a bounded color reference preview, not a replica of the complete legacy homepage or a production migration.
+
+Review `/?variant=I` and `/?variant=J`; app counterparts remain available. Desktop/mobile captures, Svelte check/lint/build, autofixer, detector and Chromium page/overflow checks recorded. Owner choice remains pending.
