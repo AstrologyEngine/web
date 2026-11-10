@@ -1,11 +1,24 @@
+# Dependencies and generated application output
 node_modules/
 .svelte-kit/
 build/
 .wrangler/
+static/release.json
+static/calculation-worker.js
+
+# Caches and generated test output
+.cache/
+coverage/
+.nyc_output/
 playwright-report/
 test-results/
-static/release.json
+
+# Local credentials; committed examples must contain placeholders only
 .env*
 .dev.vars*
-static/calculation-worker.js
+!.env.example
+!.dev.vars.example
+
+# Local worktrees and OS metadata
+/.worktrees/
 .DS_Store
