@@ -17,13 +17,20 @@
   import { birthDateLabel, birthTimeLabel } from "../birth-display";
   import type { resolveBirth } from "../server/birth/resolve";
   type Birth = ReturnType<typeof birthSchema.parse>;
-  const variants = ["A", "B", "C"];
-  const names = ["Mineral spectrum", "Botanical elements", "Inked enamel"];
+  const variants = ["A", "B", "C", "D", "E", "F"];
+  const names = [
+    "Mineral spectrum",
+    "Botanical elements",
+    "Inked enamel",
+    "Porcelain · warm paper",
+    "Pigment · pearl & violet",
+    "Plum enamel · blue paper",
+  ];
   const systems = ["Tropical", "Vedic", "True Sky"];
   let palette = $derived(
     variants.includes(page.url.searchParams.get("variant") ?? "")
       ? page.url.searchParams.get("variant")!
-      : "A",
+      : "D",
   );
   const variant = "C";
   let index = $derived(variants.indexOf(palette));
@@ -126,7 +133,10 @@
   );
   const cycle = (step: number) => {
     const url = new URL(page.url.href);
-    url.searchParams.set("variant", variants[(index + step + 3) % 3]!);
+    url.searchParams.set(
+      "variant",
+      variants[(index + step + variants.length) % variants.length]!,
+    );
     void goto(
       resolve(`${landing ? "/" : "/app"}?${url.searchParams.toString()}`),
       {
@@ -265,7 +275,7 @@
 {/snippet}
 
 {#if landing}
-  <main class="palette-landing">
+  <main class="palette-landing" data-palette={palette}>
     <header>Astrology Engine</header>
     <section>
       <h1>Explore your<br />birth chart.</h1>
@@ -295,6 +305,7 @@
   <main
     class="desktop-prototype"
     data-variant="A"
+    data-palette={palette}
     data-sheet={variant}
     data-open={sheetOpen}
     data-expanded={expanded}
@@ -632,10 +643,25 @@
 {/if}
 
 <style>
+  :global(body:has([data-palette="E"])) {
+    --shell-paper: #f8f9fc;
+    --shell-surface: #edf0f9;
+    --shell-ink: #26395d;
+    --shell-accent: #65509b;
+    --shell-line: #c8d1e3;
+  }
+  :global(body:has([data-palette="F"])) {
+    --shell-paper: #f6f9fc;
+    --shell-surface: #eaf1f7;
+    --shell-ink: #233b50;
+    --shell-accent: #75476f;
+    --shell-line: #ccd9e3;
+  }
+
   :global(body:has(.palette-landing)) {
     margin: 0;
-    background: #f5f2eb;
-    color: #292d38;
+    background: var(--shell-paper, #f5f2eb);
+    color: var(--shell-ink, #292d38);
     font: 16px/1.6 system-ui;
   }
   .palette-landing {
@@ -663,7 +689,7 @@
     max-width: 35ch;
   }
   .palette-landing a {
-    color: #644678;
+    color: var(--shell-accent, #644678);
   }
   .hero-wheel {
     position: absolute;
@@ -678,7 +704,7 @@
     position: fixed;
     right: 24px;
     top: 80px;
-    background: #faf8f3;
+    background: var(--shell-surface, #faf8f3);
     padding: 20px;
     z-index: 3;
   }
@@ -699,8 +725,8 @@
 
   :global(body:has(.desktop-prototype)) {
     margin: 0;
-    background: #f5f2eb;
-    color: #292d38;
+    background: var(--shell-paper, #f5f2eb);
+    color: var(--shell-ink, #292d38);
     font:
       15px/1.6 system-ui,
       sans-serif;
@@ -710,10 +736,10 @@
     margin: 0;
     padding: 0;
     height: auto;
-    --line: #ded9d0;
-    --accent: #644678;
+    --line: var(--shell-line, #ded9d0);
+    --accent: var(--shell-accent, #644678);
     --muted: #686273;
-    --ink: #292d38;
+    --ink: var(--shell-ink, #292d38);
     --stage: min(100dvh - 170px, 72vw);
   }
   .desktop-prototype,
@@ -730,12 +756,12 @@
   .desktop-prototype :global(button:focus-visible),
   dialog :global(:focus-visible),
   .review-bar button:focus-visible {
-    outline: 2px solid #644678;
+    outline: 2px solid var(--shell-accent, #644678);
     outline-offset: 4px;
   }
   :global(body:has(.desktop-prototype) ::selection) {
     background: #dfd2e8;
-    color: #292d38;
+    color: var(--shell-ink, #292d38);
   }
   .workspace {
     flex: none;
@@ -752,7 +778,7 @@
     align-items: center;
     padding: 0 32px;
     border-bottom: 1px solid var(--line);
-    background: #faf8f3;
+    background: var(--shell-surface, #faf8f3);
   }
   .brand {
     display: flex;
@@ -767,7 +793,7 @@
     width: 30px;
     height: 30px;
     fill: none;
-    stroke: #6b5380;
+    stroke: var(--shell-accent, #6b5380);
     stroke-width: 1.4;
   }
   .birth-line {
@@ -834,8 +860,8 @@
     background: #e9e1ec;
   }
   .presets button[aria-pressed="true"] {
-    background: #644678;
-    color: #faf8f3;
+    background: var(--shell-accent, #644678);
+    color: var(--shell-surface, #faf8f3);
   }
   .controls .icon {
     padding: 0;
@@ -874,7 +900,7 @@
     stroke-width: 1;
   }
   .empty-wheel text {
-    fill: #6b5380;
+    fill: var(--shell-accent, #6b5380);
     stroke: none;
     font:
       24px Georgia,
@@ -893,7 +919,7 @@
     text-align: center;
   }
   .reading-pane {
-    background: #faf8f3;
+    background: var(--shell-surface, #faf8f3);
     border-left: 1px solid var(--line);
     display: flex;
     flex-direction: column;
@@ -904,7 +930,7 @@
     min-height: 0;
     padding: 38px 30px;
     overflow-y: auto;
-    scrollbar-color: #b7a8bf #faf8f3;
+    scrollbar-color: #b7a8bf var(--shell-surface, #faf8f3);
     scrollbar-width: thin;
   }
   h1 {
@@ -923,7 +949,7 @@
     margin: 0 0 18px;
   }
   .intro {
-    color: #644678;
+    color: var(--shell-accent, #644678);
     font:
       21px/1.45 Georgia,
       serif;
@@ -979,7 +1005,7 @@
   select {
     font: inherit;
     padding: 8px;
-    background: #faf8f3;
+    background: var(--shell-surface, #faf8f3);
     border: 1px solid var(--line);
   }
   .tables {
@@ -1056,15 +1082,15 @@
     padding: 36px;
     border: 0;
     border-radius: 16px;
-    background: #faf8f3;
-    color: #292d38;
-    box-shadow: 0 18px 70px #292d3830;
+    background: var(--shell-surface, #faf8f3);
+    color: var(--shell-ink, #292d38);
+    box-shadow: 0 18px 70px var(--shell-ink, #292d38) 30;
     font:
       15px/1.6 system-ui,
       sans-serif;
   }
   dialog::backdrop {
-    background: #f5f2eb38;
+    background: var(--shell-paper, #f5f2eb) 38;
   }
   dialog h2 {
     font:
@@ -1074,17 +1100,17 @@
   }
   dialog :global(textarea) {
     background: #fffdf8;
-    color: #292d38;
+    color: var(--shell-ink, #292d38);
     border-color: #c9becf;
-    caret-color: #644678;
+    caret-color: var(--shell-accent, #644678);
   }
   dialog :global(.primary) {
-    background: #644678;
+    background: var(--shell-accent, #644678);
   }
   .example {
     background: none;
     border: 0;
-    color: #644678 !important;
+    color: var(--shell-accent, #644678) !important;
     text-decoration: underline;
     text-underline-offset: 4px;
     margin-top: 14px;
@@ -1104,9 +1130,9 @@
     column-gap: 24px;
     padding: 8px 15px;
     border-radius: 12px;
-    background: #292d38;
-    color: #faf8f3;
-    box-shadow: 0 5px 20px #292d3830;
+    background: var(--shell-ink, #292d38);
+    color: var(--shell-surface, #faf8f3);
+    box-shadow: 0 5px 20px var(--shell-ink, #292d38) 30;
     font:
       12px/1.4 system-ui,
       sans-serif;
@@ -1170,7 +1196,7 @@
       right: 0;
       width: 360px;
       height: calc(100dvh - 80px);
-      box-shadow: -10px 12px 40px #292d3820;
+      box-shadow: -10px 12px 40px var(--shell-ink, #292d38) 20;
     }
     [data-open="true"] .reading-pane {
       display: flex;
@@ -1268,8 +1294,8 @@
       font-size: 12px;
     }
     .wheel-space :global(.mobile-wheel button) {
-      background: #faf8f3;
-      color: #644678;
+      background: var(--shell-surface, #faf8f3);
+      color: var(--shell-accent, #644678);
       border: 1px solid #cdc3d2;
       border-radius: 6px;
       padding: 6px 10px;
@@ -1290,7 +1316,7 @@
       height: 40dvh;
       border-left: 0;
       border-top: 1px solid var(--line);
-      box-shadow: 0 -10px 40px #292d3820;
+      box-shadow: 0 -10px 40px var(--shell-ink, #292d38) 20;
       padding-bottom: env(safe-area-inset-bottom);
     }
     [data-sheet="B"][data-open="true"] .reading-pane {

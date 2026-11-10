@@ -29,3 +29,17 @@ Screenshots: `{A,B,C}-{desktop,mid,mobile}.png`, corresponding `-selected.png`, 
 Checks: Svelte check (zero errors/warnings), lint, production build, official Svelte autofixer (no issues; existing architectural suggestions retained), Impeccable detector (empty findings). Chromium checked all variants and viewport classes, sign selection, crowded mobile chart, homepage rendering, no app horizontal overflow and no page errors. Physical devices, Safari, color-vision simulation, production integration and deployment remain unverified. This chooses a shipped theme; it is not a proposed user theme picker.
 
 Ticket: https://github.com/AstrologyEngine/web-issues/issues/29
+
+## Second comparison: legacy theme directions
+
+Owner feedback: retain the rainbow progression of A/C; investigate web-legacy for another set. No palette approved yet. Original A/B/C remain available.
+
+- **D — Porcelain / warm paper:** pale rainbow, uniformly black sign glyphs; root legacy shell (`src/routes/+layout.svelte`): paper #f5f2eb, surface #faf8f3, charcoal #292d38, plum #644678. Quietest ring.
+- **E — Pigment / pearl & violet:** richer mid-light rainbow, uniformly black glyphs; legacy natal course (`src/lib/courses/natal-chart/course.css`): pearl #f8f9fc, wash #edf0f9, navy #26395d, violet #65509b. More chroma in a cool shell.
+- **F — Plum enamel / blue paper:** deep rainbow, uniformly white glyphs; legacy engine course (`src/lib/courses/engine/course.css`): paper #f6f9fc, wash #eaf1f7, slate #233b50, plum #75476f. Strongest ring contrast against the pale shell.
+
+The shell previews retain the approved layout and typography hierarchy; they are color comparisons, not wholesale migrations of the course UI. The source lives at `/Users/jacksteam/Documents/AstrologyEngine/web-legacy`.
+
+Gemini was black in C because automatic relative-luminance contrast selects black on its lighter ochre fill. D/E/F constrain the entire fill range so all signs use the same glyph ink. Minimum glyph contrast: D 10.31:1, E 6.34:1, F 5.96:1, all 13 fills included.
+
+Review `/app?variant=D|E|F` and `/?variant=D|E|F`. The arrows now cycle all six options, preserving chart and selection. Selected-state captures use `review=0` so the prototype harness does not cover the compact sheet. Svelte check/lint pass; official autofixer reports no issues. Browser captures cover the same computed chart, selected states at desktop/mid/mobile, and homepage/app desktop/mobile. Device/Safari/color-vision simulation and production delivery remain outside the evidence recorded here.
