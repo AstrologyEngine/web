@@ -55,3 +55,11 @@ The owner clarified that “legacy front page” means the dark, starry homepage
 **I — Celestial vivid rainbow** and **J — Celestial jewel rainbow** pair the G/H sign fills with midnight #0c1223, ivory #f0e9dc, gold #ddbd79, and the actual legacy landscape asset. Planet/angle ink is gold, secondary ink is pale slate, and the plate is midnight. Homepage review uses a full wheel beside the source headline to assess this visual setting, rather than the warm-paper oversized-wheel context. This is a bounded color reference preview, not a replica of the complete legacy homepage or a production migration.
 
 Review `/?variant=I` and `/?variant=J`; app counterparts remain available. Desktop/mobile captures, Svelte check/lint/build, autofixer, detector and Chromium page/overflow checks recorded. Owner choice remains pending.
+
+## Independent website theme and quieter palettes
+
+Owner found I/J too saturated and requested an independent website-theme dial, anticipating light/dark mode. Added **K — Mineral glow** (A's muted rainbow) and **L — Soft jewel** (medium saturation with white glyphs).
+
+The second review dial now changes **Website: Warm light / Starry dark**, independently of the wheel-palette dial. URL state is `variant=K&theme=dark` or `theme=light`; default website theme is dark. Geometry stays fixed between modes. Palette changes preserve the website theme; website-theme changes preserve every sign fill while updating the page background, chart ink, plate, and aspect tones. Existing palette names retain comparison history; the website dial now overrides their earlier shell associations. This is a development review control, not a finalized production light/dark UX or persisted OS-preference setting.
+
+Chromium verified independence in both directions and captured K/L in both modes at desktop/mobile. No page errors or horizontal overflow. Svelte/lint/build pass, official autofixer reports no issues, detector empty. Production integration, physical devices and final palette approval remain pending.

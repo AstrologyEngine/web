@@ -17,7 +17,7 @@
   import { birthDateLabel, birthTimeLabel } from "../birth-display";
   import type { resolveBirth } from "../server/birth/resolve";
   type Birth = ReturnType<typeof birthSchema.parse>;
-  const variants = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
+  const variants = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
   const names = [
     "Mineral spectrum",
     "Botanical elements",
@@ -29,6 +29,8 @@
     "Jewel spectrum",
     "Celestial · vivid rainbow",
     "Celestial · jewel rainbow",
+    "Celestial · mineral glow",
+    "Celestial · soft jewel",
   ];
   const systems = ["Tropical", "Vedic", "True Sky"];
   let palette = $derived(
@@ -37,7 +39,18 @@
       : "D",
   );
   const variant = "C";
-  const celestial = $derived(palette === "I" || palette === "J");
+  const websiteTheme = $derived(
+    page.url.searchParams.get("theme") === "light" ? "light" : "dark",
+  );
+  const celestial = true;
+  const switchWebsiteTheme = () => {
+    const url = new URL(page.url.href);
+    url.searchParams.set("theme", websiteTheme === "dark" ? "light" : "dark");
+    void goto(
+      resolve(`${landing ? "/" : "/app"}?${url.searchParams.toString()}`),
+      { replace: true },
+    );
+  };
   let index = $derived(variants.indexOf(palette));
   let reviewing = $derived(
     import.meta.env.DEV && page.url.searchParams.get("review") !== "0",
@@ -280,7 +293,12 @@
 {/snippet}
 
 {#if landing}
-  <main class="palette-landing" class:celestial data-palette={palette}>
+  <main
+    class="palette-landing"
+    class:celestial
+    data-palette={palette}
+    data-mode={websiteTheme}
+  >
     <header>Astrology Engine</header>
     <section>
       <h1>
@@ -315,6 +333,7 @@
     class="desktop-prototype"
     data-variant="A"
     data-palette={palette}
+    data-mode={websiteTheme}
     data-sheet={variant}
     data-open={sheetOpen}
     data-expanded={expanded}
@@ -619,11 +638,24 @@
 
 {#if reviewing}
   <footer class="review-bar" aria-label="Prototype review controls">
-    <div class="switcher">
+    <div class="switcher" aria-label="Wheel palette">
       <button aria-label="Previous palette" onclick={() => cycle(-1)}>←</button
       ><strong>{palette} · {names[index]}</strong><button
         aria-label="Next palette"
         onclick={() => cycle(1)}>→</button
+      >
+    </div>
+    <div class="switcher" aria-label="Website theme">
+      <button aria-label="Previous website theme" onclick={switchWebsiteTheme}
+        >←</button
+      >
+      <strong
+        >Website · {websiteTheme === "dark"
+          ? "Starry dark"
+          : "Warm light"}</strong
+      >
+      <button aria-label="Next website theme" onclick={switchWebsiteTheme}
+        >→</button
       >
     </div>
     <div class="review-actions">
@@ -1424,7 +1456,9 @@
     }
   }
   :global(body:has([data-palette="I"])),
-  :global(body:has([data-palette="J"])) {
+  :global(body:has([data-palette="J"])),
+  :global(body:has([data-palette="K"])),
+  :global(body:has([data-palette="L"])) {
     --shell-paper: #0c1223;
     --shell-surface: #141c30;
     --shell-ink: #f0e9dc;
@@ -1432,7 +1466,7 @@
     --shell-line: #46516b;
     color-scheme: dark;
   }
-  .palette-landing.celestial {
+  .palette-landing.celestial[data-mode="dark"] {
     background:
       linear-gradient(90deg, #0c122350, #0c122315),
       url("/prototype-legacy/night-landscape.jpg") center top / cover;
@@ -1452,7 +1486,7 @@
     font-size: clamp(2.8rem, 4.4vw, 4.6rem);
   }
   .celestial h1 em {
-    color: #ddbd79;
+    color: var(--shell-accent);
     font-style: normal;
   }
   .celestial .hero-wheel {
@@ -1475,12 +1509,41 @@
     }
   }
   :global(body:has([data-palette="I"]) .review-bar),
-  :global(body:has([data-palette="J"]) .review-bar) {
+  :global(body:has([data-palette="J"]) .review-bar),
+  :global(body:has([data-palette="K"]) .review-bar),
+  :global(body:has([data-palette="L"]) .review-bar) {
     background: #141c30;
     color: #f0e9dc;
   }
   :global(body:has([data-palette="I"]) .review-bar button),
-  :global(body:has([data-palette="J"]) .review-bar button) {
+  :global(body:has([data-palette="J"]) .review-bar button),
+  :global(body:has([data-palette="K"]) .review-bar button),
+  :global(body:has([data-palette="L"]) .review-bar button) {
+    color: #f0e9dc;
+  }
+
+  :global(body:has([data-mode="light"])) {
+    --shell-paper: #f5f2eb;
+    --shell-surface: #faf8f3;
+    --shell-ink: #292d38;
+    --shell-accent: #644678;
+    --shell-line: #ded9d0;
+    color-scheme: light;
+  }
+  :global(body:has([data-mode="dark"])) {
+    --shell-paper: #0c1223;
+    --shell-surface: #141c30;
+    --shell-ink: #f0e9dc;
+    --shell-accent: #ddbd79;
+    --shell-line: #46516b;
+    color-scheme: dark;
+  }
+  :global(body:has([data-mode]) .review-bar) {
+    background: #141c30;
+    color: #f0e9dc;
+    flex-wrap: wrap;
+  }
+  :global(body:has([data-mode]) .review-bar button) {
     color: #f0e9dc;
   }
 </style>

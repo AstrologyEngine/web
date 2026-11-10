@@ -13,9 +13,28 @@
   import type { Astrology } from "./calculation/snapshot";
   import { page } from "$app/state";
   import { paletteThemes } from "./prototype/palettes";
-  const theme = $derived(
+  const paletteTheme = $derived(
     paletteThemes[page.url.searchParams.get("variant") ?? "A"] ??
       WHEEL_THEMES.traditional,
+  );
+  const darkPreview = $derived(
+    import.meta.env.DEV &&
+      page.url.searchParams.has("variant") &&
+      page.url.searchParams.get("theme") !== "light",
+  );
+  const theme = $derived(
+    import.meta.env.DEV && page.url.searchParams.has("variant")
+      ? {
+          ...paletteTheme,
+          ink: darkPreview
+            ? { strong: "#ddbd79", mid: "#b9bed0", faint: "#46516b" }
+            : { strong: "#292d38", mid: "#635b68", faint: "#c5beb5" },
+          plate: darkPreview ? "#0c1223" : "#faf8f3",
+          aspect: darkPreview
+            ? { hard: "#e68a84", soft: "#84b9df", neutral: "#b9bed0" }
+            : { hard: "#a8493e", soft: "#416a86", neutral: "#817781" },
+        }
+      : paletteTheme,
   );
   let {
     chart,

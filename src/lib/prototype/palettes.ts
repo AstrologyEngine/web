@@ -169,3 +169,22 @@ const celestial = (base: AstroChartTheme): AstroChartTheme => ({
 });
 paletteThemes.I = celestial(paletteThemes.G!);
 paletteThemes.J = celestial(paletteThemes.H!);
+
+paletteThemes.K = celestial(paletteThemes.A!);
+paletteThemes.L = celestial(
+  make([
+    "#9d483f",
+    "#96693c",
+    "#7e7232",
+    "#5d7a31",
+    "#338053",
+    "#327e74",
+    "#397a8e",
+    "#3f619d",
+    "#663f9d",
+    "#6f3f9d",
+    "#953f9d",
+    "#9d3f7d",
+    "#9d3f5b",
+  ]),
+);
