@@ -1,3 +1,4 @@
+import { dev } from "$app/env";
 import { env } from "cloudflare:workers";
 import { json } from "@sveltejs/kit";
 import {
@@ -7,7 +8,7 @@ import {
 import type { RequestHandler } from "./$types";
 
 const headers = { "Cache-Control": "no-store" };
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, fetch }) => {
   try {
     const reader = request.body?.getReader();
     if (!reader)
@@ -61,7 +62,7 @@ export const POST: RequestHandler = async ({ request }) => {
       );
     return json(
       await resolveBirth(input.data, (path) =>
-        env.ASSETS.fetch(new URL(path, request.url)),
+        dev ? fetch(path) : env.ASSETS.fetch(new URL(path, request.url)),
       ),
       {
         headers,

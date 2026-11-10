@@ -3,7 +3,7 @@
 PR CI checks types, lint, formatting, browser behavior, build and Worker packaging.
 Main runs those checks once, then deploys staging and maintains the Changesets release PR.
 Merge a release PR to publish a GitHub prerelease and deploy its exact tag to alpha.
-The app is private and never published to npm. Regular releases do not deploy.
+The repository is public; the app is never published to npm. Regular releases do not deploy.
 
 - Staging: https://staging.astrologyengine.dev (`astrology-engine-web-staging`)
 - Alpha: https://alpha.astrologyengine.dev (`astrology-engine-web-alpha`)
