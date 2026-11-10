@@ -15,7 +15,7 @@ bun run dev
 ```
 
 Before committing: `bun run check`, `bun run check:ts`, `bun run lint`,
-`bun run format:check`, `bun run check:content`, `bun run build`, both environment dry runs, and
+`bun run format:check`, `bun run build`, both environment dry runs, and
 `bun run test:browser` (install Chromium with `bunx playwright install chromium`).
 
 The [editorial review packet](docs/editorial/natal-chart-review.md) records outstanding content review. The [measurement guide](docs/beta-measurement.md) describes the local collection and reporting path and its deployment verification limits.
