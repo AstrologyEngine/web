@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import { t } from "./copy/index.svelte";
   let {
     label,
     name,
@@ -34,7 +35,7 @@
     <button
       ontouchstart={touchStart}
       ontouchend={touchEnd}
-      aria-label="Resize details"
+      aria-label={t("details.shell.resize")}
       aria-valuemin="0"
       aria-valuemax="70"
       aria-valuenow={snap}
@@ -54,7 +55,10 @@
     >
   </div>
   <div class="scroll">
-    <button class="close" onclick={onclose} aria-label="Close details">×</button
+    <button
+      class="close"
+      onclick={onclose}
+      aria-label={t("details.shell.close")}>×</button
     >
     <h2 bind:this={heading} tabindex="-1">{name}</h2>
     {@render children()}

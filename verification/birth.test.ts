@@ -13,8 +13,8 @@ test("requires an explicitly supplied birth time", async () => {
     { sentence: "Born January 2, 1980 in London, England" },
     assets,
   );
-  expect(result.kind).toBe("needs_input");
-  expect(result.message).toContain("birth time");
+  expect(result).toMatchObject({ kind: "needs_input", code: "TIME_MISSING" });
+  expect(result).not.toHaveProperty("message");
 });
 test("preserves explicit seconds and validates atlas identity", async () => {
   const result = await resolveBirth(
@@ -39,6 +39,7 @@ test("requires a choice when a clock time repeats and rejects a gap", async () =
   expect(overlap.kind).toBe("needs_input");
   if (overlap.kind !== "needs_input") throw new Error(JSON.stringify(overlap));
   expect(overlap.timeChoices?.length).toBe(2);
+  expect(overlap.code).toBe("TIME_AMBIGUOUS");
   const picked = await resolveBirth(
     { sentence, timeKey: overlap.timeChoices![1]!.key },
     assets,
@@ -51,7 +52,7 @@ test("requires a choice when a clock time repeats and rejects a gap", async () =
     assets,
   );
   expect(gap.kind).toBe("needs_input");
-  if (gap.kind === "needs_input") expect(gap.message).toContain("skipped");
+  expect(gap).toMatchObject({ code: "TIME_SKIPPED" });
 });
 test("presents ambiguous numeric dates", async () => {
   const result = await resolveBirth(
@@ -60,6 +61,7 @@ test("presents ambiguous numeric dates", async () => {
   );
   expect(result.kind).toBe("needs_input");
   if (result.kind === "needs_input") expect(result.dates.length).toBe(2);
+  expect(result).toMatchObject({ code: "CHOOSE_DATE" });
 });
 test("does not discard explicitly supplied timezone or offset", async () => {
   for (const sentence of [
@@ -70,8 +72,7 @@ test("does not discard explicitly supplied timezone or offset", async () => {
   ]) {
     const result = await resolveBirth({ sentence }, assets);
     expect(result.kind).toBe("needs_input");
-    if (result.kind === "needs_input")
-      expect(result.message).toContain("timezone");
+    expect(result).toMatchObject({ code: "EXPLICIT_TIMEZONE" });
   }
 });
 test("requires a single date and time instead of resolving a range", async () => {
@@ -81,8 +82,7 @@ test("requires a single date and time instead of resolving a range", async () =>
   ]) {
     const result = await resolveBirth({ sentence }, assets);
     expect(result.kind).toBe("needs_input");
-    if (result.kind === "needs_input")
-      expect(result.message).toContain("range");
+    expect(result).toMatchObject({ code: "RANGE" });
   }
 });
 test("resolves historical offsets beyond fourteen hours", async () => {
@@ -94,5 +94,29 @@ test("resolves historical offsets beyond fourteen hours", async () => {
   if (result.kind === "resolved") {
     expect(result.birth.utcOffset).toBe("+15:02:19");
     expect(result.birth.utc).toBe("1860-01-14T19:27:41Z");
+  }
+});
+test("reports outcomes as codes for the client to word", async () => {
+  for (const [sentence, expected] of [
+    [
+      "Born at 3 PM in London, England",
+      { kind: "needs_input", code: "DATE_INCOMPLETE" },
+    ],
+    [
+      "Born June 21, 2000 at 1pm in Qwxzvbnmtown",
+      { kind: "needs_input", code: "PLACE_NOT_FOUND" },
+    ],
+    [
+      "Born June 21, 2099 at 1pm in London, England",
+      { kind: "needs_input", code: "TIME_IN_FUTURE" },
+    ],
+    [
+      "Born June 21, 1800 at 1pm in London, England",
+      { kind: "error", code: "OUT_OF_COVERAGE" },
+    ],
+  ] as const) {
+    const result = await resolveBirth({ sentence }, assets);
+    expect(result, sentence).toMatchObject(expected);
+    expect(result, sentence).not.toHaveProperty("message");
   }
 });

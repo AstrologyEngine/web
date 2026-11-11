@@ -4,14 +4,10 @@
   import type { Chart } from "./calculation/chart";
   import type { Selection } from "./selection";
   import { houseFor, signAt } from "./selection";
-  import {
-    signs,
-    houses,
-    angles,
-    aspectContent,
-    rulers,
-  } from "./exploration-content";
-  import { bodySymbols } from "./wheel/body-symbols";
+  import { rulers } from "./rulers";
+  import { copy, t } from "./copy/index.svelte";
+  import type { PlainKey } from "./copy/copy";
+  import { referenceLabel } from "./labels";
   let {
     selection,
     chart,
@@ -25,24 +21,33 @@
     snap: 40 | 70;
     onclose: () => void;
   } = $props();
-  const title = (value: string) => value[0]!.toUpperCase() + value.slice(1);
+  const labels = {
+    sign: "details.label.sign",
+    house: "details.label.house",
+    angle: "details.label.angle",
+    aspect: "details.label.aspect",
+  } as const satisfies Record<typeof selection.kind, PlainKey>;
   let name = $derived(
     selection.kind === "sign"
-      ? title(selection.name)
+      ? copy().signName(selection.name)
       : selection.kind === "house"
-        ? `House ${selection.number}`
+        ? copy().houseName(selection.number)
         : selection.kind === "angle"
-          ? (bodySymbols[selection.name]?.name ?? selection.name)
-          : `${bodySymbols[selection.first]?.name ?? selection.first} ${selection.aspectType} ${bodySymbols[selection.second]?.name ?? selection.second}`,
+          ? copy().pointName(selection.name)
+          : t("details.aspect.title", {
+              first: copy().pointName(selection.first),
+              aspect: copy().aspectName(selection.aspectType),
+              second: copy().pointName(selection.second),
+            }),
   );
   let content = $derived(
     selection.kind === "sign"
-      ? signs[selection.name]
+      ? copy().sign(selection.name)
       : selection.kind === "house"
-        ? houses[selection.number - 1]!
+        ? copy().house(selection.number)
         : selection.kind === "angle"
-          ? angles[selection.name]!
-          : aspectContent[selection.aspectType],
+          ? copy().angle(selection.name)
+          : copy().aspect(selection.aspectType),
   );
   let cuspSign = $derived(
     selection.kind === "house"
@@ -62,52 +67,63 @@
 </script>
 
 <DetailsShell
-  label={`${title(selection.kind)} details`}
+  label={t(labels[selection.kind])}
   {name}
   bind:heading
   bind:snap
   {onclose}
 >
-  <p>{content.insight}</p>
-  <p class="keywords">{content.keywords.join(" · ")}</p>
+  {#if content}
+    <p>{content.insight}</p>
+    <p class="keywords">{content.keywords.join(" · ")}</p>
+  {:else}
+    <p>{t("details.unavailable")}</p>
+  {/if}
   {#if selection.kind === "house"}
     <dl>
       <div>
-        <dt>Sign at cusp</dt>
-        <dd>{cuspSign ? title(cuspSign) : "Unavailable"}</dd>
+        <dt>{t("details.house.cuspSign")}</dt>
+        <dd>
+          {cuspSign
+            ? copy().signName(cuspSign)
+            : t("details.house.unavailable")}
+        </dd>
       </div>
       {#if ruler && ruler[0] !== ruler[1]}
         <div>
-          <dt>Traditional ruler</dt>
-          <dd>{ruler[0]}</dd>
+          <dt>{t("details.house.traditionalRuler")}</dt>
+          <dd>{copy().pointName(ruler[0])}</dd>
         </div>
         <div>
-          <dt>Modern ruler</dt>
-          <dd>{ruler[1]}</dd>
+          <dt>{t("details.house.modernRuler")}</dt>
+          <dd>{copy().pointName(ruler[1])}</dd>
         </div>
       {:else}<div>
-          <dt>Ruler</dt>
-          <dd>{ruler ? ruler[0] : "No established ruler"}</dd>
+          <dt>{t("details.house.ruler")}</dt>
+          <dd>
+            {ruler ? copy().pointName(ruler[0]) : t("details.house.noRuler")}
+          </dd>
         </div>{/if}
       <div>
-        <dt>Occupants</dt>
+        <dt>{t("details.house.occupants")}</dt>
         <dd>
           {occupants.length
-            ? occupants
-                .map((b) => bodySymbols[b.name]?.name ?? b.name)
-                .join(", ")
-            : "No bodies in this house"}
+            ? occupants.map((b) => copy().pointName(b.name)).join(", ")
+            : t("details.house.empty")}
         </dd>
       </div>
     </dl>
   {/if}
   <p class="context">
-    {chart.configuration.reference === "tropical"
-      ? "Tropical"
-      : chart.configuration.reference === "fagan-bradley"
-        ? "Vedic"
-        : "True Sky"} · {chart.house_system} houses{chart.requested_house_system !== chart.house_system
-      ? ` (requested ${chart.requested_house_system})`
-      : ""}
+    {chart.requested_house_system !== chart.house_system
+      ? t("details.contextRequested", {
+          reference: t(referenceLabel[chart.configuration.reference]),
+          houseSystem: chart.house_system,
+          requested: chart.requested_house_system,
+        })
+      : t("details.context", {
+          reference: t(referenceLabel[chart.configuration.reference]),
+          houseSystem: chart.house_system,
+        })}
   </p>
 </DetailsShell>

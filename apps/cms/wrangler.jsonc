@@ -1,0 +1,66 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "astrology-engine-cms-local",
+  "main": "src/index.ts",
+  // Newest date supported by the runtime bundled with @cloudflare/vitest-plugin 1.1.13.
+  "compatibility_date": "2026-09-25",
+  "workers_dev": false,
+  "preview_urls": false,
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "redact_query_string": true,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": false,
+    },
+  },
+  "vars": {
+    "CMS_ALLOWED_ORIGINS": "http://127.0.0.1:4173,http://localhost:4173,http://localhost:5173",
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "astrology-engine-cms-local",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "env": {
+    "staging": {
+      "name": "astrology-engine-cms-staging",
+      "routes": [
+        { "pattern": "cms-staging.astrologyengine.dev", "custom_domain": true },
+      ],
+      "vars": {
+        "CMS_ALLOWED_ORIGINS": "https://staging.astrologyengine.dev",
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "astrology-engine-cms-staging",
+          "database_id": "REPLACE_WITH_STAGING_DATABASE_ID",
+          "migrations_dir": "migrations",
+        },
+      ],
+    },
+    "alpha": {
+      "name": "astrology-engine-cms-alpha",
+      "routes": [
+        { "pattern": "cms-alpha.astrologyengine.dev", "custom_domain": true },
+      ],
+      "vars": {
+        "CMS_ALLOWED_ORIGINS": "https://alpha.astrologyengine.dev",
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "astrology-engine-cms-alpha",
+          "database_id": "REPLACE_WITH_ALPHA_DATABASE_ID",
+          "migrations_dir": "migrations",
+        },
+      ],
+    },
+  },
+}

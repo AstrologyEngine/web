@@ -5,6 +5,7 @@ import { extractLocationQuery } from "./location-remainder";
 import { REGION_ABBREVIATIONS } from "./regions";
 import { atlasHash, atlasManifest } from "./atlas-manifest";
 import { birthSchema } from "../../domain";
+import type { ResolverCode } from "../../messages";
 
 export const resolverVersion =
   "website-e00a2f9e10aa5b4f338875bc306166bfb939903c-plugin-v1";
@@ -141,8 +142,7 @@ export const resolveBirth = async (
       dates,
       locations: [],
       locationQuery,
-      message:
-        "The birth details contain a range. Supply one exact date and time.",
+      code: "RANGE" as const,
     };
   if (
     parsed.hasExplicitTimezone ||
@@ -154,8 +154,7 @@ export const resolveBirth = async (
       dates,
       locations: [],
       locationQuery,
-      message:
-        "An explicit timezone or offset was supplied. Please provide the local birth date and time at the birthplace without a timezone, or clarify the intended local time.",
+      code: "EXPLICIT_TIMEZONE" as const,
     };
   const places = await locations(locationQuery, fetchAsset);
   const valid = dates.filter((d) => d.valid);
@@ -172,27 +171,17 @@ export const resolveBirth = async (
       : undefined);
   const base = { dates, locations: places, locationQuery };
   const need = (
-    message: string,
+    code: ResolverCode,
     timeChoices?: { key: string; label: string }[],
   ) => ({
     kind: "needs_input" as const,
     ...base,
-    message,
+    code,
     ...(timeChoices ? { timeChoices } : {}),
   });
-  if (!date)
-    return need(
-      dates.length
-        ? "Choose a valid date interpretation."
-        : "Enter a complete birth date, including the year.",
-    );
-  if (!date.hasTime) return need("Add your birth time to calculate a chart.");
-  if (!place)
-    return need(
-      places.length
-        ? "Choose your birthplace."
-        : "No place found. Add a city and state or country.",
-    );
+  if (!date) return need(dates.length ? "CHOOSE_DATE" : "DATE_INCOMPLETE");
+  if (!date.hasTime) return need("TIME_MISSING");
+  if (!place) return need(places.length ? "CHOOSE_PLACE" : "PLACE_NOT_FOUND");
   const wall = Temporal.PlainDateTime.from(date.wallClock, {
     overflow: "reject",
   });
@@ -206,9 +195,7 @@ export const resolveBirth = async (
     !earlier.toPlainDateTime().equals(wall) ||
     !later.toPlainDateTime().equals(wall)
   )
-    return need(
-      "That local time was skipped when the clocks changed. Correct the birth time.",
-    );
+    return need("TIME_SKIPPED");
   let zoned = earlier;
   if (earlier.epochNanoseconds !== later.epochNanoseconds) {
     const choices = [earlier, later].map((t) => ({
@@ -218,21 +205,15 @@ export const resolveBirth = async (
     const selected = [earlier, later].find(
       (t) => t.toInstant().toString() === body.timeKey,
     );
-    if (!selected)
-      return need(
-        "That local time occurred twice. Choose the recorded UTC offset.",
-        choices,
-      );
+    if (!selected) return need("TIME_AMBIGUOUS", choices);
     zoned = selected;
   }
   const utc = zoned.toInstant().toString({ smallestUnit: "second" });
-  if (Date.parse(utc) > Date.now())
-    return need("Birth time must be in the past.");
+  if (Date.parse(utc) > Date.now()) return need("TIME_IN_FUTURE");
   if (utc < "1849-12-31T23:59:28Z" || utc > "2149-12-20T23:58:50Z")
     return {
       kind: "error" as const,
-      code: "OUT_OF_COVERAGE",
-      message: "Birth time is outside sky data coverage.",
+      code: "OUT_OF_COVERAGE" as const,
       retryable: false,
     };
   const label = [place.city, place.region, place.country]
@@ -262,9 +243,7 @@ export const resolveBirth = async (
   if (!candidate.success)
     return {
       kind: "error" as const,
-      code: "INVALID_INPUT",
-      message:
-        "The birth details could not be validated. Check the date, time and birthplace.",
+      code: "INVALID_BIRTH" as const,
       retryable: false,
     };
   const birth = candidate.data;

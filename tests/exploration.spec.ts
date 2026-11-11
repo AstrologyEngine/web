@@ -98,7 +98,7 @@ test("controlled engine positions use raw final-degree boundaries", async ({
       details.getByText(fixture.degree, { exact: true }),
     ).toBeVisible();
     if (fixture.progress === 0)
-      await expect(details.getByText("cancer", { exact: true })).toBeVisible();
+      await expect(details.getByText("Cancer", { exact: true })).toBeVisible();
     await expect(details.getByText(/final degree of its sign/i)).toHaveCount(
       fixture.bridge ? 1 : 0,
     );

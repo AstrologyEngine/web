@@ -1,6 +1,8 @@
 <script lang="ts">
   import type { Measurement } from "./measurement/client";
-  import { systemHelp, customTrueSkyHelp } from "./exploration-content";
+  import { t } from "./copy/index.svelte";
+  import { housesLabel, presetLabel } from "./labels";
+  import type { PlainKey } from "./copy/copy";
   import { settingsSchema } from "./domain";
   import {
     choosePreset,
@@ -33,6 +35,11 @@
   let selected = $derived(matchPreset(accepted));
   let requestedName = $derived(matchPreset(requested));
   const names: Preset[] = ["Tropical", "Vedic", "True Sky", "Custom"];
+  const systemHelpKey = {
+    tropical: "settings.help.tropical",
+    "fagan-bradley": "settings.help.faganBradley",
+    "true-sky": "settings.help.trueSky",
+  } as const satisfies Record<Settings["reference"], PlainKey>;
   const choose = (name: Preset) => {
     measurement?.use("settings");
     measurement?.interaction("navigation");
@@ -68,12 +75,12 @@
 </script>
 
 <div class="settings">
-  <div class="presets" role="group" aria-label="Zodiac presets">
+  <div class="presets" role="group" aria-label={t("settings.presets.label")}>
     {#each names as name (name)}
       <button
         aria-pressed={selected === name}
         aria-busy={pending && requestedName === name}
-        onclick={() => choose(name)}>{name}</button
+        onclick={() => choose(name)}>{t(presetLabel[name])}</button
       >
     {/each}
   </div>
@@ -86,34 +93,46 @@
         measurement?.use("system_help");
         measurement?.open({ kind: "system_help", system: selected });
       }
-    }}>About this system</button
+    }}>{t("settings.help.toggle")}</button
   >
-  {#if helpOpen}<div id="system-help" role="region" aria-label="System help">
+  {#if helpOpen}<div
+      id="system-help"
+      role="region"
+      aria-label={t("settings.help.label")}
+    >
       <p>
         {accepted.reference === "true-sky" && accepted.divisions === "equal"
-          ? customTrueSkyHelp.text
-          : systemHelp[accepted.reference]}
+          ? t("settings.help.trueSkyEqual")
+          : t(systemHelpKey[accepted.reference])}
       </p>
       <p>
-        Signs: {accepted.divisions}{accepted.divisions ===
-        "constellation"
-          ? accepted.ophiuchus
-            ? " · Ophiuchus included"
-            : " · Ophiuchus excluded"
-          : ""}. Actual houses: {actualHouses}.
+        {t(
+          accepted.divisions !== "constellation"
+            ? "settings.help.summary"
+            : accepted.ophiuchus
+              ? "settings.help.summaryOphiuchusIncluded"
+              : "settings.help.summaryOphiuchusExcluded",
+          {
+            divisions: t(
+              accepted.divisions === "constellation"
+                ? "settings.help.divisionsConstellation"
+                : "settings.help.divisionsEqual",
+            ),
+            houses: actualHouses,
+          },
+        )}
       </p>
     </div>{/if}
   <button class="advanced" onclick={open}
-    >Advanced settings: {selected} · {accepted.houses === "whole-sign"
-      ? "Whole Sign"
-      : accepted.houses === "placidus"
-        ? "Placidus"
-        : "Equal"} houses</button
+    >{t("settings.advanced.open", {
+      preset: t(presetLabel[selected]),
+      houses: t(housesLabel[accepted.houses]),
+    })}</button
   >
 </div>
 {#if dialogOpen && draft}
   <dialog
-    aria-label="Advanced settings"
+    aria-label={t("settings.advanced.title")}
     {@attach setup}
     onkeydown={(event) => {
       if (event.key === "Escape") event.stopPropagation();
@@ -136,11 +155,14 @@
     }}
   >
     <div class="dialog-header">
-      <h2>Advanced settings</h2>
-      <button aria-label="Close Advanced settings" onclick={apply}>✕</button>
+      <h2>{t("settings.advanced.title")}</h2>
+      <button aria-label={t("settings.advanced.close")} onclick={apply}
+        >✕</button
+      >
     </div>
-    <p>Changes apply when you press Apply or close this panel.</p>
-    <label> Zodiac reference
+    <p>{t("settings.advanced.intro")}</p>
+    <label>
+      {t("settings.reference.label")}
       <select
         bind:value={draft.reference}
         onchange={() => {
@@ -150,23 +172,33 @@
           }
         }}
       >
-        <option value="tropical">Tropical</option><option value="fagan-bradley"
-          >Fagan–Bradley (Vedic)</option
-        ><option value="true-sky">True Sky</option>
+        <option value="tropical">{t("settings.reference.tropical")}</option
+        ><option value="fagan-bradley"
+          >{t("settings.reference.faganBradley")}</option
+        ><option value="true-sky">{t("settings.reference.trueSky")}</option>
       </select>
     </label>
     <label
-      >Sign divisions
+      >{t("settings.divisions.label")}
       <select
         bind:value={draft.divisions}
         disabled={draft.reference !== "true-sky"}
         onchange={() => {
           if (draft && draft.divisions === "equal") draft.ophiuchus = false;
         }}
-      ><option value="equal">Equal</option><option value="constellation">Constellation</option></select>
+        ><option value="equal">{t("settings.divisions.equal")}</option><option
+          value="constellation">{t("settings.divisions.constellation")}</option
+        ></select
+      >
     </label>
     <label
-      >House system <select bind:value={draft.houses}><option value="whole-sign">Whole Sign</option><option value="equal">Equal</option><option value="placidus">Placidus</option></select></label
+      >{t("settings.houses.label")}
+      <select bind:value={draft.houses}
+        ><option value="whole-sign">{t("settings.houses.wholeSign")}</option
+        ><option value="equal">{t("settings.houses.equal")}</option><option
+          value="placidus">{t("settings.houses.placidus")}</option
+        ></select
+      ></label
     >
     <label class="check"
       ><input
@@ -174,12 +206,24 @@
         bind:checked={draft.ophiuchus}
         disabled={draft.reference !== "true-sky" ||
           draft.divisions !== "constellation"}
-      /> Include Ophiuchus</label
+      />
+      {t("settings.ophiuchus.label")}</label
     >
     <label
-      >Atmakaraka method <select bind:value={draft.atmakaraka}><option value="progressInSign">Progress in Sign</option><option value="closestToMC">Closest to MC</option></select></label
+      >{t("settings.atmakaraka.label")}
+      <select bind:value={draft.atmakaraka}
+        ><option value="progressInSign"
+          >{t("settings.atmakaraka.progressInSign")}</option
+        ><option value="closestToMC"
+          >{t("settings.atmakaraka.closestToMc")}</option
+        ></select
+      ></label
     >
-    <footer><button class="primary" onclick={apply}>Apply</button></footer>
+    <footer>
+      <button class="primary" onclick={apply}
+        >{t("settings.advanced.apply")}</button
+      >
+    </footer>
   </dialog>
 {/if}
 

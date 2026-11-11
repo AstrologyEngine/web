@@ -1,0 +1,2 @@
+# Copy to .dev.vars for local admin access. At least 32 characters.
+CMS_ADMIN_TOKEN=local-development-token-change-me-0123456789

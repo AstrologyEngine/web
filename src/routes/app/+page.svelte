@@ -6,6 +6,7 @@
   } from "../../lib/measurement/client";
   import BirthEdit from "../../lib/BirthEdit.svelte";
   import Explorer from "../../lib/Explorer.svelte";
+  import LanguageSwitcher from "../../lib/LanguageSwitcher.svelte";
   import SettingsControls from "../../lib/SettingsControls.svelte";
   import {
     customFields,
@@ -18,6 +19,10 @@
   import type { Snapshot } from "../../lib/calculation/snapshot";
   import type { resolveBirth } from "../../lib/server/birth/resolve";
   import { z } from "zod";
+  import { t } from "../../lib/copy/index.svelte";
+  import type { PlainKey } from "../../lib/copy/copy";
+  import { presetLabel } from "../../lib/labels";
+  import { calculationMessageKey } from "../../lib/messages";
   import "../../lib/prototype.css";
   type Birth = z.infer<typeof birthSchema>;
   type Resolution = Awaited<ReturnType<typeof resolveBirth>>;
@@ -30,13 +35,12 @@
     z.object({
       kind: z.literal("error"),
       code: z.string(),
-      message: z.string(),
       retryable: z.boolean(),
     }),
     z
       .object({
         kind: z.literal("needs_input"),
-        message: z.string(),
+        code: z.string(),
         locationQuery: z.string(),
         dates: z.array(
           z
@@ -82,7 +86,7 @@
   let snapshot = $state<Snapshot | null>(null);
   let editing = $state(true);
   let loading = $state(false);
-  let error = $state("");
+  let error = $state<PlainKey | null>(null);
   let editButton = $state<HTMLButtonElement>();
   let generation = 0;
   let worker: Worker | undefined;
@@ -105,13 +109,10 @@
       ) {
         snapshot = parsed.data;
         measurement?.chart(matchPreset(parsed.data.requestedSettings));
-        error = "";
+        error = null;
       } else {
         measurement?.fail("calculation", "failed");
-        error =
-          typeof result?.message === "string"
-            ? result.message
-            : "Calculation failed. Please retry.";
+        error = calculationMessageKey(result?.code);
         if (result?.retryWorker) {
           instance.terminate();
           worker = undefined;
@@ -126,14 +127,14 @@
       clearTimeout(timeout);
       loading = false;
       measurement?.fail("calculation", "unavailable");
-      error = "Calculation could not start. Please retry.";
+      error = "error.calculation.notStarted";
     };
     return instance;
   };
   const calculate = (value: Birth) => {
     generation++;
     loading = true;
-    error = "";
+    error = null;
     clearTimeout(timeout);
     try {
       worker ??= makeWorker();
@@ -147,14 +148,14 @@
         worker = undefined;
         loading = false;
         measurement?.fail("calculation", "timeout");
-        error = "Calculation took too long. Please retry.";
+        error = "error.calculation.timeout";
       }, 30000);
     } catch {
       worker?.terminate();
       worker = undefined;
       loading = false;
       measurement?.fail("calculation", "unavailable");
-      error = "Calculation could not start. Please retry.";
+      error = "error.calculation.notStarted";
     }
   };
   onMount(() => {
@@ -213,21 +214,33 @@
   }
 </script>
 
-<svelte:head><title>Your chart | Astrology Engine</title></svelte:head>
+<svelte:head><title>{t("app.meta.title")}</title></svelte:head>
 <main class={{ "chart-ready": !!snapshot && !editing }}>
-  <header><span>✳</span> Astrology Engine <small>BETA</small></header>
+  <header>
+    <span>✳</span>
+    {t("brand.name")}
+    <small>{t("brand.beta")}</small><LanguageSwitcher />
+  </header>
   <section class="entry">
-    <p class="eyebrow">YOUR NATAL CHART</p>
-    <h1>{birth ? "Your birth chart" : "Start with your birth details"}</h1>
+    <p class="eyebrow">{t("app.entry.eyebrow")}</p>
+    <h1>
+      {birth ? t("app.entry.headingWithBirth") : t("app.entry.headingEmpty")}
+    </h1>
     {#if editing}<BirthEdit
         {birth}
         {resolve}
         onclose={accept}
         onstart={() => measurement?.start()}
       />{:else}
-      <p>{birth?.localDate} at {birth?.localTime} in {birth?.place.label}</p>
+      {#if birth}<p>
+          {t("app.entry.summary", {
+            date: birth.localDate,
+            time: birth.localTime,
+            place: birth.place.label,
+          })}
+        </p>{/if}
       <button bind:this={editButton} onclick={() => (editing = true)}
-        >Edit birth details</button
+        >{t("app.entry.edit")}</button
       >
     {/if}
   </section>
@@ -242,27 +255,42 @@
     />{/if}
   {#if snapshot && JSON.stringify(snapshot.requestedSettings) !== JSON.stringify(settings)}<p
       role="status"
-    >Showing {matchPreset(snapshot.requestedSettings)} chart{loading
-        ? ` while updating to ${matchPreset(settings)}`
-        : "; requested settings have not been applied"}.</p>{/if}
+    >
+      {loading
+        ? t("app.status.updating", {
+            shown: t(presetLabel[matchPreset(snapshot.requestedSettings)]),
+            requested: t(presetLabel[matchPreset(settings)]),
+          })
+        : t("app.status.notApplied", {
+            shown: t(presetLabel[matchPreset(snapshot.requestedSettings)]),
+          })}
+    </p>{/if}
   {#if loading}<p role="status">
-      Calculating your chart…{snapshot ? " Showing your previous chart." : ""}
+      {snapshot
+        ? t("app.status.calculatingWithPrevious")
+        : t("app.status.calculating")}
     </p>{/if}
   {#if error}
-    <p role="alert">{error}</p>
-    <button onclick={() => birth && calculate(birth)}>Retry calculation</button>
+    <p role="alert">{t(error)}</p>
+    <button onclick={() => birth && calculate(birth)}
+      >{t("app.error.retry")}</button
+    >
   {/if}
   {#if snapshot && birth && (snapshot.birth.utc !== birth.utc || snapshot.birth.place.id !== birth.place.id)}<p
       role="status"
     >
-      Showing the previous chart for {snapshot.birth.localDate} at {snapshot.birth
-        .localTime}
-      in {snapshot.birth.place.label}.
+      {t("app.status.previousBirth", {
+        date: snapshot.birth.localDate,
+        time: snapshot.birth.localTime,
+        place: snapshot.birth.place.label,
+      })}
     </p>{/if}
   {#if snapshot?.systems.astrology}
-    {#if snapshot.systems.astrology.selectedFrame.requested_house_system !== snapshot.systems.astrology.selectedFrame.house_system}<p>
-        House system adjusted to {snapshot.systems.astrology.selectedFrame
-          .house_system}.
+    {#if snapshot.systems.astrology.selectedFrame.requested_house_system !== snapshot.systems.astrology.selectedFrame.house_system}<p
+      >
+        {t("app.status.housesAdjusted", {
+          houseSystem: snapshot.systems.astrology.selectedFrame.house_system,
+        })}
       </p>{/if}
     <Explorer {snapshot} birthIdentity={JSON.stringify(birth)} {measurement} />
   {/if}
