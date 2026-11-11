@@ -1,5 +1,4 @@
-import { dev } from "$app/env";
-import { env } from "cloudflare:workers";
+import { dev } from "$app/environment";
 import { json } from "@sveltejs/kit";
 import {
   resolveBirth,
@@ -8,15 +7,14 @@ import {
 import type { RequestHandler } from "./$types";
 
 const headers = { "Cache-Control": "no-store" };
-export const POST: RequestHandler = async ({ request, fetch }) => {
+export const POST: RequestHandler = async ({ request, fetch, platform }) => {
   try {
     const reader = request.body?.getReader();
     if (!reader)
       return json(
         {
           kind: "error",
-          code: "INVALID_INPUT",
-          message: "Enter your birth details.",
+          code: "EMPTY_INPUT",
           retryable: false,
         },
         { status: 400, headers },
@@ -32,8 +30,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
         return json(
           {
             kind: "error",
-            code: "INVALID_INPUT",
-            message: "Birth details are too long.",
+            code: "INPUT_TOO_LONG",
             retryable: false,
           },
           { status: 413, headers },
@@ -55,14 +52,15 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
         {
           kind: "error",
           code: "INVALID_INPUT",
-          message: "Please check your birth details.",
           retryable: false,
         },
         { status: 400, headers },
       );
     return json(
       await resolveBirth(input.data, (path) =>
-        dev ? fetch(path) : env.ASSETS.fetch(new URL(path, request.url)),
+        dev
+          ? fetch(path)
+          : platform!.env.ASSETS.fetch(new URL(path, request.url)),
       ),
       {
         headers,
@@ -73,7 +71,6 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
       {
         kind: "error",
         code: "TEMPORARY_FAILURE",
-        message: "Unable to resolve birth details. Please try again.",
         retryable: true,
       },
       { status: 503, headers },

@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import type { Chart } from "./calculation/chart";
   import { bodySymbols } from "./wheel/body-symbols";
+  import { copy, t } from "./copy/index.svelte";
   type BodyName = Chart["bodies"][number]["name"];
   let {
     members,
@@ -20,7 +21,7 @@
 
 <dialog
   bind:this={dialog}
-  aria-label="Choose a body"
+  aria-label={t("wheel.groupPicker.title")}
   oncancel={(event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -31,8 +32,10 @@
   }}
 >
   <div class="header">
-    <h2>Choose a body</h2>
-    <button aria-label="Close body picker" onclick={onclose}>×</button>
+    <h2>{t("wheel.groupPicker.title")}</h2>
+    <button aria-label={t("wheel.groupPicker.close")} onclick={onclose}
+      >×</button
+    >
   </div>
   <div class="tiles">
     {#each members as name (name)}
@@ -43,7 +46,7 @@
             fill="currentColor"
             fill-rule="evenodd"
           /></svg
-        ><span>{bodySymbols[name].name}</span></button
+        ><span>{copy().pointName(name)}</span></button
       >
     {/each}
   </div>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from "./copy/index.svelte";
   import type { Measurement } from "./measurement/client";
   import type { Snippet } from "svelte";
   let {
@@ -55,31 +56,31 @@
 <div class="mobile-wheel">
   <div class="controls">
     <button onclick={toggle} aria-pressed={zoomed}
-      >{zoomed ? "Show whole wheel" : "Zoom half wheel"}</button
+      >{zoomed ? t("wheel.mobile.zoomOut") : t("wheel.mobile.zoomIn")}</button
     >
     {#if zoomed}
       <button
-        aria-label="Pan wheel left"
+        aria-label={t("wheel.mobile.panLeft")}
         onclick={() => {
           measurement?.interaction("pan");
           viewport?.scrollBy({ left: -140 });
         }}>←</button
       >
       <button
-        aria-label="Pan wheel right"
+        aria-label={t("wheel.mobile.panRight")}
         onclick={() => {
           measurement?.interaction("pan");
           viewport?.scrollBy({ left: 140 });
         }}>→</button
       >
-      <small>Drag sideways to pan</small>
+      <small>{t("wheel.mobile.dragHint")}</small>
     {/if}
   </div>
   <div
     bind:this={viewport}
     class={["viewport", { zoomed }]}
     role="region"
-    aria-label="Chart viewport"
+    aria-label={t("wheel.mobile.viewport")}
     tabindex="-1"
     onpointerdown={down}
     onpointermove={move}

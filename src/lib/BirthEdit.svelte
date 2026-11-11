@@ -3,8 +3,12 @@
   import { onMount, untrack } from "svelte";
   import { birthSchema } from "./domain";
   import type { resolveBirth } from "./server/birth/resolve";
+  import { t } from "./copy/index.svelte";
+  import { resolverMessageKey, type ResolverCode } from "./messages";
   type Birth = ReturnType<typeof birthSchema.parse>;
-  type Resolution = Awaited<ReturnType<typeof resolveBirth>>;
+  type Resolution =
+    | Awaited<ReturnType<typeof resolveBirth>>
+    | { kind: "error"; code: ResolverCode; retryable: boolean };
   let {
     birth,
     resolve,
@@ -23,6 +27,7 @@
   } = $props();
   let ready = $state(false);
   const initialBirth = untrack(() => birth);
+  // Input for the English sentence parser, not display copy.
   const initial = initialBirth
     ? `${initialBirth.localDate} at ${initialBirth.localTime} in ${initialBirth.place.label}`
     : "";
@@ -71,12 +76,7 @@
       return next;
     } catch {
       if (version === serial)
-        result = {
-          kind: "error",
-          code: "TEMPORARY_FAILURE",
-          message: "Unable to resolve birth details. Please try again.",
-          retryable: true,
-        } as Resolution;
+        result = { kind: "error", code: "TEMPORARY_FAILURE", retryable: true };
       return null;
     } finally {
       if (version === serial) busy = false;
@@ -121,7 +121,7 @@
 <section>
   <div>
     <label class="field"
-      >Birth details
+      >{t("birth.input.label")}
       <textarea
         id="birth-input"
         disabled={!ready}
@@ -131,7 +131,7 @@
         bind:value={sentence}
         oninput={changed}
         rows="3"
-        placeholder="June 21, 2000 at 1pm in London"></textarea></label
+        placeholder={t("birth.input.placeholder")}></textarea></label
     >
     <div class="chips" aria-live="polite">
       {#if result?.kind === "resolved"}<span class="confirmed"
@@ -142,53 +142,67 @@
         >
       {:else if result?.kind === "needs_input"}<span
           class={{ confirmed: result.dates.some((d) => d.valid) }}
-          >{result.dates.find((d) => d.valid)?.label ?? "Date needed"}</span
+          >{result.dates.find((d) => d.valid)?.label ??
+            t("birth.chip.dateNeeded")}</span
         ><span class={{ confirmed: result.dates.some((d) => d.hasTime) }}>
           {result.dates.some((d) => d.hasTime)
-            ? "Time provided"
-            : "Birth time needed"}</span
+            ? t("birth.chip.timeProvided")
+            : t("birth.chip.timeNeeded")}</span
         ><span class={{ confirmed: result.locations.length > 0 }}
-          >{result.locations.length ? "Place found" : "Birthplace needed"}</span
+          >{result.locations.length
+            ? t("birth.chip.placeFound")
+            : t("birth.chip.placeNeeded")}</span
         >
-      {:else}<span>Date needed</span><span>Birth time needed</span><span
-          >Birthplace needed</span
-        >{/if}
+      {:else}<span>{t("birth.chip.dateNeeded")}</span><span
+          >{t("birth.chip.timeNeeded")}</span
+        ><span>{t("birth.chip.placeNeeded")}</span>{/if}
     </div>
-    {#if busy}<p role="status">Resolving birth details…</p>{/if}
+    {#if busy}<p role="status">{t("birth.status.resolving")}</p>{/if}
     {#if result && result.kind !== "resolved"}<p class="warning" role="status">
-        {result.message}
+        {t(resolverMessageKey(result.code))}
       </p>{/if}
     {#if result?.kind === "error" && result.retryable}<button
-        onclick={() => void run()}>Retry</button
+        onclick={() => void run()}>{t("birth.action.retry")}</button
       >{/if}
     {#if result?.kind === "needs_input"}
-      {#if result.dates.filter((d) => d.valid).length > 1}<fieldset><legend>Choose
-      a date</legend>{#each result.dates.filter((d) => d.valid) as date (date.key)}<button
+      {#if result.dates.filter((d) => d.valid).length > 1}<fieldset>
+          <legend>{t("birth.choice.date")}</legend
+          >{#each result.dates.filter((d) => d.valid) as date (date.key)}<button
               aria-pressed={dateKey === date.key}
               onclick={() => choose("date", date.key)}>{date.label}</button
-            >{/each}</fieldset>{/if}
-      {#if result.locations.length > 1}<fieldset><legend>Choose a birthplace</legend>{#each result.locations as place (place.key)}<button
+            >{/each}
+        </fieldset>{/if}
+      {#if result.locations.length > 1}<fieldset>
+          <legend>{t("birth.choice.place")}</legend
+          >{#each result.locations as place (place.key)}<button
               aria-pressed={locationKey === place.key}
-              onclick={() => choose("location", place.key)}>{place.city}, {place.region},
-              {place.country}</button
-            >{/each}</fieldset>{/if}
-      {#if result.timeChoices}<fieldset><legend>Choose the recorded offset</legend>{#each result.timeChoices as time (time.key)}<button
+              onclick={() => choose("location", place.key)}
+              >{t("birth.choice.placeOption", {
+                city: place.city,
+                region: place.region,
+                country: place.country,
+              })}</button
+            >{/each}
+        </fieldset>{/if}
+      {#if result.timeChoices}<fieldset>
+          <legend>{t("birth.choice.offset")}</legend
+          >{#each result.timeChoices as time (time.key)}<button
               aria-pressed={timeKey === time.key}
               onclick={() => choose("time", time.key)}>{time.label}</button
-            >{/each}</fieldset>{/if}
+            >{/each}
+        </fieldset>{/if}
     {/if}
   </div>
-  <p class="field-hint">
-    Complete edits apply on Apply or close. Incomplete edits are discarded on
-    close.
-  </p>
+  <p class="field-hint">{t("birth.edit.hint")}</p>
   <div class="actions">
     <button
       class="primary"
       disabled={busy || result?.kind !== "resolved"}
-      onclick={() => void close()}>Apply</button
+      onclick={() => void close()}>{t("birth.action.apply")}</button
     >
-    {#if birth}<button onclick={() => void close()}>Close</button>{/if}
+    {#if birth}<button onclick={() => void close()}
+        >{t("birth.action.close")}</button
+      >{/if}
   </div>
 </section>
 

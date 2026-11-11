@@ -5,14 +5,14 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "bun run worker:build && vite dev",
+    "dev": "bun run worker:build && node scripts/cms-snapshot.mjs && vite dev",
     "sync": "svelte-kit sync",
-    "check": "rsvelte-check --tsgo --tsconfig ./tsconfig.json",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
     "check:ts": "node node_modules/@typescript/native/bin/tsc --noEmit",
-    "lint": "oxlint .",
-    "format": "rsvelte-fmt .",
-    "format:check": "rsvelte-fmt --check .",
-    "build": "bun run worker:build && node scripts/build-info.mjs && vite build",
+    "lint": "oxlint --disable-nested-config . && node scripts/check-copy.mjs",
+    "format": "oxfmt --disable-nested-config . && prettier --plugin prettier-plugin-svelte --write \"**/*.svelte\"",
+    "format:check": "oxfmt --disable-nested-config --check . && prettier --plugin prettier-plugin-svelte --check \"**/*.svelte\"",
+    "build": "bun run worker:build && node scripts/build-info.mjs && node scripts/cms-snapshot.mjs && vite build",
     "dry-run": "wrangler deploy --dry-run",
     "test:browser": "playwright test",
     "changeset": "changeset",
@@ -28,23 +28,20 @@
   "devDependencies": {
     "@changesets/cli": "3.0.3",
     "@playwright/test": "1.64.1",
-    "@rsvelte/fmt": "0.7.25",
-    "@rsvelte/oxlint-plugin": "0.2.6",
-    "@rsvelte/svelte-check": "0.5.32",
-    "@sveltejs/adapter-cloudflare": "8.0.2",
-    "@sveltejs/kit": "3.1.1",
-    "@sveltejs/vite-plugin-svelte": "npm:@rsvelte/vite-plugin-svelte@0.5.3",
+    "@sveltejs/adapter-cloudflare": "7.2.9",
+    "@sveltejs/kit": "2.59.1",
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
     "@types/node": "24.10.0",
     "@typescript/native": "npm:typescript@7.0.2",
     "oxfmt": "0.76.0",
     "oxlint": "1.91.0",
+    "prettier": "3.9.10",
+    "prettier-plugin-svelte": "4.1.1",
     "svelte": "5.57.1",
+    "svelte-check": "4.7.8",
     "typescript": "6.0.3",
     "vite": "8.3.5",
-    "wrangler": "4.157.0"
-  },
-  "overrides": {
-    "@sveltejs/vite-plugin-svelte": "npm:@rsvelte/vite-plugin-svelte@0.5.3"
+    "wrangler": "4.156.0"
   },
   "engines": {
     "node": "24.10.0"

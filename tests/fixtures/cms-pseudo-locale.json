@@ -1,0 +1,27 @@
+{
+  "locales": [{ "code": "en-XA", "name": "English (pseudo)", "enabled": true }],
+  "seeds": [
+    {
+      "locale": "en-XA",
+      "entries": {
+        "ui": {
+          "brand.name": { "text": "[Àśţŕöĺöĝý Ëñĝîñë]" },
+          "landing.hero.eyebrow": {
+            "text": "[À ĹÎŢŢĹË ÇÛŔÎÖŚÎŢÝ ĜÖËŚ À ĹÖÑĜ ŴÀÝ]"
+          },
+          "language.switcher": { "text": "[Ĺàñĝûàĝë]" },
+          "app.entry.headingEmpty": {
+            "text": "[Šţàŕţ ŵîţĥ ýöûŕ ƀîŕţĥ ðëţàîĺš]"
+          }
+        },
+        "body": {
+          "SUN": {
+            "name": "[Šûñ]",
+            "insight": "[Ţĥë Šûñ šýɱƀöĺîžëš îðëñţîţý.]",
+            "keywords": ["[îðëñţîţý]", "[þûŕþöšë]"]
+          }
+        }
+      }
+    }
+  ]
+}

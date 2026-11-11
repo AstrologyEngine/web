@@ -88,6 +88,20 @@ const dataset = async (utc: string) => {
   return { data, sha256: s.sha256 };
 };
 let queue = Promise.resolve();
+/** Stable outcome code; the page words it with CMS copy. */
+const calculationCode = (error: unknown) => {
+  const message = error instanceof Error ? error.message : "";
+  if (message === "Could not download calculation data.")
+    return "DATA_UNAVAILABLE";
+  if (message === "Calculation data failed its integrity check.")
+    return "DATA_INTEGRITY";
+  if (message === "Birth date is outside the supported calculation range.")
+    return "OUT_OF_RANGE";
+  if (message === "No verified data covers this date.")
+    return "NO_VERIFIED_DATA";
+  return "CALCULATION_FAILED";
+};
+
 self.onmessage = (event: MessageEvent) => {
   queue = queue
     .then(async () => {
@@ -108,8 +122,6 @@ self.onmessage = (event: MessageEvent) => {
               ok: false,
               code: "INVALID_INPUT",
               retryWorker: false,
-              message:
-                "Birth details or settings are invalid. Please check them and try again.",
             },
           });
           return;
@@ -195,31 +207,7 @@ self.onmessage = (event: MessageEvent) => {
           result: {
             ok: false,
             retryWorker: initializationFailed,
-            code:
-              error instanceof Error &&
-              error.message === "Could not download calculation data."
-                ? "DATA_UNAVAILABLE"
-                : error instanceof Error &&
-                    error.message ===
-                      "Calculation data failed its integrity check."
-                  ? "DATA_INTEGRITY"
-                  : error instanceof Error &&
-                      [
-                        "Birth date is outside the supported calculation range.",
-                        "No verified data covers this date.",
-                      ].includes(error.message)
-                    ? "OUT_OF_RANGE"
-                    : "CALCULATION_FAILED",
-            message:
-              error instanceof Error &&
-              [
-                "Could not download calculation data.",
-                "Calculation data failed its integrity check.",
-                "Birth date is outside the supported calculation range.",
-                "No verified data covers this date.",
-              ].includes(error.message)
-                ? error.message
-                : "Calculation failed. Please retry.",
+            code: calculationCode(error),
           },
         });
       }

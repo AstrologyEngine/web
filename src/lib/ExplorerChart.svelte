@@ -9,7 +9,7 @@
   import MobileWheel from "./MobileWheel.svelte";
   import Details from "./Details.svelte";
   import ReferenceDetails from "./ReferenceDetails.svelte";
-  import { bodySymbols } from "./wheel/body-symbols";
+  import { copy, t } from "./copy/index.svelte";
   let {
     snapshot,
     measurement,
@@ -47,26 +47,25 @@
         ]
       : [],
   );
-  const title = (s: string) => s[0]!.toUpperCase() + s.slice(1);
-  const label = (name: BodyName) => bodySymbols[name]?.name ?? name;
+  const label = (name: BodyName) => copy().pointName(name);
   $effect(() => {
     const current = selection;
     if (current && !supported(current, chart, astrology.aspects))
       untrack(() => {
         selection = null;
-        announcement = "Selection no longer available";
+        announcement = t("explorer.announce.unavailable");
       });
   });
   $effect(() => {
     if (pickerOpen && snapshot.generation !== pickerGeneration)
       untrack(() => {
         pickerOpen = false;
-        announcement = "Connections updated; open the picker again.";
+        announcement = t("explorer.announce.pickerReset");
       });
   });
   function dismiss(restore = false) {
     selection = null;
-    announcement = "Selection cleared";
+    announcement = t("explorer.announce.cleared");
     if (
       restore &&
       (origin instanceof HTMLElement || origin instanceof SVGElement)
@@ -101,7 +100,7 @@
     origin = target;
     measurement?.open(next);
     selection = next;
-    announcement = "Selection opened";
+    announcement = t("explorer.announce.opened");
     snap = 40;
     await tick();
     if (keyboard)
@@ -211,44 +210,42 @@
   >
   <div class="alternatives">
     <details class="body-list">
-      <summary>Choose a body by name</summary>
+      <summary>{t("explorer.list.bodies")}</summary>
       <div>
         {#each chart.bodies.filter((item) => !isAngle(item.name)) as item (item.name)}<button
             aria-pressed={body?.name === item.name}
             onclick={(event) =>
-              selectBody(item.name, event.currentTarget, event.detail === 0)}>{label(
-                item.name,
-              )}</button
+              selectBody(item.name, event.currentTarget, event.detail === 0)}
+            >{label(item.name)}</button
           >{/each}
       </div>
     </details>
     <details>
-      <summary>Choose a sign by name</summary>
+      <summary>{t("explorer.list.signs")}</summary>
       <div>
         {#each chart.zodiac_sectors as sign (sign.sign)}<button
             aria-pressed={selection?.kind === "sign" &&
               selection.name === sign.sign}
             onclick={(event) =>
-              selectSign(sign.sign, event.currentTarget, event.detail === 0)}>{title(
-                sign.sign,
-              )}</button
+              selectSign(sign.sign, event.currentTarget, event.detail === 0)}
+            >{copy().signName(sign.sign)}</button
           >{/each}
       </div>
     </details>
     <details>
-      <summary>Choose a house by number</summary>
+      <summary>{t("explorer.list.houses")}</summary>
       <div>
         {#each chart.cusps as _, index (index)}<button
             aria-pressed={selection?.kind === "house" &&
               selection.number === index + 1}
             onclick={(event) =>
-              selectHouse(index + 1, event.currentTarget, event.detail === 0)}>House
-              {index + 1}</button
+              selectHouse(index + 1, event.currentTarget, event.detail === 0)}
+            >{copy().houseName(index + 1)}</button
           >{/each}
       </div>
     </details>
     <details>
-      <summary>Choose an angle by name</summary>
+      <summary>{t("explorer.list.angles")}</summary>
       <div>
         {#each angleIds as name (name)}<button
             aria-pressed={selection?.kind === "angle" &&
@@ -265,7 +262,9 @@
     <button
       onclick={(event) =>
         openPicker(astrology.aspects, event.currentTarget, body?.name ?? null)}
-      >Explore aspects{body ? ` of ${label(body.name)}` : ""}</button
+      >{body
+        ? t("explorer.aspects.exploreOf", { body: label(body.name) })
+        : t("explorer.aspects.explore")}</button
     >
   </div>
   {#if body}<Details
@@ -284,7 +283,7 @@
   <span class="sr-only" aria-live="polite">{announcement}</span>
 </div>
 {#if pickerOpen}<dialog
-    aria-label="Choose an aspect"
+    aria-label={t("explorer.picker.label")}
     {@attach setupDialog}
     onkeydown={(event) => {
       if (event.key === "Escape") event.stopPropagation();
@@ -296,19 +295,17 @@
   >
     <h2>
       {first
-        ? `Choose a connection to ${label(first)}`
-        : "Choose the first body"}
+        ? t("explorer.picker.second", { body: label(first) })
+        : t("explorer.picker.first")}
     </h2>
     <div class="picker-buttons">
       {#each first ? pickerSecond : pickerFirst as name (name)}<button
-          onclick={() => (first ? pickSecond(name) : pickFirst(name))}>{label(
-            name,
-          )}</button
+          onclick={() => (first ? pickSecond(name) : pickFirst(name))}
+          >{label(name)}</button
         >{/each}
     </div>
-    {#if first}<button onclick={backPicker}>Back</button>{/if}<button
-      onclick={closePicker}>Close</button
-    >
+    {#if first}<button onclick={backPicker}>{t("explorer.picker.back")}</button
+      >{/if}<button onclick={closePicker}>{t("explorer.picker.close")}</button>
   </dialog>{/if}
 
 <style>

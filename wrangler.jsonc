@@ -8,6 +8,9 @@
     "binding": "ASSETS",
     "directory": ".svelte-kit/cloudflare",
   },
+  // CMS copy via Service Binding (docs/designs/cms.md §9.1). Bindings are not
+  // inherited by environments, so each environment names its CMS Worker.
+  "services": [{ "binding": "CMS", "service": "astrology-engine-cms-local" }],
   "workers_dev": false,
   "preview_urls": false,
   "observability": {
@@ -25,6 +28,9 @@
       "preview_urls": true,
       "previews": {},
       "name": "astrology-engine-web-staging",
+      "services": [
+        { "binding": "CMS", "service": "astrology-engine-cms-staging" },
+      ],
       "routes": [
         {
           "pattern": "staging.astrologyengine.dev",
@@ -34,6 +40,9 @@
     },
     "alpha": {
       "name": "astrology-engine-web-alpha",
+      "services": [
+        { "binding": "CMS", "service": "astrology-engine-cms-alpha" },
+      ],
       "routes": [
         {
           "pattern": "alpha.astrologyengine.dev",

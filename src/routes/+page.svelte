@@ -2,42 +2,45 @@
   import { resolve } from "$app/paths";
   import { zodiacGlyphPaths } from "../lib/wheel/zodiac-glyphs";
   import { planetGlyphPaths } from "../lib/wheel/planet-glyphs";
+  import LanguageSwitcher from "../lib/LanguageSwitcher.svelte";
+  import { copy, t } from "../lib/copy/index.svelte";
 </script>
 
 <svelte:head>
-  <title>Natal Chart Explorer | Astrology Engine</title>
-  <meta
-    name="description"
-    content="Explore the elements of your birth chart, one discovery at a time."
-  />
+  <title>{t("landing.meta.title")}</title>
+  <meta name="description" content={t("landing.meta.description")} />
 </svelte:head>
 
 <main>
   <header>
-    <span class="brand-mark" aria-hidden="true">✳</span> Astrology Engine
-    <span class="beta">BETA</span>
+    <span class="brand-mark" aria-hidden="true">✳</span>
+    {t("brand.name")}
+    <span class="beta">{t("brand.beta")}</span>
+    <LanguageSwitcher />
   </header>
   <div class="hero">
     <section class="intro">
-      <p class="eyebrow">A LITTLE CURIOSITY GOES A LONG WAY</p>
-      <h1>Explore your<br />birth chart.</h1>
-      <p class="description">
-        There’s more to your chart than your Sun sign. Discover the planets,
-        signs and houses that make up your unique sky, one piece at a time.
-      </p>
+      <p class="eyebrow">{t("landing.hero.eyebrow")}</p>
+      <h1>
+        {#each copy().lines("landing.hero.title") as line, i (i)}{#if i}<br
+            />{/if}{line}{/each}
+      </h1>
+      <p class="description">{t("landing.hero.description")}</p>
       <a class="cta" href={resolve("/app")}
-        >Start exploring <span aria-hidden="true">↗</span></a
+        >{t("landing.hero.cta")} <span aria-hidden="true">↗</span></a
       >
-      <p class="note">Your chart begins with your birth details.</p>
+      <p class="note">{t("landing.hero.note")}</p>
     </section>
     <figure>
       <div class="sample-label">
-        <span>01 / THE WHEEL</span><span>SAMPLE CHART</span>
+        <span>{t("landing.sample.index")}</span><span
+          >{t("landing.sample.label")}</span
+        >
       </div>
       <svg
         viewBox="0 0 420 420"
         role="img"
-        aria-label="Sample chart showing Aries, Taurus and Gemini, planets, and houses 1 through 3"
+        aria-label={t("landing.sample.alt")}
       >
         <path
           d="M20 400 A380 380 0 0 1 70.9 210 L122.9 240 A320 320 0 0 0 80 400Z"
@@ -102,13 +105,13 @@
           /></g
         >
       </svg>
-      <figcaption>
-        A small glimpse of the bigger picture. This sample isn’t your personal
-        chart.
-      </figcaption>
+      <figcaption>{t("landing.sample.caption")}</figcaption>
     </figure>
   </div>
-  <footer>ASTROLOGY ENGINE <span>MADE FOR THE CURIOUS ✳</span></footer>
+  <footer>
+    {t("landing.footer.brand")}
+    <span>{t("landing.footer.tagline")} ✳</span>
+  </footer>
 </main>
 
 <style>

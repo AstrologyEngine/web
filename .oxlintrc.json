@@ -1,5 +1,7 @@
 {
-  "ignorePatterns": ["static/engine/**", "static/calculation-worker.js"],
-  "jsPlugins": ["@rsvelte/oxlint-plugin"],
-  "extends": ["./node_modules/@rsvelte/oxlint-plugin/recommended.json"]
+  "ignorePatterns": [
+    "static/engine/**",
+    "static/calculation-worker.js",
+    "apps/**"
+  ]
 }

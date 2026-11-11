@@ -1,8 +1,8 @@
 <script lang="ts">
   import DetailsShell from "./DetailsShell.svelte";
   import type { Chart } from "./calculation/chart";
-  import { bodySymbols } from "./wheel/body-symbols";
-  import { bodyReference, bridgingReference } from "./reference-content";
+  import { copy, t } from "./copy/index.svelte";
+  import { referenceLabel } from "./labels";
   type Body = Chart["bodies"][number];
   let {
     body,
@@ -17,8 +17,8 @@
     snap: 40 | 70;
     onclose: () => void;
   } = $props();
-  let name = $derived(bodySymbols[body.name]?.name ?? body.name);
-  let content = $derived(bodyReference(body.name));
+  let name = $derived(copy().pointName(body.name));
+  let content = $derived(copy().body(body.name));
   let progress = $derived(body.sign.degrees_in_sign);
   let bridge = $derived(
     chart.configuration.divisions === "equal" &&
@@ -36,33 +36,42 @@
   });
 </script>
 
-<DetailsShell label="Body details" {name} bind:heading bind:snap {onclose}>
-  <p>{content.insight}</p>
-  <p class="keywords">{content.keywords.join(" · ")}</p>
+<DetailsShell
+  label={t("details.label.body")}
+  {name}
+  bind:heading
+  bind:snap
+  {onclose}
+>
+  {#if content}
+    <p>{content.insight}</p>
+    <p class="keywords">{content.keywords.join(" · ")}</p>
+  {:else}
+    <p>{t("details.unavailable")}</p>
+  {/if}
   <dl>
     <div>
-      <dt>Sign</dt>
-      <dd>{body.sign.sign}</dd>
+      <dt>{t("details.body.sign")}</dt>
+      <dd>{copy().signName(body.sign.sign)}</dd>
     </div>
     <div>
-      <dt>House</dt>
+      <dt>{t("details.body.house")}</dt>
       <dd>{house}</dd>
     </div>
     <div>
-      <dt>Degree</dt>
+      <dt>{t("details.body.degree")}</dt>
       <dd>{Math.floor(progress * 100) / 100}°</dd>
     </div>
     <div>
-      <dt>Retrograde</dt>
-      <dd>{body.speed < 0 ? "Yes" : "No"}</dd>
+      <dt>{t("details.body.retrograde")}</dt>
+      <dd>{body.speed < 0 ? t("details.body.yes") : t("details.body.no")}</dd>
     </div>
   </dl>
-  {#if bridge}<p>{bridgingReference.text}</p>{/if}
+  {#if bridge}<p>{t("details.bridging")}</p>{/if}
   <p class="context">
-    {chart.configuration.reference === "tropical"
-      ? "Tropical"
-      : chart.configuration.reference === "fagan-bradley"
-        ? "Vedic"
-        : "True Sky"} · {chart.house_system} houses
+    {t("details.context", {
+      reference: t(referenceLabel[chart.configuration.reference]),
+      houseSystem: chart.house_system,
+    })}
   </p>
 </DetailsShell>
