@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { enterBirth } from "./helpers";
 
 // Runs against a CMS seeded with tests/fixtures/cms-pseudo-locale.json.
 const pseudoEyebrow = "[À ĹÎŢŢĹË ÇÛŔÎÖŚÎŢÝ ĜÖËŚ À ĹÖÑĜ ŴÀÝ]";
@@ -59,10 +60,7 @@ test("the app and reference content use the locale", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "[Šţàŕţ ŵîţĥ ýöûŕ ƀîŕţĥ ðëţàîĺš]" }),
   ).toBeVisible();
-  await page
-    .getByLabel(/birth details/i)
-    .fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   await page
     .getByRole("group", { name: /natal chart/i })
     .getByRole("button", { name: "[Šûñ]" })

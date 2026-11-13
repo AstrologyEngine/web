@@ -24,15 +24,33 @@ export const resolverMessages = {
 } as const satisfies Record<string, PlainKey>;
 export type ResolverCode = keyof typeof resolverMessages;
 
+/**
+ * Calculation outcomes: worker codes plus the page's own TIMEOUT and
+ * NOT_STARTED. Shown as one "Whoops, …" line; only some are worth retrying.
+ */
 export const calculationMessages = {
-  INVALID_INPUT: "error.calculation.invalidInput",
-  DATA_UNAVAILABLE: "error.calculation.dataUnavailable",
-  DATA_INTEGRITY: "error.calculation.dataIntegrity",
-  OUT_OF_RANGE: "error.calculation.outOfRange",
-  NO_VERIFIED_DATA: "error.calculation.noVerifiedData",
-  CALCULATION_FAILED: "error.calculation.failed",
+  INVALID_INPUT: "error.chart.invalidInput",
+  DATA_UNAVAILABLE: "error.chart.dataUnavailable",
+  DATA_INTEGRITY: "error.chart.dataIntegrity",
+  OUT_OF_RANGE: "error.chart.outOfRange",
+  NO_VERIFIED_DATA: "error.chart.noVerifiedData",
+  CALCULATION_FAILED: "error.chart.failed",
+  TIMEOUT: "error.chart.timeout",
+  NOT_STARTED: "error.chart.notStarted",
 } as const satisfies Record<string, PlainKey>;
 export type CalculationCode = keyof typeof calculationMessages;
+/** Retrying cannot help these: the birth details have to change. */
+const permanent = new Set<CalculationCode>([
+  "INVALID_INPUT",
+  "OUT_OF_RANGE",
+  "NO_VERIFIED_DATA",
+]);
+export const calculationRetryable = (code: CalculationCode) =>
+  !permanent.has(code);
+export const calculationCode = (code: unknown): CalculationCode =>
+  typeof code === "string" && Object.hasOwn(calculationMessages, code)
+    ? (code as CalculationCode)
+    : "CALCULATION_FAILED";
 
 const lookup = <T extends Record<string, PlainKey>>(
   table: T,
@@ -45,5 +63,3 @@ const lookup = <T extends Record<string, PlainKey>>(
 
 export const resolverMessageKey = (code: unknown) =>
   lookup(resolverMessages, code, "TEMPORARY_FAILURE");
-export const calculationMessageKey = (code: unknown) =>
-  lookup(calculationMessages, code, "CALCULATION_FAILED");

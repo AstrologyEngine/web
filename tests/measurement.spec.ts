@@ -1,8 +1,18 @@
 import { expect, test, type Route } from "@playwright/test";
+import { birthField, enterBirth, reopenBirth } from "./helpers";
 import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFileSync } from "node:child_process";
+
+/**
+ * Events as text for the "no birth data" checks, without the generated fields
+ * (timings and random IDs) that can contain "2000" by coincidence.
+ */
+const birthFree = (events: object[]) =>
+  JSON.stringify(
+    events.map(({ ms: _ms, eventId: _e, visitId: _v, ...rest }: any) => rest),
+  );
 
 test("a usable chart makes a zero-opening visit eligible without birth data in events", async ({
   page,
@@ -13,8 +23,7 @@ test("a usable chart makes a zero-opening visit eligible without birth data in e
     await route.fulfill({ status: 204 });
   });
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   await expect(page.getByRole("group", { name: /natal chart/i })).toBeVisible();
   await expect
     .poll(() => events.some((event: any) => event.event === "eligible"))
@@ -25,7 +34,7 @@ test("a usable chart makes a zero-opening visit eligible without birth data in e
   expect(
     events.filter((event: any) => event.event === "explanation_open"),
   ).toHaveLength(0);
-  expect(JSON.stringify(events)).not.toMatch(/2000|London|1pm/i);
+  expect(birthFree(events)).not.toMatch(/2000|London|1pm/i);
 });
 
 test("openings, repeats and both available surfaces count once per visit", async ({
@@ -37,8 +46,7 @@ test("openings, repeats and both available surfaces count once per visit", async
     await route.fulfill({ status: 204 });
   });
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   const sun = page
     .getByRole("group", { name: /natal chart/i })
     .getByRole("button", { name: "Sun", exact: true });
@@ -74,7 +82,7 @@ test("openings, repeats and both available surfaces count once per visit", async
     page.getByRole("button", { name: "Vedic", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
   expect(events.filter((e) => e.event === "chart_usable")).toHaveLength(1);
-  await page.getByRole("button", { name: "About this system" }).click();
+  // "?" shows the system overview each time it is pressed.
   await page.getByRole("button", { name: "About this system" }).click();
   await expect
     .poll(() =>
@@ -88,10 +96,8 @@ test("openings, repeats and both available surfaces count once per visit", async
     .toBe(true);
   const abortResolver = (route: Route) => route.abort();
   await page.route("**/api/resolve-birth", abortResolver);
-  await page.getByRole("button", { name: "Edit birth details" }).click();
-  await page
-    .getByLabel("Birth details")
-    .fill("January 2, 1980 at 3pm in London");
+  await reopenBirth(page);
+  await birthField(page).fill("January 2, 1980 at 3pm in London");
   await expect
     .poll(() =>
       events.some((e) => e.event === "failure" && e.system === "Vedic"),
@@ -99,8 +105,7 @@ test("openings, repeats and both available surfaces count once per visit", async
     .toBe(true);
   await page.unroute("**/api/resolve-birth", abortResolver);
   await page.reload();
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   await expect(page.getByRole("group", { name: /natal chart/i })).toBeVisible({
     timeout: 30000,
   });
@@ -235,7 +240,7 @@ test("resolver network failure records a safe category", async ({ page }) => {
   });
   await page.route("**/api/resolve-birth", (route) => route.abort());
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
+  await birthField(page).fill("June 21, 2000 at 1pm in London");
   await expect
     .poll(() =>
       events.some(
@@ -246,7 +251,7 @@ test("resolver network failure records a safe category", async ({ page }) => {
       ),
     )
     .toBe(true);
-  expect(JSON.stringify(events)).not.toMatch(/2000|London|1pm/i);
+  expect(birthFree(events)).not.toMatch(/2000|London|1pm/i);
 });
 
 test("picker and settings navigation count as interactions without opening explanations", async ({
@@ -258,8 +263,7 @@ test("picker and settings navigation count as interactions without opening expla
     await route.fulfill({ status: 204 });
   });
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   await page
     .getByRole("button", { name: "Explore aspects", exact: true })
     .click();
@@ -269,8 +273,8 @@ test("picker and settings navigation count as interactions without opening expla
   await picker.getByRole("button", { name: "Close", exact: true }).click();
   await page.getByRole("button", { name: /Advanced settings/ }).click();
   await page
-    .getByRole("dialog", { name: "Advanced settings" })
-    .getByRole("button", { name: "Apply" })
+    .getByRole("menu", { name: "House system" })
+    .getByRole("menuitemradio", { name: "Whole Sign" })
     .click();
   await expect
     .poll(
@@ -284,5 +288,5 @@ test("picker and settings navigation count as interactions without opening expla
   expect(
     events.filter((event) => event.event === "explanation_open"),
   ).toHaveLength(0);
-  expect(JSON.stringify(events)).not.toMatch(/2000|London|1pm/i);
+  expect(birthFree(events)).not.toMatch(/2000|London|1pm/i);
 });

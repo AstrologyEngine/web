@@ -56,14 +56,14 @@
   dialog {
     width: min(90vw, 440px);
     max-height: 80dvh;
-    border: 1px solid #cfc4b7;
-    border-radius: 1rem;
-    background: #fffdf8;
-    color: #28231f;
-    padding: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--surface);
+    color: var(--ink);
+    padding: 20px;
   }
   dialog::backdrop {
-    background: #211c1a88;
+    background: #292d3859;
   }
   .header {
     display: flex;
@@ -90,9 +90,9 @@
     gap: 0.6rem;
     align-items: center;
     min-height: 56px;
-    border: 1px solid #cfc4b7;
-    border-radius: 0.5rem;
-    background: white;
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    background: var(--field);
     padding: 0.6rem;
   }
   svg {

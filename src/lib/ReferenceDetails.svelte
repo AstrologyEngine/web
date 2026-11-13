@@ -54,7 +54,8 @@
       ? signAt(chart.cusps[selection.number - 1]!, chart)
       : undefined,
   );
-  let ruler = $derived(cuspSign ? rulers[cuspSign] : undefined);
+  let traditional = $derived(cuspSign ? rulers[cuspSign][0] : null);
+  let modern = $derived(cuspSign ? rulers[cuspSign][1] : null);
   let occupants = $derived(
     selection.kind === "house"
       ? chart.bodies.filter(
@@ -89,19 +90,24 @@
             : t("details.house.unavailable")}
         </dd>
       </div>
-      {#if ruler && ruler[0] !== ruler[1]}
+      {#if modern && traditional && traditional !== modern}
         <div>
           <dt>{t("details.house.traditionalRuler")}</dt>
-          <dd>{copy().pointName(ruler[0])}</dd>
+          <dd>{copy().pointName(traditional)}</dd>
         </div>
         <div>
           <dt>{t("details.house.modernRuler")}</dt>
-          <dd>{copy().pointName(ruler[1])}</dd>
+          <dd>{copy().pointName(modern)}</dd>
+        </div>
+      {:else if modern && !traditional}
+        <div>
+          <dt>{t("details.house.modernRuler")}</dt>
+          <dd>{copy().pointName(modern)}</dd>
         </div>
       {:else}<div>
           <dt>{t("details.house.ruler")}</dt>
           <dd>
-            {ruler ? copy().pointName(ruler[0]) : t("details.house.noRuler")}
+            {modern ? copy().pointName(modern) : t("details.house.noRuler")}
           </dd>
         </div>{/if}
       <div>

@@ -44,3 +44,16 @@ Browser tests start two local CMS instances and three web servers to cover
 English, a partial pseudo-locale and CMS outages. `PLAYWRIGHT_PORT` changes the
 base web port; `E2E_BASE_URL` uses an existing server;
 `PLAYWRIGHT_CHROMIUM_EXECUTABLE` optionally selects a local Chromium executable.
+
+## Local review runner
+
+With Node 24.10.0 and Bun 1.3.14 on PATH, run `./scripts/review.sh` to install
+locked dependencies, validate both applications, run browser tests, and start
+the local web/CMS stack with manual review steps. Use `./scripts/review.sh --serve`
+to skip checks and start the stack. Ctrl+C stops its services.
+
+`REVIEW_WEB_PORT`, `REVIEW_CMS_PORT`, and `PLAYWRIGHT_PORT` configure ports.
+Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE` to use an existing Chromium; otherwise the
+runner downloads it. On Linux, missing browser system libraries require a
+one-time `bunx playwright install-deps chromium` installation with administrator
+access. The runner itself does not install system packages.

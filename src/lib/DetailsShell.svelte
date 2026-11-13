@@ -66,54 +66,66 @@
 </aside>
 
 <style>
+  /* Desktop: the reading rail presents details flat, as in variant A. */
   aside {
-    border: 1px solid #d8cfc1;
-    background: #fffdf8;
-    border-radius: 1rem;
-    color: #28231f;
+    color: var(--ink);
   }
   .scroll {
-    padding: 1.5rem;
-    overflow-y: auto;
     min-height: 0;
   }
   h2 {
-    font:
-      400 2rem Georgia,
-      serif;
-    margin: 0 0 1rem;
+    margin: 0 0 20px;
+    font: 400 38px/1.15 var(--serif);
   }
   h2:focus {
     outline: none;
   }
   .close {
     float: right;
+    min-height: 0;
+    width: 36px;
+    height: 36px;
+    margin: 2px -8px 0 12px;
+    padding: 0;
     border: 0;
+    border-radius: 50%;
     background: transparent;
-    font-size: 1.8rem;
-    cursor: pointer;
+    color: var(--muted);
+    font-size: 1.6rem;
+    line-height: 1;
+  }
+  .close:hover {
+    background: var(--accent-wash);
+    color: var(--ink);
+  }
+  .scroll :global(p) {
+    margin: 0 0 14px;
   }
   .scroll :global(.keywords),
   .scroll :global(.context) {
-    color: #765b50;
+    color: var(--muted);
     font-size: 0.9rem;
   }
   .scroll :global(dl) {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    gap: 14px;
+    margin: 22px 0;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
   }
   .scroll :global(dt) {
-    font-size: 0.8rem;
-    color: #765b50;
+    color: var(--muted);
+    font-size: 12px;
   }
   .scroll :global(dd) {
-    margin: 0.25rem 0 0;
+    margin: 2px 0 0;
     text-transform: capitalize;
   }
   .handle {
     display: none;
   }
+  /* Mobile: a resizable bottom sheet over the chart. */
   @media (max-width: 799px) {
     aside {
       position: fixed;
@@ -124,8 +136,18 @@
       height: var(--sheet-height);
       display: flex;
       flex-direction: column;
-      border-radius: 1rem 1rem 0 0;
-      box-shadow: 0 -4px 24px #0002;
+      border: 1px solid var(--line);
+      border-radius: 16px 16px 0 0;
+      background: var(--surface);
+      box-shadow: 0 -4px 24px #292d3822;
+    }
+    .scroll {
+      padding: 0 20px 20px;
+      overflow-y: auto;
+    }
+    h2 {
+      font-size: 30px;
+      margin-bottom: 12px;
     }
     .handle {
       display: flex;
@@ -133,18 +155,19 @@
       touch-action: none;
     }
     .handle button {
+      min-height: 0;
+      padding: 9px 35px;
       border: 0;
       background: transparent;
-      padding: 9px 35px;
       cursor: pointer;
     }
     .handle span {
       display: block;
       width: 40px;
       height: 3px;
-      border-radius: 3px;
-      background: #9c8c7c;
       margin: 3px;
+      border-radius: 3px;
+      background: #a79cae;
     }
   }
 </style>

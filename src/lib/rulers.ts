@@ -5,10 +5,12 @@ type BodyId = (typeof bodyIds)[number];
 
 /**
  * Traditional and modern ruler of each sign, as body IDs; their names come
- * from the CMS. Ophiuchus has no established ruler.
+ * from the CMS. Ophiuchus is a modern sign: Pluto rules it, with no
+ * traditional ruler.
  */
-export const rulers: Partial<
-  Record<SignName, readonly [traditional: BodyId, modern: BodyId]>
+export const rulers: Record<
+  SignName,
+  readonly [traditional: BodyId | null, modern: BodyId]
 > = {
   aries: ["MARS", "MARS"],
   taurus: ["VENUS", "VENUS"],
@@ -22,4 +24,5 @@ export const rulers: Partial<
   capricorn: ["SATURN", "SATURN"],
   aquarius: ["SATURN", "URANUS"],
   pisces: ["JUPITER", "NEPTUNE"],
+  ophiuchus: [null, "PLUTO"],
 };

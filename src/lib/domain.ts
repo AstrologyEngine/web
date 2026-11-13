@@ -83,9 +83,6 @@ const settingsObject = z.strictObject({
     humanDesign: z.boolean(),
   }),
 });
-export const customSchema = settingsObject
-  .omit({ systems: true })
-  .refine((s) => s.divisions !== "constellation" || s.reference === "true-sky");
 export const settingsSchema = settingsObject.refine(
   (s) =>
     (s.systems.astrology || s.systems.humanDesign) &&
