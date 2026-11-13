@@ -1,12 +1,12 @@
 import { expect, test } from "@playwright/test";
+import { enterBirth } from "./helpers";
 
 test("a phone visitor enlarges, pans and returns to the whole wheel", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   await page.getByRole("button", { name: "Zoom half wheel" }).click();
   await expect(
     page.getByRole("button", { name: "Show whole wheel" }),
@@ -43,14 +43,13 @@ test("controlled crowded positions in a calculated narrow house open a named pic
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   await page.getByRole("button", { name: "True Sky", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "True Sky", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
   await expect(
-    page.getByRole("button", { name: /True Sky.*Placidus houses/ }),
+    page.getByRole("button", { name: /Whole Sign houses/ }),
   ).toBeVisible();
   const group = page
     .getByRole("button", { name: /Grouped bodies:.*Sun/ })
@@ -94,8 +93,7 @@ test("a singleton glyph stays centered inside its narrow-house target", async ({
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   const sun = page.getByRole("button", { name: "Sun", exact: true });
   await expect(sun).toBeVisible();
   await expect
@@ -151,10 +149,7 @@ for (const input of ["pointer", "keyboard"] as const) {
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/app");
-    await page
-      .getByLabel("Birth details")
-      .fill("June 21, 2000 at 1pm in London");
-    await page.getByRole("button", { name: "Apply" }).click();
+    await enterBirth(page);
     await page.getByRole("button", { name: "Zoom half wheel" }).click();
     await page.getByRole("button", { name: "Pan wheel right" }).click();
     const viewport = page.getByRole("region", { name: "Chart viewport" });
@@ -210,8 +205,7 @@ test("a selected member has its own glyph inside a shared body group", async ({
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   await page.getByRole("button", { name: "Zoom half wheel" }).click();
   await page.getByRole("button", { name: "Pan wheel right" }).click();
   const group = page

@@ -1,0 +1,153 @@
+/*
+ * /app styles shared across components: variant A design tokens and element
+ * defaults. Everything is scoped to
+ * .app-shell so the rules cannot leak into other routes after client-side
+ * navigation. Component layout and details live in the components.
+ */
+
+body:has(.app-shell) {
+  margin: 0;
+  background: #f5f2eb;
+}
+
+.app-shell {
+  --page: #f5f2eb;
+  --surface: #faf8f3;
+  --field: #fffdf8;
+  --ink: #292d38;
+  --muted: #686273;
+  --line: #ded9d0;
+  --line-strong: #cdc3d2;
+  --accent: #644678;
+  --accent-hover: #553a67;
+  --accent-ink: #faf8f3;
+  --accent-wash: #e9e1ec;
+  --accent-soft: #dfd2e8;
+  --glyph: #6b5380;
+  --ok-bg: #e7efe9;
+  --ok-ink: #2f5a41;
+  --warn-bg: #f8eedb;
+  --warn-ink: #6b4c12;
+  --danger-ink: #8a2f2f;
+  --serif: Georgia, "Times New Roman", serif;
+  min-height: 100dvh;
+  background: var(--page);
+  color: var(--ink);
+  font:
+    15px/1.6 system-ui,
+    sans-serif;
+  scrollbar-color: #b7a8bf var(--surface);
+  scrollbar-width: thin;
+}
+.app-shell *,
+.app-shell *::before,
+.app-shell *::after {
+  box-sizing: border-box;
+}
+.app-shell ::selection {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+.app-shell :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* Controls */
+.app-shell :is(button, input, select, textarea) {
+  font: inherit;
+  color: inherit;
+}
+.app-shell button {
+  cursor: pointer;
+  min-height: 44px;
+  padding: 9px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--field);
+}
+.app-shell button:hover {
+  background: var(--accent-wash);
+}
+.app-shell button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.app-shell .primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+  min-width: 90px;
+}
+.app-shell .primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+.app-shell textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 11px 12px;
+  border: 1px solid #c9becf;
+  border-radius: 8px;
+  background: var(--field);
+  caret-color: var(--accent);
+}
+
+/* Birth details field and feedback (BirthEdit) */
+.app-shell .field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 16px 0;
+  font-size: 13px;
+  font-weight: 500;
+}
+.app-shell .field-hint {
+  margin: 8px 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.app-shell .chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 16px 0;
+}
+.app-shell .chips span {
+  padding: 6px 10px;
+  border-radius: 20px;
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+  font-size: 12px;
+}
+.app-shell .chips .confirmed {
+  background: var(--ok-bg);
+  color: var(--ok-ink);
+}
+.app-shell .warning {
+  margin: 12px 0;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+  font-size: 13px;
+}
+.app-shell fieldset {
+  margin: 0 0 16px;
+  padding: 0 0 14px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+}
+.app-shell legend {
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.app-shell .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

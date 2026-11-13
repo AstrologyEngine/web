@@ -255,11 +255,23 @@
       }
     },
     "ui": {
+      "app.birth.dateTime": {
+        "text": "{date} at {time}"
+      },
+      "app.birth.empty": {
+        "text": "Enter birth details"
+      },
+      "app.empty.caption": {
+        "text": "Add a date, time and place of birth"
+      },
+      "app.empty.label": {
+        "text": "Empty chart awaiting birth details"
+      },
+      "app.empty.title": {
+        "text": "Your sky begins here"
+      },
       "app.entry.edit": {
         "text": "Edit birth details"
-      },
-      "app.entry.eyebrow": {
-        "text": "YOUR NATAL CHART"
       },
       "app.entry.headingEmpty": {
         "text": "Start with your birth details"
@@ -267,20 +279,20 @@
       "app.entry.headingWithBirth": {
         "text": "Your birth chart"
       },
-      "app.entry.summary": {
-        "text": "{date} at {time} in {place}"
-      },
       "app.error.retry": {
         "text": "Retry calculation"
+      },
+      "app.error.retryLink": {
+        "text": "Retry"
       },
       "app.meta.title": {
         "text": "Your chart | Astrology Engine"
       },
+      "app.rail.hint": {
+        "text": "Select a planet, sign, house or angle on the wheel to read about it here."
+      },
       "app.status.calculating": {
         "text": "Calculating your chart…"
-      },
-      "app.status.calculatingWithPrevious": {
-        "text": "Calculating your chart… Showing your previous chart."
       },
       "app.status.housesAdjusted": {
         "text": "House system adjusted to {houseSystem}."
@@ -288,17 +300,11 @@
       "app.status.notApplied": {
         "text": "Showing {shown} chart; requested settings have not been applied."
       },
-      "app.status.previousBirth": {
-        "text": "Showing the previous chart for {date} at {time} in {place}."
-      },
       "app.status.updating": {
         "text": "Showing {shown} chart while updating to {requested}."
       },
-      "birth.action.apply": {
-        "text": "Apply"
-      },
-      "birth.action.close": {
-        "text": "Close"
+      "birth.action.done": {
+        "text": "Done"
       },
       "birth.action.retry": {
         "text": "Retry"
@@ -330,14 +336,14 @@
       "birth.choice.placeOption": {
         "text": "{city}, {region}, {country}"
       },
-      "birth.edit.hint": {
-        "text": "Complete edits apply on Apply or close. Incomplete edits are discarded on close."
-      },
       "birth.input.label": {
         "text": "Birth details"
       },
       "birth.input.placeholder": {
         "text": "June 21, 2000 at 1pm in London"
+      },
+      "birth.modal.intro": {
+        "text": "A date, time and birthplace locate your chart in the sky."
       },
       "birth.status.resolving": {
         "text": "Resolving birth details…"
@@ -438,29 +444,29 @@
       "details.unavailable": {
         "text": "Details are unavailable right now."
       },
-      "error.calculation.dataIntegrity": {
-        "text": "Calculation data failed its integrity check."
+      "error.chart.dataIntegrity": {
+        "text": "Whoops, chart data couldn’t be verified."
       },
-      "error.calculation.dataUnavailable": {
-        "text": "Could not download calculation data."
+      "error.chart.dataUnavailable": {
+        "text": "Whoops, chart data couldn’t be downloaded."
       },
-      "error.calculation.failed": {
-        "text": "Calculation failed. Please retry."
+      "error.chart.failed": {
+        "text": "Whoops, chart calculation failed."
       },
-      "error.calculation.invalidInput": {
-        "text": "Birth details or settings are invalid. Please check them and try again."
+      "error.chart.invalidInput": {
+        "text": "Whoops, these birth details couldn’t be used."
       },
-      "error.calculation.notStarted": {
-        "text": "Calculation could not start. Please retry."
+      "error.chart.notStarted": {
+        "text": "Whoops, chart calculation couldn’t start."
       },
-      "error.calculation.noVerifiedData": {
-        "text": "No verified data covers this date."
+      "error.chart.noVerifiedData": {
+        "text": "Whoops, there’s no verified data for this birth date."
       },
-      "error.calculation.outOfRange": {
-        "text": "Birth date is outside the supported calculation range."
+      "error.chart.outOfRange": {
+        "text": "Whoops, this birth date is outside the supported range."
       },
-      "error.calculation.timeout": {
-        "text": "Calculation took too long. Please retry."
+      "error.chart.timeout": {
+        "text": "Whoops, chart calculation took too long."
       },
       "error.resolver.chooseDate": {
         "text": "Choose a valid date interpretation."
@@ -597,38 +603,8 @@
       "language.switcher": {
         "text": "Language"
       },
-      "settings.advanced.apply": {
-        "text": "Apply"
-      },
-      "settings.advanced.close": {
-        "text": "Close Advanced settings"
-      },
-      "settings.advanced.intro": {
-        "text": "Changes apply when you press Apply or close this panel."
-      },
-      "settings.advanced.open": {
-        "text": "Advanced settings: {preset} · {houses} houses"
-      },
-      "settings.advanced.title": {
-        "text": "Advanced settings"
-      },
-      "settings.atmakaraka.closestToMc": {
-        "text": "Closest to MC"
-      },
-      "settings.atmakaraka.label": {
-        "text": "Atmakaraka method"
-      },
-      "settings.atmakaraka.progressInSign": {
-        "text": "Progress in Sign"
-      },
-      "settings.divisions.constellation": {
-        "text": "Constellation"
-      },
-      "settings.divisions.equal": {
-        "text": "Equal"
-      },
-      "settings.divisions.label": {
-        "text": "Sign divisions"
+      "settings.advanced.houses": {
+        "text": "Advanced settings: {houses} houses"
       },
       "settings.help.divisionsConstellation": {
         "text": "constellation"
@@ -645,9 +621,6 @@
       "settings.help.summary": {
         "text": "Signs: {divisions}. Actual houses: {houses}."
       },
-      "settings.help.summaryOphiuchusExcluded": {
-        "text": "Signs: {divisions} · Ophiuchus excluded. Actual houses: {houses}."
-      },
       "settings.help.summaryOphiuchusIncluded": {
         "text": "Signs: {divisions} · Ophiuchus included. Actual houses: {houses}."
       },
@@ -657,14 +630,14 @@
       "settings.help.tropical": {
         "text": "Tropical astrology divides the zodiac into twelve equal signs, beginning at the March equinox point."
       },
-      "settings.help.trueSky": {
-        "text": "True Sky uses unequal, constellation-based divisions following the Chimenti convention, with Ophiuchus available as an optional thirteenth sector."
-      },
-      "settings.help.trueSkyEqual": {
-        "text": "This custom setting uses the True Sky starting point with twelve equal signs instead of constellation-based divisions."
+      "settings.help.trueSkyConstellations": {
+        "text": "True Sky uses unequal, constellation-based divisions following the Chimenti convention, including Ophiuchus as a thirteenth sign."
       },
       "settings.houses.equal": {
         "text": "Equal"
+      },
+      "settings.houses.equalHint": {
+        "text": "Twelve 30° houses measured from the Ascendant."
       },
       "settings.houses.label": {
         "text": "House system"
@@ -672,14 +645,14 @@
       "settings.houses.placidus": {
         "text": "Placidus"
       },
+      "settings.houses.placidusHint": {
+        "text": "Houses sized by the time it takes each part of the sky to rise."
+      },
       "settings.houses.wholeSign": {
         "text": "Whole Sign"
       },
-      "settings.ophiuchus.label": {
-        "text": "Include Ophiuchus"
-      },
-      "settings.preset.custom": {
-        "text": "Custom"
+      "settings.houses.wholeSignHint": {
+        "text": "Each house is one whole sign."
       },
       "settings.preset.tropical": {
         "text": "Tropical"
@@ -692,18 +665,6 @@
       },
       "settings.presets.label": {
         "text": "Zodiac presets"
-      },
-      "settings.reference.faganBradley": {
-        "text": "Fagan–Bradley (Vedic)"
-      },
-      "settings.reference.label": {
-        "text": "Zodiac reference"
-      },
-      "settings.reference.tropical": {
-        "text": "Tropical"
-      },
-      "settings.reference.trueSky": {
-        "text": "True Sky"
       },
       "wheel.angle.asc": {
         "text": "ASC"

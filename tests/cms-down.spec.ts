@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { enterBirth } from "./helpers";
 
 // Runs against a web server whose CMS is unreachable: copy comes from the
 // bundled snapshot and the site keeps working.
@@ -15,10 +16,7 @@ test("the landing page renders snapshot copy", async ({ page }) => {
 
 test("a visitor can still create and explore a chart", async ({ page }) => {
   await page.goto("/app");
-  await page
-    .getByLabel(/birth details/i)
-    .fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   const chart = page.getByRole("group", { name: /natal chart/i });
   await expect(chart).toBeVisible({ timeout: 30000 });
   await chart.getByRole("button", { name: "Sun" }).click();

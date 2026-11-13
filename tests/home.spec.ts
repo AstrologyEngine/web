@@ -1,4 +1,12 @@
 import { test, expect } from "@playwright/test";
+import {
+  birthDialog,
+  birthField,
+  doneButton,
+  editBirthButton,
+  enterBirth,
+  reopenBirth,
+} from "./helpers";
 
 for (const viewport of [
   { width: 1280, height: 800 },
@@ -22,10 +30,9 @@ for (const viewport of [
     await start.focus();
     await page.keyboard.press("Enter");
     await expect(page).toHaveURL(/\/app$/);
-    const entry = page.getByLabel(/birth details/i);
-    await expect(entry).toBeVisible();
+    const entry = birthField(page);
+    await expect(birthDialog(page)).toBeVisible();
     await expect(entry).toBeEnabled();
-    await page.keyboard.press("Tab");
     await expect(entry).toBeFocused();
     await expect(entry).toBeEmpty();
   });
@@ -35,10 +42,7 @@ test("visitor creates a personal chart from birth details", async ({
   page,
 }) => {
   await page.goto("/app");
-  await page
-    .getByLabel(/birth details/i)
-    .fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: /apply|create chart/i }).click();
+  await enterBirth(page);
   await expect(page.getByRole("group", { name: /natal chart/i })).toBeVisible({
     timeout: 30000,
   });
@@ -48,18 +52,20 @@ test("visitor resolves an ambiguous date and can discard an incomplete edit", as
   page,
 }) => {
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("03/04/2000 at 1pm in London");
+  await birthField(page).fill("03/04/2000 at 1pm in London");
   await page.getByRole("button", { name: /Mar 4, 2000/ }).click();
-  await page.getByRole("button", { name: "Apply" }).click();
+  await expect(doneButton(page)).toBeEnabled();
+  await doneButton(page).click();
   await expect(page.getByRole("group", { name: /natal chart/i })).toBeVisible();
-  await page.getByRole("button", { name: "Edit birth details" }).click();
-  await page.getByLabel("Birth details").fill("incomplete");
+  await reopenBirth(page);
+  await birthField(page).fill("incomplete");
   await page.keyboard.press("Escape");
-  await expect(
-    page.getByRole("button", { name: "Edit birth details" }),
-  ).toBeFocused();
+  await expect(birthDialog(page)).toHaveCount(0);
+  await expect(editBirthButton(page)).toBeFocused();
   await expect(page.getByRole("group", { name: /natal chart/i })).toBeVisible();
-  await expect(page.getByText(/2000-03-04/)).toBeVisible();
+  await expect(editBirthButton(page)).toHaveAccessibleDescription(
+    /March 4, 2000 at 1:00 PM/,
+  );
 });
 
 test("visitor can retry an unavailable birth resolver", async ({ page }) => {
@@ -71,10 +77,11 @@ test("visitor can retry an unavailable birth resolver", async ({ page }) => {
     } else await route.continue();
   });
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
+  await birthField(page).fill("June 21, 2000 at 1pm in London");
   await page.getByRole("button", { name: "Retry", exact: true }).click();
-  await page.getByRole("button", { name: "Apply" }).click();
   await expect(page.getByRole("group", { name: /natal chart/i })).toBeVisible();
+  await doneButton(page).click();
+  await expect(birthDialog(page)).toHaveCount(0);
 });
 
 test("visitor can retry unavailable calculation data and reload starts fresh", async ({
@@ -88,21 +95,24 @@ test("visitor can retry unavailable calculation data and reload starts fresh", a
     } else await route.continue();
   });
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
-  await expect(page.getByRole("alert")).toContainText(
-    /download calculation data/i,
+  await birthField(page).fill("June 21, 2000 at 1pm in London");
+  // The first calculation fails inside the modal, which stays open.
+  const dialog = birthDialog(page);
+  await expect(dialog.getByRole("alert")).toContainText(
+    "Whoops, chart data couldn’t be downloaded.",
   );
-  await page.getByRole("button", { name: "Retry calculation" }).click();
+  await expect(doneButton(page)).toBeDisabled();
+  await dialog.getByRole("button", { name: "Retry calculation" }).click();
   await expect(page.getByRole("group", { name: /natal chart/i })).toBeVisible();
+  await doneButton(page).click();
   await page.reload();
-  await expect(page.getByLabel("Birth details")).toBeEmpty();
+  await expect(birthField(page)).toBeEmpty();
   await expect(page.getByRole("group", { name: /natal chart/i })).toHaveCount(
     0,
   );
 });
 
-test("failed update labels the previous chart and retains keyboard focus", async ({
+test("a failed update shows a Whoops line with Retry and retains keyboard focus", async ({
   page,
 }) => {
   let failSlice = false;
@@ -111,22 +121,26 @@ test("failed update labels the previous chart and retains keyboard focus", async
     else await route.continue();
   });
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   await expect(page.getByRole("group", { name: /natal chart/i })).toBeVisible();
-  await page.getByRole("button", { name: "Edit birth details" }).click();
+  await reopenBirth(page);
   failSlice = true;
-  await page
-    .getByLabel("Birth details")
-    .fill("January 2, 1980 at 3pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await birthField(page).fill("January 2, 1980 at 3pm in London");
+  // The failure appears in the open modal as one line with a Retry link.
+  const dialog = birthDialog(page);
+  await expect(dialog.getByRole("alert")).toHaveText(
+    "Whoops, chart data couldn’t be downloaded.",
+  );
+  await expect(
+    dialog.getByRole("button", { name: "Retry calculation" }),
+  ).toHaveText("Retry");
+  await expect(dialog.getByText(/previous chart/i)).toHaveCount(0);
+  await doneButton(page).click();
+  await expect(editBirthButton(page)).toBeFocused();
   await expect(page.getByRole("alert")).toBeVisible();
   await expect(
-    page.getByText(/Showing the previous chart for 2000-06-21/),
+    page.getByRole("button", { name: "Retry calculation" }),
   ).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Edit birth details" }),
-  ).toBeFocused();
 });
 
 test("visitor sees a retry when the calculation worker cannot start", async ({
@@ -136,10 +150,13 @@ test("visitor sees a retry when the calculation worker cannot start", async ({
     Object.defineProperty(window, "Worker", { value: undefined });
   });
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
-  await expect(page.getByRole("alert")).toContainText(/could not start/i);
+  await birthField(page).fill("June 21, 2000 at 1pm in London");
+  const dialog = birthDialog(page);
+  await expect(dialog.getByRole("alert")).toHaveText(
+    "Whoops, chart calculation couldn’t start.",
+  );
   await expect(
-    page.getByRole("button", { name: "Retry calculation" }),
+    dialog.getByRole("button", { name: "Retry calculation" }),
   ).toBeVisible();
+  await expect(doneButton(page)).toBeDisabled();
 });

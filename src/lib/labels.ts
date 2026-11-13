@@ -6,7 +6,6 @@ export const presetLabel = {
   Tropical: "settings.preset.tropical",
   Vedic: "settings.preset.vedic",
   "True Sky": "settings.preset.trueSky",
-  Custom: "settings.preset.custom",
 } as const satisfies Record<Preset, PlainKey>;
 
 /** Short reference name used in chart context lines. */

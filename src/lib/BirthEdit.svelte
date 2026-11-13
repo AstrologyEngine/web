@@ -1,6 +1,6 @@
 <script lang="ts">
   import { birthDateLabel, birthTimeLabel } from "./birth-display";
-  import { onMount, untrack } from "svelte";
+  import { onMount, tick, untrack, type Snippet } from "svelte";
   import { birthSchema } from "./domain";
   import type { resolveBirth } from "./server/birth/resolve";
   import { t } from "./copy/index.svelte";
@@ -12,9 +12,13 @@
   let {
     birth,
     resolve,
-    onclose,
+    onresolve,
     onstart = () => {},
+    closable,
+    ondone,
+    status,
   }: {
+    /** Prefill; read once when the editor mounts. */
     birth: Birth | null;
     resolve: (input: {
       sentence: string;
@@ -22,8 +26,14 @@
       locationKey?: string;
       timeKey?: string;
     }) => Promise<Resolution>;
-    onclose: (birth: Birth | null) => void;
+    /** Each complete resolution of the current text (the live preview). */
+    onresolve: (birth: Birth) => void;
     onstart?: () => void;
+    /** Whether Done may close the editor; it also waits for pending parses. */
+    closable: boolean;
+    ondone: () => void;
+    /** Calculation status, rendered above Done. */
+    status?: Snippet;
   } = $props();
   let ready = $state(false);
   const initialBirth = untrack(() => birth);
@@ -41,15 +51,26 @@
           }
         : null,
     ),
-    busy = $state(false);
+    busy = $state(false),
+    // The text changed since the last result: its choices no longer apply.
+    stale = $state(false);
   let dateKey = $state<string | undefined>(),
     locationKey = $state<string | undefined>(),
     timeKey = $state<string | undefined>();
   let serial = 0,
     timer: ReturnType<typeof setTimeout>;
-  let closing = false;
+  let field = $state<HTMLTextAreaElement>();
   onMount(() => {
     ready = true;
+    // After the update that enables the field (and the dialog has opened),
+    // focus it with the caret after any prefill.
+    void tick().then(() => {
+      if (!field) return;
+      field.focus();
+      field.setSelectionRange(field.value.length, field.value.length);
+      field.scrollTop = field.scrollHeight;
+    });
+    // Unmounting drops a pending parse: its result can no longer apply.
     return () => {
       clearTimeout(timer);
       serial++;
@@ -60,8 +81,8 @@
     const version = ++serial;
     if (!sentence.trim()) {
       result = null;
-      busy = false;
-      return null;
+      busy = stale = false;
+      return;
     }
     busy = true;
     try {
@@ -71,21 +92,21 @@
         ...(locationKey ? { locationKey } : {}),
         ...(timeKey ? { timeKey } : {}),
       });
-      if (version !== serial) return null;
+      if (version !== serial) return;
       result = next;
-      return next;
+      if (next.kind === "resolved") onresolve(next.birth);
     } catch {
       if (version === serial)
         result = { kind: "error", code: "TEMPORARY_FAILURE", retryable: true };
-      return null;
     } finally {
-      if (version === serial) busy = false;
+      if (version === serial) busy = stale = false;
     }
   }
   function changed() {
     onstart();
     serial++;
-    result = null;
+    // Feedback from the last parse stays until the next result replaces it.
+    stale = true;
     dateKey = undefined;
     locationKey = undefined;
     timeKey = undefined;
@@ -99,24 +120,7 @@
     if (key === "time") timeKey = value;
     void run();
   }
-  async function close() {
-    if (closing) return;
-    closing = true;
-    const resolved =
-      !busy && result?.kind === "resolved" ? result : await run();
-    onclose(resolved?.kind === "resolved" ? resolved.birth : null);
-    closing = false;
-  }
 </script>
-
-<svelte:window
-  onkeydown={(event) => {
-    if (event.key === "Escape" && birth) {
-      event.preventDefault();
-      void close();
-    }
-  }}
-/>
 
 <section>
   <div>
@@ -125,9 +129,7 @@
       <textarea
         id="birth-input"
         disabled={!ready}
-        {@attach (node) => {
-          if (initialBirth) node.focus();
-        }}
+        bind:this={field}
         bind:value={sentence}
         oninput={changed}
         rows="3"
@@ -169,6 +171,7 @@
           <legend>{t("birth.choice.date")}</legend
           >{#each result.dates.filter((d) => d.valid) as date (date.key)}<button
               aria-pressed={dateKey === date.key}
+              disabled={stale}
               onclick={() => choose("date", date.key)}>{date.label}</button
             >{/each}
         </fieldset>{/if}
@@ -176,6 +179,7 @@
           <legend>{t("birth.choice.place")}</legend
           >{#each result.locations as place (place.key)}<button
               aria-pressed={locationKey === place.key}
+              disabled={stale}
               onclick={() => choose("location", place.key)}
               >{t("birth.choice.placeOption", {
                 city: place.city,
@@ -188,31 +192,67 @@
           <legend>{t("birth.choice.offset")}</legend
           >{#each result.timeChoices as time (time.key)}<button
               aria-pressed={timeKey === time.key}
+              disabled={stale}
               onclick={() => choose("time", time.key)}>{time.label}</button
             >{/each}
         </fieldset>{/if}
     {/if}
   </div>
-  <p class="field-hint">{t("birth.edit.hint")}</p>
+  {@render status?.()}
   <div class="actions">
     <button
-      class="primary"
-      disabled={busy || result?.kind !== "resolved"}
-      onclick={() => void close()}>{t("birth.action.apply")}</button
+      class="primary done"
+      disabled={busy || !closable}
+      aria-busy={busy}
+      onclick={ondone}
+      >{#if busy}<span class="spinner" aria-hidden="true"></span>{/if}{t(
+        "birth.action.done",
+      )}</button
     >
-    {#if birth}<button onclick={() => void close()}
-        >{t("birth.action.close")}</button
-      >{/if}
   </div>
 </section>
 
 <style>
+  .done {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .spinner {
+      animation-duration: 2.4s;
+    }
+  }
   fieldset button {
     margin: 4px;
   }
   fieldset button[aria-pressed="true"] {
-    border-color: #7aa4e8;
-    background: #eff5ff;
-    color: #214f9e;
+    border-color: var(--accent);
+    background: var(--accent-wash);
+    color: var(--accent);
+  }
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+  [role="status"]:not(.warning) {
+    margin: 8px 0;
+    color: var(--muted);
+    font-size: 13px;
   }
 </style>

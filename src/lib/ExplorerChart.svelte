@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Measurement } from "./measurement/client";
-  import { tick, untrack } from "svelte";
+  import { tick, untrack, type Snippet } from "svelte";
   import { angleIds, isAngle } from "./identities";
   import type { Snapshot } from "./calculation/snapshot";
   import type { BodyName, SignName, Selection, Aspect } from "./selection";
@@ -9,11 +9,24 @@
   import MobileWheel from "./MobileWheel.svelte";
   import Details from "./Details.svelte";
   import ReferenceDetails from "./ReferenceDetails.svelte";
+  import ChartLayout from "./ChartLayout.svelte";
   import { copy, t } from "./copy/index.svelte";
   let {
     snapshot,
     measurement,
-  }: { snapshot: Snapshot; measurement: Measurement | null } = $props();
+    controls,
+    status,
+    overview,
+  }: {
+    snapshot: Snapshot;
+    measurement: Measurement | null;
+    /** Chart controls; receives a callback that shows the overview in the rail. */
+    controls?: Snippet<[() => void]>;
+    status?: Snippet;
+    /** Reading rail content while nothing is selected. */
+    overview?: Snippet;
+  } = $props();
+  let rail = $state<HTMLElement>();
   let selection = $state<Selection | null>(null);
   let origin: Element | null = null;
   let heading = $state<HTMLHeadingElement>();
@@ -78,7 +91,7 @@
     const chartTarget = target.closest(".wheel")
       ? target
       : target
-          .closest(".explorer")
+          .closest(".chart-layout")
           ?.querySelector('.wheel [aria-pressed="true"]');
     if (!sheet || !chartTarget) return;
     const availableBottom = sheet.getBoundingClientRect().top;
@@ -159,6 +172,12 @@
       true,
     );
   }
+  // "?" returns the rail to the system overview and moves focus to its heading.
+  async function showOverview() {
+    selection = null;
+    await tick();
+    rail?.querySelector<HTMLElement>("[data-rail-heading]")?.focus();
+  }
   const setupDialog = (node: HTMLDialogElement) => {
     node.showModal();
     return () => node.close();
@@ -178,7 +197,8 @@
     }
   }}
 />
-<div class={["explorer", { "with-details": !!selection }]}>
+{#snippet stageControls()}{@render controls?.(showOverview)}{/snippet}
+{#snippet wheelView()}
   <MobileWheel {measurement}
     ><Wheel
       {chart}
@@ -208,6 +228,23 @@
       onblank={() => dismiss()}
     /></MobileWheel
   >
+{/snippet}
+{#snippet railView()}
+  {#if body}<Details
+      {body}
+      {chart}
+      bind:heading
+      bind:snap
+      onclose={() => dismiss(true)}
+    />{:else if reference}<ReferenceDetails
+      selection={reference}
+      {chart}
+      bind:heading
+      bind:snap
+      onclose={() => dismiss(true)}
+    />{:else}{@render overview?.()}{/if}
+{/snippet}
+{#snippet alternatives()}
   <div class="alternatives">
     <details class="body-list">
       <summary>{t("explorer.list.bodies")}</summary>
@@ -267,21 +304,16 @@
         : t("explorer.aspects.explore")}</button
     >
   </div>
-  {#if body}<Details
-      {body}
-      {chart}
-      bind:heading
-      bind:snap
-      onclose={() => dismiss(true)}
-    />{:else if reference}<ReferenceDetails
-      selection={reference}
-      {chart}
-      bind:heading
-      bind:snap
-      onclose={() => dismiss(true)}
-    />{/if}
-  <span class="sr-only" aria-live="polite">{announcement}</span>
-</div>
+{/snippet}
+<ChartLayout
+  controls={controls ? stageControls : undefined}
+  wheel={wheelView}
+  {status}
+  rail={railView}
+  below={alternatives}
+  bind:railElement={rail}
+/>
+<span class="sr-only" aria-live="polite">{announcement}</span>
 {#if pickerOpen}<dialog
     aria-label={t("explorer.picker.label")}
     {@attach setupDialog}
@@ -309,20 +341,12 @@
   </dialog>{/if}
 
 <style>
-  .explorer {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1rem 2rem;
-    align-items: start;
-  }
-  .with-details {
-    grid-template-columns: minmax(0, 1fr) minmax(250px, 340px);
-  }
-  .alternatives {
-    grid-column: 1;
-  }
   .alternatives details {
     margin-bottom: 0.7rem;
+  }
+  .alternatives summary {
+    cursor: pointer;
+    width: fit-content;
   }
   .alternatives details div,
   .picker-buttons {
@@ -333,18 +357,17 @@
   }
   .alternatives button,
   .picker-buttons button {
-    border: 1px solid #a89583;
-    border-radius: 1rem;
-    background: #fffdf8;
-    padding: 0.35rem 0.7rem;
+    min-height: 36px;
+    padding: 6px 14px;
+    border: 1px solid var(--line-strong);
+    border-radius: 20px;
+    background: var(--field);
+    font-size: 14px;
   }
   .alternatives button[aria-pressed="true"] {
-    background: #523f37;
-    color: white;
-  }
-  .with-details :global(aside) {
-    grid-column: 2;
-    grid-row: 1 / span 2;
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--accent-ink);
   }
   .sr-only {
     position: absolute;
@@ -359,16 +382,17 @@
     max-height: 80dvh;
     overflow: auto;
     border: 0;
-    border-radius: 1rem;
-    padding: 1.5rem;
+    border-radius: 16px;
+    padding: 24px;
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 18px 70px #292d3830;
   }
   dialog::backdrop {
-    background: #0f172a65;
+    background: #292d3859;
   }
-  @media (max-width: 799px) {
-    .explorer {
-      display: block;
-      padding-bottom: 2rem;
-    }
+  dialog h2 {
+    margin: 0 0 12px;
+    font: 400 24px/1.2 var(--serif);
   }
 </style>

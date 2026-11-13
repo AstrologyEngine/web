@@ -1,9 +1,9 @@
 import { test, expect } from "@playwright/test";
+import { enterBirth, reopenBirth } from "./helpers";
 
 test("a learner explores a sign and its chart context", async ({ page }) => {
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   await page
     .getByRole("group", { name: /natal chart/i })
     .getByRole("button", { name: "Aries", exact: true })
@@ -22,8 +22,7 @@ test("named alternatives explain a house, angle and aspect with active system he
   page,
 }) => {
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   await page.getByText("Choose a house by number").click();
   await page
     .getByRole("button", { name: "House 1", exact: true })
@@ -68,8 +67,7 @@ test("supported signs persist and Ophiuchus clears when unavailable", async ({
   page,
 }) => {
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   await page.getByText("Choose a sign by name").click();
   await page.getByRole("button", { name: "Aries", exact: true }).last().click();
   await page.getByRole("button", { name: "Vedic", exact: true }).click();
@@ -101,8 +99,7 @@ test("aspect pair can be reselected in reverse to clear details", async ({
   page,
 }) => {
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   const explore = page.getByRole("button", {
     name: "Explore aspects",
     exact: true,
@@ -147,15 +144,11 @@ test("an open aspect picker closes when a newer chart is accepted", async ({
     await route.continue();
   });
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   await expect(page.getByRole("group", { name: /natal chart/i })).toBeVisible();
-  await page.getByRole("button", { name: "Edit birth details" }).click();
+  await reopenBirth(page);
   hold = true;
-  await page
-    .getByLabel("Birth details")
-    .fill("January 2, 1980 at 3pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page, "January 2, 1980 at 3pm in London");
   await waiting;
   await page
     .getByRole("button", { name: "Explore aspects", exact: true })
@@ -173,8 +166,7 @@ test("body selection dims unrelated lines and starts the aspect picker at its co
   page,
 }) => {
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   const chart = page.getByRole("group", { name: /natal chart/i });
   const lines = chart.locator(
     'line[stroke="var(--w-hard)"], line[stroke="var(--w-soft)"]',
@@ -204,8 +196,7 @@ test("pointer aspect picker limits choices to lines near the click", async ({
   page,
 }) => {
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   const chart = page.getByRole("group", { name: /natal chart/i });
   await expect(chart).toBeVisible();
   await chart.scrollIntoViewIfNeeded();
@@ -263,8 +254,7 @@ test("pointer aspect picker limits choices to lines near the click", async ({
 test("direct house and angle targets open mobile details", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   const chart = page.getByRole("group", { name: /natal chart/i });
   const house = chart.getByRole("button", { name: "House 1", exact: true });
   await house.focus();
@@ -282,7 +272,9 @@ test("direct house and angle targets open mobile details", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("Ophiuchus house cusp does not invent a ruler", async ({ page }) => {
+test("an Ophiuchus house cusp has Pluto as its only, modern ruler", async ({
+  page,
+}) => {
   // Controlled cusp positions exercise wording and do not establish astronomical accuracy.
   await page.route("**/calculation-worker.js", async (route) => {
     const response = await route.fetch();
@@ -290,8 +282,7 @@ test("Ophiuchus house cusp does not invent a ruler", async ({ page }) => {
     await route.fulfill({ response, body: patch + (await response.text()) });
   });
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   await page.getByRole("button", { name: "True Sky", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "True Sky", exact: true }),
@@ -304,23 +295,7 @@ test("Ophiuchus house cusp does not invent a ruler", async ({ page }) => {
   const house = page.getByRole("complementary", { name: "House details" });
   await expect(house.getByText("Ophiuchus", { exact: true })).toBeVisible();
   await expect(
-    house.getByText("No established ruler", { exact: true }),
-  ).toBeVisible();
-});
-
-test("Escape closes the aspect picker without dismissing birth editing", async ({
-  page,
-}) => {
-  await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
-  await page.getByRole("button", { name: "Edit birth details" }).click();
-  await page
-    .getByRole("button", { name: "Explore aspects", exact: true })
-    .click();
-  await page.keyboard.press("Escape");
-  await expect(
-    page.getByRole("dialog", { name: "Choose an aspect" }),
-  ).toHaveCount(0);
-  await expect(page.getByLabel("Birth details")).toBeVisible();
+    house.locator("dt", { hasText: /^Modern ruler$/ }).locator("+ dd"),
+  ).toHaveText("Pluto");
+  await expect(house.getByText("Traditional ruler")).toHaveCount(0);
 });

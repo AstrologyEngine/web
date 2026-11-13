@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test";
+import { enterBirth, reopenBirth } from "./helpers";
 
 test("a visitor selects a body and reads its placement", async ({ page }) => {
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   const sun = page.getByRole("button", { name: "Sun", exact: true });
   await sun.click();
   await expect(sun).toHaveAttribute("aria-pressed", "true");
@@ -17,8 +17,7 @@ test("keyboard selection focuses details and Escape returns to its origin", asyn
   page,
 }) => {
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   const sun = page.getByRole("button", { name: "Sun", exact: true });
   await sun.focus();
   await page.keyboard.press("Enter");
@@ -38,8 +37,7 @@ test("mobile details can be resized, dismissed and leave the chart available", a
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   await page.getByText("Choose a body by name").click();
   await page.getByRole("button", { name: "Sun", exact: true }).last().click();
   const sheet = page.getByRole("complementary", { name: "Body details" });
@@ -88,10 +86,7 @@ test("controlled engine positions use raw final-degree boundaries", async ({
   ]) {
     progress = fixture.progress;
     await page.goto("/app");
-    await page
-      .getByLabel("Birth details")
-      .fill("June 21, 2000 at 1pm in London");
-    await page.getByRole("button", { name: "Apply" }).click();
+    await enterBirth(page);
     await page.getByRole("button", { name: "Sun", exact: true }).click();
     const details = page.getByRole("complementary", { name: "Body details" });
     await expect(
@@ -109,8 +104,7 @@ test("reselecting, blank chart space, and Close clear the selected body", async 
   page,
 }) => {
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   const chart = page.getByRole("group", { name: /natal chart/i });
   const sun = chart.getByRole("button", { name: "Sun", exact: true });
   await sun.click();
@@ -126,8 +120,7 @@ test("reselecting, blank chart space, and Close clear the selected body", async 
 
 test("a sign highlight clears when a body replaces it", async ({ page }) => {
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   const chart = page.getByRole("group", { name: /natal chart/i });
   const aries = chart.getByRole("button", { name: "Aries", exact: true });
   await aries.click();
@@ -149,8 +142,7 @@ test("controlled final-degree note follows accepted systems and is suppressed in
     await route.fulfill({ response, body: patch + (await response.text()) });
   });
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   await page.getByRole("button", { name: "Sun", exact: true }).click();
   const details = page.getByRole("complementary", { name: "Body details" });
   await expect(details.getByText(/final degree of its sign/i)).toBeVisible();
@@ -169,14 +161,10 @@ test("controlled final-degree note follows accepted systems and is suppressed in
 
 test("an accepted birth edit clears prior selection", async ({ page }) => {
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   await page.getByRole("button", { name: "Sun", exact: true }).click();
-  await page.getByRole("button", { name: "Edit birth details" }).click();
-  await page
-    .getByLabel("Birth details")
-    .fill("January 2, 1980 at 3pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await reopenBirth(page);
+  await enterBirth(page, "January 2, 1980 at 3pm in London");
   await expect(
     page.getByRole("complementary", { name: "Body details" }),
   ).toHaveCount(0);
@@ -190,8 +178,7 @@ test("desktop keyboard selection from below the wheel reveals the details headin
 }) => {
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   await page.getByText("Choose a body by name", { exact: true }).click();
   const sun = page
     .locator(".body-list")

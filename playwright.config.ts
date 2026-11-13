@@ -34,6 +34,7 @@ const web = (p: number, cmsOrigin: string) => ({
 
 export default defineConfig({
   testDir: "tests",
+  globalSetup: "./tests/global-setup.ts",
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
     trace: "retain-on-failure",

@@ -1,49 +1,112 @@
 import { test, expect } from "@playwright/test";
+import {
+  birthField,
+  editBirthButton,
+  enterBirth,
+  reopenBirth,
+} from "./helpers";
 
 test("learner switches an accepted chart to Vedic", async ({ page }) => {
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   await expect(page.getByRole("group", { name: /natal chart/i })).toBeVisible();
   await page.getByRole("button", { name: "Vedic", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Vedic", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByText(/Vedic.*Equal houses/)).toBeVisible();
+  await expect(
+    page.getByRole("button", {
+      name: "Advanced settings: Whole Sign houses",
+    }),
+  ).toBeVisible();
 });
 
-test("advanced edits apply on close and Custom restores them during this visit", async ({
+test("the house system applies from the menu and is kept across presets", async ({
   page,
 }) => {
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
-  await expect(page.getByRole("group", { name: /natal chart/i })).toBeVisible();
+  await enterBirth(page);
+  await expect(
+    page.getByRole("group", { name: "Zodiac presets" }).getByRole("button"),
+  ).toHaveText(["Tropical", "Vedic", "True Sky"]);
   await page.getByRole("button", { name: /Advanced settings/ }).click();
-  await page.getByLabel("House system").selectOption("placidus");
-  await page.keyboard.press("Escape");
+  const menu = page.getByRole("menu", { name: "House system" });
   await expect(
-    page.getByRole("button", { name: "Custom", exact: true }),
-  ).toHaveAttribute("aria-pressed", "true");
+    menu.getByRole("menuitemradio", { name: "Whole Sign" }),
+  ).toHaveAttribute("aria-checked", "true");
+  await menu.getByRole("menuitemradio", { name: "Placidus" }).click();
+  await expect(menu).toBeHidden();
   await expect(
-    page.getByRole("button", { name: /Custom.*Placidus houses/ }),
+    page.getByRole("button", { name: "Advanced settings: Placidus houses" }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Tropical", exact: true }).click();
+  await expect(page.getByText(/Actual houses: placidus/)).toBeVisible();
+  await page.getByRole("button", { name: "True Sky", exact: true }).click();
   await expect(
-    page.getByRole("button", { name: "Tropical", exact: true }),
-  ).toHaveAttribute("aria-pressed", "true");
-  await page.getByRole("button", { name: "Custom", exact: true }).click();
-  await expect(
-    page.getByRole("button", { name: "Custom", exact: true }),
+    page.getByRole("button", { name: "True Sky", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
   await expect(
-    page.getByRole("button", { name: /Custom.*Placidus houses/ }),
+    page.getByRole("button", { name: "Advanced settings: Placidus houses" }),
   ).toBeVisible();
   await page.reload();
-  await expect(page.getByLabel("Birth details")).toBeEmpty();
-  await expect(page.getByRole("group", { name: /Zodiac presets/ })).toHaveCount(
+  await expect(birthField(page)).toBeEmpty();
+  await expect(
+    page.getByRole("img", { name: "Empty chart awaiting birth details" }),
+  ).toBeAttached();
+  await expect(page.getByRole("group", { name: /natal chart/i })).toHaveCount(
     0,
   );
+  await enterBirth(page);
+  await expect(
+    page.getByRole("button", { name: "Advanced settings: Whole Sign houses" }),
+  ).toBeVisible();
+});
+
+test("the house menu works from the keyboard and closes without changes", async ({
+  page,
+}) => {
+  await page.goto("/app");
+  await enterBirth(page);
+  await page
+    .getByRole("group", { name: /natal chart/i })
+    .getByRole("button", { name: "Sun", exact: true })
+    .click();
+  const details = page.getByRole("complementary", { name: "Body details" });
+  const more = page.getByRole("button", { name: /Advanced settings/ });
+  const menu = page.getByRole("menu", { name: "House system" });
+  await more.focus();
+  await page.keyboard.press("Enter");
+  await expect(
+    menu.getByRole("menuitemradio", { name: "Whole Sign" }),
+  ).toBeFocused();
+  // Arrow keys move focus without applying.
+  await page.keyboard.press("ArrowDown");
+  await expect(
+    menu.getByRole("menuitemradio", { name: "Equal" }),
+  ).toBeFocused();
+  await expect(more).toHaveAccessibleName(
+    "Advanced settings: Whole Sign houses",
+  );
+  // Escape closes the menu only: the selected body stays open.
+  await page.keyboard.press("Escape");
+  await expect(menu).toBeHidden();
+  await expect(more).toBeFocused();
+  await expect(details).toBeVisible();
+  // An outside click closes without changes.
+  await more.click();
+  await expect(menu).toBeVisible();
+  await page.mouse.click(5, 400);
+  await expect(menu).toBeHidden();
+  await expect(more).toHaveAccessibleName(
+    "Advanced settings: Whole Sign houses",
+  );
+  // Enter applies the focused option and returns focus to the button.
+  await more.focus();
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("End");
+  await page.keyboard.press("Enter");
+  await expect(menu).toBeHidden();
+  await expect(more).toHaveAccessibleName("Advanced settings: Placidus houses");
+  await expect(more).toBeFocused();
 });
 
 test("newer birth and preset win while an earlier calculation is pending", async ({
@@ -67,30 +130,24 @@ test("newer birth and preset win while an earlier calculation is pending", async
     await route.continue();
   });
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   await expect(page.getByRole("group", { name: /natal chart/i })).toBeVisible();
-  await page.getByRole("button", { name: "Edit birth details" }).click();
+  await reopenBirth(page);
   hold = true;
-  await page
-    .getByLabel("Birth details")
-    .fill("January 2, 1980 at 3pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page, "January 2, 1980 at 3pm in London");
   await waiting;
   await page.getByRole("button", { name: "True Sky", exact: true }).click();
   await page.getByRole("button", { name: "Vedic", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Tropical", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
-  await expect(
-    page.getByText(/Showing the previous chart for 2000-06-21/),
-  ).toBeVisible();
   release();
   await expect(
     page.getByRole("button", { name: "Vedic", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByText(/Showing the previous chart for/)).toHaveCount(0);
-  await expect(page.getByText(/1980-01-02/)).toBeVisible();
+  await expect(editBirthButton(page)).toHaveAccessibleDescription(
+    /January 2, 1980 at 3:00 PM/,
+  );
 });
 
 test("failed birth update can recover by choosing another preset", async ({
@@ -104,35 +161,15 @@ test("failed birth update can recover by choosing another preset", async ({
     } else await route.continue();
   });
   await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page);
   await expect(page.getByRole("group", { name: /natal chart/i })).toBeVisible();
-  await page.getByRole("button", { name: "Edit birth details" }).click();
+  await reopenBirth(page);
   fail = true;
-  await page
-    .getByLabel("Birth details")
-    .fill("January 2, 1980 at 3pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await enterBirth(page, "January 2, 1980 at 3pm in London");
   await expect(page.getByRole("alert")).toBeVisible();
   await page.getByRole("button", { name: "True Sky", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "True Sky", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByText(/Showing the previous chart for/)).toHaveCount(0);
-});
-
-test("Escape closes advanced settings without dismissing the birth editor", async ({
-  page,
-}) => {
-  await page.goto("/app");
-  await page.getByLabel("Birth details").fill("June 21, 2000 at 1pm in London");
-  await page.getByRole("button", { name: "Apply" }).click();
-  await expect(page.getByRole("group", { name: /natal chart/i })).toBeVisible();
-  await page.getByRole("button", { name: "Edit birth details" }).click();
-  await page.getByRole("button", { name: /Advanced settings/ }).click();
-  await page.keyboard.press("Escape");
-  await expect(
-    page.getByRole("dialog", { name: "Advanced settings" }),
-  ).toHaveCount(0);
-  await expect(page.getByLabel("Birth details")).toBeVisible();
+  await expect(page.getByRole("alert")).toHaveCount(0);
 });
