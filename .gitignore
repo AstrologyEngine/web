@@ -6,6 +6,7 @@ build/
 static/release.json
 static/calculation-worker.js
 static/content/
+static/engine/
 
 # Caches and generated test output
 .cache/
