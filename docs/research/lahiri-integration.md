@@ -4,7 +4,7 @@ Inspected 2026-11-10 for [Compare three fixed zodiac systems while preserving th
 
 ## Finding
 
-Reuse the existing engine effort: [feat: add Lahiri chart reference (benchmark alignment pending)](https://github.com/AstrologyEngine/library/pull/9). It is open and draft, on `feat/lahiri` at `2b86542`, with an explicit consumer-rollout exclusion. Its local worktree is `/Users/jacksteam/Documents/AstrologyEngine/library/.worktrees/lahiri`; it was clean when inspected. Do not duplicate that work, copy its unaccepted binary into the website, or choose another Lahiri model while treating the existing effort as absent.
+Reuse the existing engine effort: [feat: add Lahiri chart reference (benchmark alignment pending)](https://github.com/AstrologyEngine/library/pull/9). It is open and draft, on `feat/lahiri` at `2b86542`, with an explicit consumer-rollout exclusion. The local worktree was clean when inspected. Do not duplicate that work, copy its unaccepted binary into the website, or choose another Lahiri model while treating the existing effort as absent.
 
 The refreshed engine default `e47f53bdc00875b4e03885571f2461617da0971d` exposes Tropical, Fagan–Bradley and True Sky, without Lahiri. Its unified `calculate_chart` pipeline owns reference offset, daily-rate correction, projection, sign assignment and house construction. Use the accepted source revision rather than assuming the candidate branch is ready for consumers. [Current configuration](https://github.com/AstrologyEngine/library/blob/e47f53bdc00875b4e03885571f2461617da0971d/src/conventions.rs), [shared pipeline](https://github.com/AstrologyEngine/library/blob/e47f53bdc00875b4e03885571f2461617da0971d/src/chart.rs).
 
