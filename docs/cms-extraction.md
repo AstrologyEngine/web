@@ -29,6 +29,9 @@ Deployment and preview creation require repository variable
 and seeds first. Deployed web snapshots then fetch from the matching staging
 or alpha CMS and fail the build if unreachable. Preview cleanup remains active.
 Local builds use package baseline copy when `CMS_SNAPSHOT_ORIGIN` is absent.
+A disabled staging deployment is reported in the workflow summary. A published
+web prerelease fails explicitly while the gate is disabled, so it cannot appear
+to have shipped alpha successfully.
 
 ## Extraction verification
 
