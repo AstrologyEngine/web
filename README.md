@@ -4,113 +4,80 @@ Natal Chart Explorer website built with SvelteKit, strict TypeScript, Bun and Cl
 
 ## Build the calculation engine
 
-The calculation engine is built from the sibling `../library` source tree.
-`static/engine/` is generated locally and is not committed. The GeoNames atlas
-in `static/atlas/` is a separate input and remains included.
+Build the browser Wasm wrapper from the sibling `../library` source tree before
+running the website or its checks. The annual ephemeris `.bin` files and
+`static/engine/ephemeris/index.json` remain included, as does the independent
+GeoNames atlas in `static/atlas/`. Only the generated Wasm wrapper and its
+JavaScript/TypeScript bindings must be built locally.
 
-Before running the website or its checks, provide the library source and its
-compatible `HDCHEB01` ephemeris dataset (`cheb.bin`). Keep the full dataset outside
-this web repository. The library's `README.md`, `rust-toolchain.toml`,
-`examples/configurable-chart/README.md`, and `tools/notices/README.md` are the
-build references for that source revision. Record its exact source commit when
-preparing the assets, even when the source directory has no Git metadata.
-
-The current library build requires Rust 1.96.0 with the
+Use the library's `rust-toolchain.toml`,
+`examples/configurable-chart/README.md`, and `tools/notices/README.md` for the
+selected source revision. The current library requires Rust 1.96.0 with the
 `wasm32-unknown-unknown` target, a native Rust build environment, Bun 1.3.14,
-wasm-bindgen-cli 0.2.122, and `tar`. Install those prerequisites before building;
-`WASM_BINDGEN` can select an existing compatible wasm-bindgen executable.
-The library must include its checked-in notice bundles. If the build reports
-stale notices, follow its notice guide to refresh and verify them.
+wasm-bindgen-cli 0.2.122, and `tar`. Install these prerequisites before building;
+`WASM_BINDGEN` can select an existing compatible executable. The library must
+include its checked-in notice bundles; follow its notice guide if they are stale.
 
-Run the following from this web repository, setting `EPHEMERIS_FILE` to the
-absolute path of the supplied dataset. Use an empty `static/engine/` destination;
-for a rebuild, preserve or move aside existing assets before starting so files
-from different builds cannot be mixed.
+Run from this web repository:
 
 ```sh
 set -eu
-export EPHEMERIS_FILE=/absolute/path/to/cheb.bin
 export WEB_ROOT="$PWD"
 export LIBRARY_ROOT="$(cd ../library && pwd)"
-test -f "$EPHEMERIS_FILE"
-test ! -e "$WEB_ROOT/static/engine"
-
 (
   set -eu
-  cd "$LIBRARY_ROOT"
-  cargo build --locked --release -p dataset-builder
-  cd examples/configurable-chart
+  cd "$LIBRARY_ROOT/examples/configurable-chart"
   bun install --frozen-lockfile
   bun run build:wasm
   bun run check
   mkdir -p "$WEB_ROOT/static/engine"
   cp -R engine/. "$WEB_ROOT/static/engine/"
-  bun prepare-segments.ts "$EPHEMERIS_FILE" "$WEB_ROOT/static/engine/ephemeris"
-  bun verify-segments.ts "$EPHEMERIS_FILE" "$WEB_ROOT/static/engine/ephemeris"
 )
 ```
 
-Stop if any command fails. The Wasm build produces `chart.js`, `chart_bg.wasm`
-and their TypeScript declarations. Copy the whole `engine/` output, including
-its license, notice documents and source archive. The segment preparation step
-produces `ephemeris/index.json` and hash-named binary files under
-`ephemeris/<dataset-sha256>/`. A full `cheb.bin` alone is not the website's expected
-asset layout. Segment verification checks full-versus-sliced parity in the
-library's Wasm adapter; it does not establish website compatibility.
+Copy the complete wrapper output, including `chart.js`, `chart_bg.wasm`, their
+TypeScript declarations, license/notice documents and source archive. Keep
+`static/engine/ephemeris/` intact. Building this wrapper does not require
+regenerating the dataset or its annual slices. A full dataset supplied with the
+library may be used for its own verification, but is not a replacement for the
+website's existing slice layout.
 
-### Pin and verify the rebuilt assets
+### Pin and verify the rebuilt wrapper
 
-The website deliberately rejects assets with unexpected hashes. Its existing
-pins describe the previous engine build; copying newly built files alone is
-not enough. After selecting and reviewing a new library revision or dataset,
-calculate the asset identities from the actual output:
+The website rejects a Wasm binary whose SHA-256 differs from its checked-in pin.
+Compute the hash of the actual build:
 
 ```sh
 node --input-type=module <<'NODE'
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-const hash = bytes => createHash('sha256').update(bytes).digest('hex');
-const indexBytes = readFileSync('static/engine/ephemeris/index.json');
-const index = JSON.parse(indexBytes);
-console.log(JSON.stringify({
-  wasmSha256: hash(readFileSync('static/engine/chart_bg.wasm')),
-  indexSha256: hash(indexBytes),
-  datasetSha256: index.source.sha256,
-  datasetFingerprint: index.source.engineFingerprint,
-  segmentCount: index.segments.length,
-  birthCoverageUtc: index.birthCoverageUtc,
-  slices: Object.fromEntries(index.segments.map(s => [s.year, s.sha256])),
-}, null, 2));
+console.log(createHash('sha256').update(
+  readFileSync('static/engine/chart_bg.wasm'),
+).digest('hex'));
 NODE
 ```
 
-Update these checked-in integrity/provenance records together:
+When adopting a rebuilt wrapper, review and update these records together:
 
-- `src/lib/calculation/worker.ts`: `WASM`, `INDEX`, `DATASET`,
-  `engineCommit`, and `datasetFingerprint`.
-- `src/lib/calculation/snapshot.ts`: the matching provenance literals.
-- `src/lib/calculation/slices.json`: the complete year-to-hash `slices` map.
-- `verification/engine-assets.test.ts`: expected Wasm, index and dataset hashes,
-  and the segment count for the selected coverage.
-- `docs/calculation-provenance.md`: source revision, dataset identity,
-  fingerprint, asset hashes, and verification evidence.
+- `src/lib/calculation/worker.ts`: `WASM` and the actual library `engineCommit`.
+- `src/lib/calculation/snapshot.ts`: matching `wrapperSha256` and `engineCommit` literals.
+- `verification/engine-assets.test.ts`: expected Wasm hash.
+- `docs/calculation-provenance.md`: library revision, Wasm hash and verification evidence.
 
-Use the library source commit for `engineCommit`, not the web commit. The
-`supplementarySourceCommit` identifies separate website adaptation code and does
-not change simply because the calculation engine is rebuilt. Preserve integrity
-checks; do not remove them to accept a mismatching build. The library's
-`calculate(bytes, JSON-request)` export must still satisfy
+Record the exact library source commit even if its directory has no Git metadata.
+Do not change dataset/index hashes, dataset fingerprint, the slice map or segment
+count when reusing the included ephemeris files. `supplementarySourceCommit`
+identifies separate website adaptation code and also remains unchanged.
+Preserve integrity checks rather than disabling them. The rebuilt library's
+`calculate(bytes, JSON-request)` export must remain compatible with
 `src/lib/calculation/chart.ts` and the website's requested settings.
 
-Then run the development checks below, including
-`bun test verification/engine-assets.test.ts`, the full verification suite, the
-web build, and browser tests with the CMS installed. Building the JS worker with
-`bun run worker:build` does not compile Rust or prepare ephemeris assets.
-
-CI and deployment must provision the same library revision and dataset, build
-the assets with their notices, and verify the checked-in pins before packaging
-the website. That provisioning is not yet configured; a checkout without these
-assets is not ready for deployment or chart calculation.
+Run the development checks below, including `bun test verification`, the web
+build and browser tests with the CMS installed. `bun run worker:build` builds the
+JS worker, not the Rust/Wasm wrapper. CI/deployment must build the same wrapper,
+include its notices, and verify its pin before packaging. That provisioning is
+not yet configured; a fresh checkout is not ready for chart calculation or
+deployment until the wrapper is prepared.
 
 ## Development
 
