@@ -1,7 +1,10 @@
 import type { Bundle } from "../../copy/copy";
 
-export type LocaleSummary = { code: string; name: string; chain: string[] };
-export type LocalesIndex = { default: string; locales: LocaleSummary[] };
+import type { LocalesIndex } from "@astrologyengine/cms-contract/types";
+export type {
+  LocaleSummary,
+  LocalesIndex,
+} from "@astrologyengine/cms-contract/types";
 
 type Entry<T> = { value: T; etag: string | null; checkedAt: number };
 

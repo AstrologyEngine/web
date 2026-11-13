@@ -1,3 +1,6 @@
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { cmsRepoPath } from "./scripts/cms-repo.mjs";
 import { defineConfig } from "@playwright/test";
 
 // Projects (docs/plans/cms.md, Phase 7):
@@ -18,8 +21,9 @@ const url = (p: number) => `http://127.0.0.1:${p}`;
 const chromium = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
 
 const cms = (p: number, fixture?: string) => ({
-  command: `bun run dev:e2e --port ${p}${fixture ? ` --fixture ${fixture}` : ""}`,
-  cwd: "apps/cms",
+  command: `bun run dev:e2e --port ${p}`,
+  ...(fixture ? { env: { CMS_E2E_FIXTURE: fixture } } : {}),
+  cwd: cmsRepoPath(),
   url: `${url(p)}/health`,
   reuseExistingServer: false,
   timeout: 120_000,
@@ -76,7 +80,13 @@ export default defineConfig({
     ? undefined
     : [
         cms(ports.cms),
-        cms(ports.cmsI18n, "../../tests/fixtures/cms-pseudo-locale.json"),
+        cms(
+          ports.cmsI18n,
+          resolve(
+            fileURLToPath(new URL(".", import.meta.url)),
+            "tests/fixtures/cms-pseudo-locale.json",
+          ),
+        ),
         web(ports.web, url(ports.cms)),
         web(ports.webI18n, url(ports.cmsI18n)),
         // Port 9 (discard) refuses connections: the CMS is down.

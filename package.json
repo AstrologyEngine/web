@@ -18,9 +18,11 @@
     "changeset": "changeset",
     "version:release": "changeset version && bun install --lockfile-only && bun run format",
     "release:publish": "node scripts/publish-release.mjs",
-    "worker:build": "bun build src/lib/calculation/worker.ts --target browser --outfile static/calculation-worker.js"
+    "worker:build": "bun build src/lib/calculation/worker.ts --target browser --outfile static/calculation-worker.js",
+    "dev:stack": "node scripts/dev-stack.mjs"
   },
   "dependencies": {
+    "@astrologyengine/cms-contract": "https://github.com/AstrologyEngine/cms/releases/download/v0.1.0/cms-contract-0.1.0.tgz",
     "@js-temporal/polyfill": "0.5.1",
     "chrono-node": "2.10.3",
     "zod": "4.6.7"
