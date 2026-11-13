@@ -1,8 +1,7 @@
 # Calculation assets and local verification
 
-The generated Wasm wrapper is no longer checked in. Follow the root README build
-instructions to prepare it from the sibling library. The ephemeris index and
-annual binary slices remain included under `static/engine/ephemeris/`.
+Engine assets are no longer checked in. Follow the root README build instructions
+to prepare `static/engine/` from the separately supplied library and dataset.
 The identities and results below record the previous integration baseline;
 update them together with the runtime and test pins when adopting a rebuilt engine.
 
