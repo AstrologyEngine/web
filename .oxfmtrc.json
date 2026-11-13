@@ -3,7 +3,6 @@
   "ignorePatterns": [
     "static/engine/**",
     "static/atlas/**",
-    "apps/**",
     "docs/editorial/natal-chart-review.md"
   ]
 }

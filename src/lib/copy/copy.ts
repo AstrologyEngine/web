@@ -2,7 +2,7 @@
  * Typed access to CMS copy (docs/designs/cms.md §9.3). Keys and placeholder
  * names come from the CMS catalog, so unknown keys fail type checks.
  */
-import type { AppCatalog } from "$cms/catalog";
+import type { AppCatalog } from "@astrologyengine/cms-contract/catalog";
 
 type UiKeys = AppCatalog["ui"]["keys"];
 export type UiKey = keyof UiKeys & string;
@@ -18,14 +18,8 @@ export type PlainKey = {
 export type Reference = { insight: string; keywords: string[] };
 export type NamedReference = Reference & { name: string };
 
-export type Bundle = {
-  locale: string;
-  default: string;
-  chain: string[];
-  version: number;
-  entries: Record<string, Record<string, Record<string, unknown>>>;
-  fallbacks: Record<string, string>;
-};
+import type { Bundle } from "@astrologyengine/cms-contract/types";
+export type { Bundle } from "@astrologyengine/cms-contract/types";
 
 type Options = { warn?: (message: string) => void };
 

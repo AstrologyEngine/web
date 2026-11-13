@@ -5,6 +5,7 @@
 //     fetches every enabled locale; any failure fails the build.
 //   node scripts/cms-snapshot.mjs
 //     without an origin (local dev, tests): English from the CMS seed.
+import { createRequire } from "node:module";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -77,7 +78,9 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const root = fileURLToPath(new URL("..", import.meta.url));
   const result = await writeSnapshot({
     origin: process.env.CMS_SNAPSHOT_ORIGIN || undefined,
-    seedPath: join(root, "apps/cms/seed/en.json"),
+    seedPath: createRequire(import.meta.url).resolve(
+      "@astrologyengine/cms-contract/seed/en.json",
+    ),
     outDir: join(root, "static/content"),
   });
   console.log(

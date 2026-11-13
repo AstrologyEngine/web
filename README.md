@@ -8,52 +8,50 @@ Use Node 24.10.0 and Bun 1.3.14.
 
 ```sh
 bun install --frozen-lockfile
-(cd apps/cms && bun install --frozen-lockfile)
 bun run sync
 bun run dev
 ```
 
-Before committing: `bun run check`, `bun run check:ts`, `bun run lint`,
-`bun run format:check`, `bun run build`, both environment dry runs, and
+Web can install, check and build independently. Without a running CMS, local
+requests use baseline copy bundled from the pinned contract package.
+
+For both services, clone [AstrologyEngine/cms](https://github.com/AstrologyEngine/cms)
+as sibling `../cms` and run:
+
+```sh
+bun run dev:stack
+# Other checkout/ports:
+CMS_REPO_PATH=/path/to/cms WEB_PORT=5174 CMS_PORT=8789 bun run dev:stack
+```
+
+The launcher installs frozen dependencies, migrates/seeds persistent local D1,
+watches and temporarily links the local contract, and starts CMS then web.
+Ctrl+C stops its processes and restores the pinned package. Each service can
+also run separately: start CMS there, then set `CMS_ORIGIN` when starting web
+(default `http://127.0.0.1:8787`). `scripts/review.sh` runs checks and browser
+tests before starting the same stack; `--serve` starts it without checks.
+
+Before committing: `bun run sync`, `bun run check`, `bun run check:ts`,
+`bun run lint`, `bun run format:check`, `node --test scripts/*.test.mjs`,
+`bun test verification`, `bun run build`, both environment dry runs and
 `bun run test:browser` (install Chromium with `bunx playwright install chromium`).
 
 ## CMS copy
 
-The [CMS Worker](apps/cms/README.md) stores website text and reference content.
-See the [design](docs/designs/cms.md), [plan](docs/plans/cms.md) and
-[operations runbook](docs/runbooks/cms.md).
+[CMS](https://github.com/AstrologyEngine/cms) owns website copy, the typed
+catalog, locale helpers and baseline English seed. Web pins
+`@astrologyengine/cms-contract` to an exact public GitHub release asset.
 
-Start `bun run dev:e2e` in `apps/cms` in a separate terminal for a fresh local
-CMS on port 8787. The web server uses `CMS_ORIGIN` (default
-`http://127.0.0.1:8787`); deployed Workers use the `CMS` service binding.
-The server negotiates `?lang`, the language cookie and `Accept-Language`.
-A language switcher appears when multiple locales are enabled.
+New keys: update and release CMS, deploy/seed it, then update web's dependency
+URL and lockfile before using those keys. Ordinary content edits use the CMS
+admin API and need no web release. See the
+[CMS runbook](https://github.com/AstrologyEngine/cms/blob/main/docs/runbooks/cms.md).
 
-Dev and build generate outage snapshots in `static/content/` from the English
-seed. Set `CMS_SNAPSHOT_ORIGIN` to the target CMS for deployed builds; a failed
-snapshot fetch fails the build. Provision and seed the CMS before deploying the
-web service binding, following the runbook. Remote database IDs are placeholders.
+Builds bundle outage snapshots from the package's baseline seed by default.
+`CMS_SNAPSHOT_ORIGIN` fetches all enabled locales from a live CMS; fetch errors
+fail the build. Deployed builds always use their target CMS origin.
 
-The imported toolchain uses SvelteKit 2.59.1, Cloudflare adapter 7.2.9 and the
-official Svelte compiler, with oxfmt and Prettier for formatting. Node and Bun
-pins remain unchanged.
-
-Run `node --test scripts/*.test.mjs` and `bun test verification` alongside the
-web checks above. Run `test`, `check`, `lint` and `format:check` in `apps/cms`.
-Browser tests start two local CMS instances and three web servers to cover
-English, a partial pseudo-locale and CMS outages. `PLAYWRIGHT_PORT` changes the
-base web port; `E2E_BASE_URL` uses an existing server;
-`PLAYWRIGHT_CHROMIUM_EXECUTABLE` optionally selects a local Chromium executable.
-
-## Local review runner
-
-With Node 24.10.0 and Bun 1.3.14 on PATH, run `./scripts/review.sh` to install
-locked dependencies, validate both applications, run browser tests, and start
-the local web/CMS stack with manual review steps. Use `./scripts/review.sh --serve`
-to skip checks and start the stack. Ctrl+C stops its services.
-
-`REVIEW_WEB_PORT`, `REVIEW_CMS_PORT`, and `PLAYWRIGHT_PORT` configure ports.
-Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE` to use an existing Chromium; otherwise the
-runner downloads it. On Linux, missing browser system libraries require a
-one-time `bunx playwright install-deps chromium` installation with administrator
-access. The runner itself does not install system packages.
+Browser tests require a CMS checkout and use isolated databases for English,
+a partial pseudo-locale and CMS outages. `CMS_REPO_PATH` overrides the sibling
+path; `PLAYWRIGHT_PORT` changes test ports. `E2E_BASE_URL` tests an existing site
+without a local CMS checkout. See [extraction details](docs/cms-extraction.md).
