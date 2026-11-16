@@ -1,7 +1,3 @@
 {
-  "ignorePatterns": [
-    "static/engine/**",
-    "static/calculation-worker.js",
-    "apps/**"
-  ]
+  "ignorePatterns": ["static/engine/**", "static/calculation-worker.js"]
 }

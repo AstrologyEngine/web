@@ -1,7 +1,16 @@
 import { sveltekit } from "@sveltejs/kit/vite";
-import { defineConfig } from "vite";
+import { defineConfig, searchForWorkspaceRoot } from "vite";
+import { resolve } from "node:path";
 export default defineConfig({
   plugins: [sveltekit()],
-  // The CMS in apps/cms keeps local D1 state there while browser tests run.
-  server: { watch: { ignored: ["**/apps/cms/.wrangler/**"] } },
+  server: process.env.CMS_REPO_PATH
+    ? {
+        fs: {
+          allow: [
+            searchForWorkspaceRoot(process.cwd()),
+            resolve(process.env.CMS_REPO_PATH, "packages/contract"),
+          ],
+        },
+      }
+    : {},
 });

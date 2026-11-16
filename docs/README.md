@@ -29,3 +29,10 @@ Use `bun run test:browser` locally, or set `E2E_BASE_URL` to test a hosted site
 without starting Vite. New tests in `tests/` are included automatically. Staging
 and alpha run the suite after deployment. Preview E2E failures fail the preview
 check; reports and failure traces are uploaded as workflow artifacts.
+
+## CMS extraction gate
+
+CMS is maintained in AstrologyEngine/cms. Deployment and preview creation are
+disabled unless repository variable `CMS_DEPLOY_ENABLED=true`; enable only
+after hosted provisioning/acceptance in web-issues#39. CMS must deploy and seed
+before web. Contract release assets are independent of hosted deployment.

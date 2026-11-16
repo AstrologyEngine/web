@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   preview:
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event.pull_request.head.repo.full_name == github.repository && (github.event.action == 'closed' || vars.CMS_DEPLOY_ENABLED == 'true')
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     env:
@@ -55,7 +55,7 @@ jobs:
           echo "id=$id" >> "$GITHUB_OUTPUT"
           gh api -X POST "repos/$REPO/deployments/$id/statuses" -f state=in_progress
           bun run sync
-          bun run build
+          CMS_SNAPSHOT_ORIGIN=https://cms-staging.astrologyengine.dev bun run build
       - name: Upload preview
         id: upload
         if: steps.deploy.outputs.id != ''

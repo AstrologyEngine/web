@@ -1,4 +1,7 @@
-import { negotiate, parseAcceptLanguage } from "$cms/locales";
+import {
+  negotiate,
+  parseAcceptLanguage,
+} from "@astrologyengine/cms-contract/locales";
 
 const NO_MATCH = "";
 
