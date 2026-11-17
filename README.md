@@ -28,8 +28,7 @@ The launcher installs frozen dependencies, migrates/seeds persistent local D1,
 watches and temporarily links the local contract, and starts CMS then web.
 Ctrl+C stops its processes and restores the pinned package. Each service can
 also run separately: start CMS there, then set `CMS_ORIGIN` when starting web
-(default `http://127.0.0.1:8787`). `scripts/review.sh` runs checks and browser
-tests before starting the same stack; `--serve` starts it without checks.
+(default `http://127.0.0.1:8787`).
 
 Before committing: `bun run sync`, `bun run check`, `bun run check:ts`,
 `bun run lint`, `bun run format:check`, `node --test scripts/*.test.mjs`,
