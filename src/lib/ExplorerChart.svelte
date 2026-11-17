@@ -202,24 +202,19 @@
   <MobileWheel {measurement}
     ><Wheel
       {chart}
-      {astrology}
-      selectedBody={body?.name ?? null}
-      selectedSign={selection?.kind === "sign" ? selection.name : null}
-      selectedHouse={selection?.kind === "house" ? selection.number : null}
-      selectedAngle={selection?.kind === "angle" ? selection.name : null}
-      onselect={selectBody}
-      onselectSign={selectSign}
-      onselectHouse={selectHouse}
-      onselectAngle={selectAngle}
+      aspects={astrology.aspects}
+      selected={selection}
+      onglyphclick={({ glyph, origin, keyboard }) =>
+        choose(glyph, origin, keyboard)}
       onexposeGroup={() => measurement?.expose("body_picker")}
       onopenGroup={() => {
         measurement?.use("body_picker");
         measurement?.interaction("navigation");
       }}
-      onselectAspects={(near, target) =>
+      onaspectclick={({ aspects: near, origin }) =>
         openPicker(
           near,
-          target,
+          origin,
           body &&
             near.some((a) => a.planetA === body.name || a.planetB === body.name)
             ? body.name

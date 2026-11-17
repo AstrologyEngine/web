@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { isAngle, signIds } from "./identities";
+  import { angleIds, isAngle, signIds } from "./identities";
   import { WHEEL_THEMES, contrastInk } from "./wheel/theme";
   import { annularSector } from "./wheel/arcPath";
   import { longitudeToSvgAngle } from "./wheel/angles";
@@ -11,61 +11,109 @@
   import GroupedPicker from "./GroupedPicker.svelte";
   import { tick } from "svelte";
   import type { Chart } from "./calculation/chart";
-  import type { Astrology } from "./calculation/snapshot";
+  import type { Aspect, BodyName, Glyph, Selection } from "./selection";
+  import type { AspectEvent, GlyphEvent } from "./wheel/events";
   const theme = WHEEL_THEMES.traditional;
   let {
     chart,
-    astrology,
-    selectedBody = null,
-    onselect = () => {},
+    aspects: chartAspects,
+    label,
+    selected = null,
+    interactive,
+    crowding = true,
+    onglyphclick,
+    onglyphhover,
+    onaspectclick,
     onblank = () => {},
-    selectedSign = null,
-    selectedHouse = null,
-    selectedAngle = null,
-    onselectSign,
-    onselectHouse,
-    onselectAngle,
-    onselectAspects,
     onexposeGroup = () => {},
     onopenGroup = () => {},
   }: {
     chart: Chart;
-    astrology: Astrology;
-    selectedBody?: Chart["bodies"][number]["name"] | null;
-    onselect?: (
-      name: Chart["bodies"][number]["name"],
-      origin: Element,
-      keyboard: boolean,
-    ) => void;
+    aspects: Aspect[];
+    /** Accessible name of the chart; defaults to the app's chart label. */
+    label?: string;
+    /** Marks the matching glyph as pressed; aspects dim lines off the body. */
+    selected?: Selection | null;
+    /** Which glyphs are buttons; all of them when omitted. */
+    interactive?: (glyph: Glyph) => boolean;
+    /** Group crowded bodies into badges on narrow windows (the app's mobile). */
+    crowding?: boolean;
+    onglyphclick?: (event: GlyphEvent) => void;
+    /** Pointer entered a glyph, or left it (`null`). */
+    onglyphhover?: (event: GlyphEvent | null) => void;
+    onaspectclick?: (event: AspectEvent) => void;
     onblank?: () => void;
-    selectedSign?: Chart["zodiac_sectors"][number]["sign"] | null;
-    selectedHouse?: number | null;
-    selectedAngle?: Chart["bodies"][number]["name"] | null;
-    onselectSign?: (
-      sign: Chart["zodiac_sectors"][number]["sign"],
-      origin: Element,
-      keyboard: boolean,
-    ) => void;
-    onselectHouse?: (house: number, origin: Element, keyboard: boolean) => void;
-    onselectAngle?: (
-      angle: Chart["bodies"][number]["name"],
-      origin: Element,
-      keyboard: boolean,
-    ) => void;
     onexposeGroup?: () => void;
     onopenGroup?: () => void;
-    onselectAspects?: (
-      aspects: Astrology["aspects"],
-      origin: Element,
-      keyboard: boolean,
-    ) => void;
   } = $props();
   let width = $state(0);
   let picker = $state<{
-    members: Chart["bodies"][number]["name"][];
+    members: BodyName[];
     origin: Element;
   } | null>(null);
-  let selected = $state<{ name: string; x: number; y: number } | null>(null);
+  const selectedBody = $derived(
+    selected?.kind === "body" ? selected.name : null,
+  );
+  const isPressed = (glyph: Glyph) =>
+    !!selected &&
+    selected.kind === glyph.kind &&
+    JSON.stringify(selected) === JSON.stringify(glyph);
+  const isOn = (glyph: Glyph) =>
+    !!onglyphclick && (interactive?.(glyph) ?? true);
+  /** Page coordinates of the pointer, or of the glyph's centre for keys. */
+  const pagePoint = (event: MouseEvent | KeyboardEvent, origin: Element) => {
+    if (event instanceof MouseEvent && event.detail !== 0)
+      return { x: event.pageX, y: event.pageY };
+    const box = origin.getBoundingClientRect();
+    return {
+      x: box.left + box.width / 2 + window.scrollX,
+      y: box.top + box.height / 2 + window.scrollY,
+    };
+  };
+  const activate = (
+    glyph: Glyph,
+    event: MouseEvent | KeyboardEvent,
+    origin: Element,
+    keyboard: boolean,
+  ) =>
+    onglyphclick?.({
+      glyph,
+      origin,
+      keyboard,
+      ...pagePoint(event, origin),
+    });
+  /** Click, Enter/Space and hover handlers for an interactive glyph. */
+  const handlers = (glyph: Glyph) => ({
+    onclick: (event: MouseEvent & { currentTarget: Element }) =>
+      activate(glyph, event, event.currentTarget, false),
+    onkeydown: (event: KeyboardEvent & { currentTarget: Element }) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        activate(glyph, event, event.currentTarget, true);
+      }
+    },
+    onpointerenter: (event: PointerEvent & { currentTarget: Element }) =>
+      onglyphhover?.({
+        glyph,
+        origin: event.currentTarget,
+        keyboard: false,
+        x: event.pageX,
+        y: event.pageY,
+      }),
+    onpointerleave: () => onglyphhover?.(null),
+  });
+  /** Button attributes for an interactive glyph; hidden from AT otherwise. */
+  const button = (glyph: Glyph, name: string) =>
+    isOn(glyph)
+      ? {
+          "data-glyph": "",
+          role: "button",
+          tabindex: 0,
+          "aria-label": name,
+          "aria-pressed": isPressed(glyph),
+          ...handlers(glyph),
+        }
+      : { "aria-hidden": true };
   const asc = $derived(
     chart.bodies.find((b) => b.name === "ASCENDANT_SYMBOL")!.longitude,
   );
@@ -75,7 +123,7 @@
     layoutBodyPositions(chart.bodies.filter((b) => !isAngle(b.name))),
   );
   const groups = $derived(
-    width > 0 && width < 800
+    crowding && width > 0 && width < 800
       ? groupCrowdedBodies(
           bodies as (Chart["bodies"][number] & { labelLongitude: number })[],
           chart.cusps,
@@ -90,10 +138,7 @@
   $effect(() => {
     if (groups.some((group) => group.members.length > 1)) onexposeGroup();
   });
-  const openGroup = (
-    members: Chart["bodies"][number]["name"][],
-    origin: Element,
-  ) => {
+  const openGroup = (members: BodyName[], origin: Element) => {
     onopenGroup();
     picker = { members, origin };
   };
@@ -104,18 +149,26 @@
     if (origin instanceof SVGElement || origin instanceof HTMLElement)
       origin.focus();
   };
-  const chooseGroup = async (name: Chart["bodies"][number]["name"]) => {
+  const chooseGroup = async (name: BodyName) => {
     const origin = picker?.origin;
     picker = null;
     await tick();
-    if (origin) selectBody(name, origin, true);
+    if (!origin) return;
+    const box = origin.getBoundingClientRect();
+    onglyphclick?.({
+      glyph: { kind: "body", name },
+      origin,
+      keyboard: true,
+      x: box.left + box.width / 2 + window.scrollX,
+      y: box.top + box.height / 2 + window.scrollY,
+    });
   };
   const signs: readonly string[] = signIds.filter(
     (sign) => sign !== "ophiuchus",
   );
   const title = (s: string) => s[0].toUpperCase() + s.slice(1);
   const aspects = $derived(
-    astrology.aspects
+    chartAspects
       .filter((a) =>
         ["Sextile", "Square", "Trine", "Opposition"].includes(a.type),
       )
@@ -159,41 +212,9 @@
       })
       .filter((a) => a !== null),
   );
-  const select = (name: string, x: number, y: number) => {
-    onblank();
-    selected = selected?.name === name ? null : { name, x, y };
-  };
-  const selectBody = (
-    name: Chart["bodies"][number]["name"],
-    origin: Element,
-    keyboard: boolean,
-  ) => {
-    selected = null;
-    onselect(name, origin, keyboard);
-  };
-  $effect(() => {
-    if (selectedBody) selected = null;
-  });
-  const clear = () => {
-    selected = null;
-    onblank();
-  };
-  const keySelect = (e: KeyboardEvent, name: string, x: number, y: number) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      select(name, x, y);
-    }
-  };
 </script>
 
-<svelte:window
-  bind:innerWidth={width}
-  onkeydown={(event) => {
-    if (event.key === "Escape" && !event.defaultPrevented && selected) {
-      selected = null;
-    }
-  }}
-/>
+<svelte:window bind:innerWidth={width} />
 <div
   class="wheel"
   style="--w-strong:{theme.ink.strong};--w-mid:{theme.ink.mid};--w-faint:{theme
@@ -205,13 +226,13 @@
     class="chart-root"
     viewBox="-20 -20 640 640"
     role="group"
-    aria-label={t("wheel.label")}
+    aria-label={label ?? t("wheel.label")}
     tabindex="-1"
     onclick={(e) => {
       if (!(e.target instanceof Element) || !e.target.closest("[data-glyph]")) {
         const svg = e.currentTarget;
         const matrix = svg.getScreenCTM();
-        if (matrix && onselectAspects) {
+        if (matrix && onaspectclick) {
           const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(
             matrix.inverse(),
           );
@@ -232,15 +253,21 @@
             .filter((line) => distance(line) < 11)
             .map((line) => line.aspect);
           if (near.length) {
-            onselectAspects(near, svg, false);
+            onaspectclick({
+              aspects: near,
+              origin: svg,
+              keyboard: false,
+              x: e.pageX,
+              y: e.pageY,
+            });
             return;
           }
         }
-        clear();
+        onblank();
       }
     }}
     onkeydown={(e) => {
-      if (e.target === e.currentTarget && e.key === "Escape") clear();
+      if (e.target === e.currentTarget && e.key === "Escape") onblank();
     }}
   >
     <g aria-hidden="true">
@@ -326,15 +353,16 @@
         >
       {/each}
     </g>
-    {#if onselectHouse}
-      {#each chart.cusps as cusp, i (i)}
+    {#each chart.cusps as cusp, i (i)}
+      {@const glyph = { kind: "house", number: i + 1 } as const}
+      {#if isOn(glyph)}
         {@const next = chart.cusps[(i + 1) % 12]}
         <path
           data-glyph
           role="button"
           tabindex="0"
           aria-label={copy().houseName(i + 1)}
-          aria-pressed={selectedHouse === i + 1}
+          aria-pressed={isPressed(glyph)}
           d={annularSector(
             133,
             231,
@@ -343,16 +371,10 @@
           )}
           transform="translate(300 300)"
           fill="transparent"
-          onclick={(e) => onselectHouse?.(i + 1, e.currentTarget, false)}
-          onkeydown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              onselectHouse?.(i + 1, e.currentTarget, true);
-            }
-          }}
+          {...handlers(glyph)}
         />
-      {/each}
-    {/if}
+      {/if}
+    {/each}
     {#each chart.zodiac_sectors as sign (sign.sign)}
       {@const a = point(sign.start_degrees, 231)}{@const b = point(
         sign.start_degrees,
@@ -377,15 +399,13 @@
         y2={b.y}
         stroke="var(--w-faint)"
       />
-      {#if onselectSign}
+      {@const glyph = { kind: "sign", name: sign.sign } as const}
+      {#if isOn(glyph)}
         <path
-          data-glyph
-          role="button"
-          tabindex="0"
-          aria-label={t("wheel.sign.region", {
-            sign: copy().signName(sign.sign),
-          })}
-          aria-pressed={selectedSign === sign.sign}
+          {...button(
+            glyph,
+            t("wheel.sign.region", { sign: copy().signName(sign.sign) }),
+          )}
           d={annularSector(
             231,
             273,
@@ -394,34 +414,11 @@
           )}
           transform="translate(300 300)"
           fill="transparent"
-          onclick={(e) => onselectSign?.(sign.sign, e.currentTarget, false)}
-          onkeydown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              onselectSign?.(sign.sign, e.currentTarget, true);
-            }
-          }}
         />
       {/if}
       <g
-        data-glyph
-        role="button"
-        tabindex="0"
-        aria-label={copy().signName(sign.sign)}
+        {...button(glyph, copy().signName(sign.sign))}
         style="--glyph-focus:{contrastInk(theme.signFills![title(sign.sign)])}"
-        aria-pressed={onselectSign
-          ? selectedSign === sign.sign
-          : selected?.name === sign.sign}
-        onclick={(e) =>
-          onselectSign
-            ? onselectSign(sign.sign, e.currentTarget, false)
-            : select(sign.sign, p.x, p.y)}
-        onkeydown={(e) => {
-          if (onselectSign && (e.key === "Enter" || e.key === " ")) {
-            e.preventDefault();
-            onselectSign(sign.sign, e.currentTarget, true);
-          } else if (!onselectSign) keySelect(e, sign.sign, p.x, p.y);
-        }}
       >
         <circle cx={p.x} cy={p.y} r="22" fill="transparent" />
         <svg
@@ -445,37 +442,18 @@
         </svg>
       </g>
     {/each}
-    {#if onselectAngle}
-      {#each ["ASCENDANT_SYMBOL", "MIDHEAVEN", "DESCENDANT", "IMUM_COELI"].map( (body) => ({ body, name: copy().pointName(body) }) ) as angle (angle.body)}
+    {#each angleIds as name (name)}
+      {@const glyph = { kind: "angle", name } as const}
+      {#if isOn(glyph)}
         {@const p = point(
-          chart.bodies.find((b) => b.name === angle.body)!.longitude,
+          chart.bodies.find((b) => b.name === name)!.longitude,
           293,
         )}
-        <g
-          data-glyph
-          role="button"
-          tabindex="0"
-          aria-label={angle.name}
-          aria-pressed={selectedAngle === angle.body}
-          onclick={(e) =>
-            onselectAngle?.(
-              angle.body as Chart["bodies"][number]["name"],
-              e.currentTarget,
-              false,
-            )}
-          onkeydown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              onselectAngle?.(
-                angle.body as Chart["bodies"][number]["name"],
-                e.currentTarget,
-                true,
-              );
-            }
-          }}><circle cx={p.x} cy={p.y} r="15" fill="transparent" /></g
+        <g {...button(glyph, copy().pointName(name))}
+          ><circle cx={p.x} cy={p.y} r="15" fill="transparent" /></g
         >
-      {/each}
-    {/if}
+      {/if}
+    {/each}
     <g aria-hidden="true" pointer-events="none">
       {#each groups as group (group.members[0].name)}
         {@const p = point(group.longitude, group.radius)}
@@ -500,37 +478,33 @@
           (body) => body.name === selectedBody,
         )}
         {@const selectedSize = Math.min(20, group.extent * 1.1)}
+        {@const members = group.members.map((b) => b.name)}
+        {@const bodies = members
+          .map((name) => copy().pointName(name))
+          .join(", ")}
         <g
-          data-glyph
-          role="button"
-          tabindex="0"
-          aria-label={selectedMember
-            ? t("wheel.group.labelSelected", {
-                bodies: group.members
-                  .map((b) => copy().pointName(b.name))
-                  .join(", "),
-                body: copy().pointName(selectedMember.name),
-              })
-            : t("wheel.group.label", {
-                bodies: group.members
-                  .map((b) => copy().pointName(b.name))
-                  .join(", "),
-              })}
-          aria-pressed={group.members.some((b) => b.name === selectedBody)}
-          onclick={(e) =>
-            openGroup(
-              group.members.map((b) => b.name),
-              e.currentTarget,
-            )}
-          onkeydown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              openGroup(
-                group.members.map((b) => b.name),
-                e.currentTarget,
-              );
-            }
-          }}
+          {...members.some((name) => isOn({ kind: "body", name }))
+            ? {
+                "data-glyph": "",
+                role: "button",
+                tabindex: 0,
+                "aria-label": selectedMember
+                  ? t("wheel.group.labelSelected", {
+                      bodies,
+                      body: copy().pointName(selectedMember.name),
+                    })
+                  : t("wheel.group.label", { bodies }),
+                "aria-pressed": !!selectedMember,
+                onclick: (e: MouseEvent & { currentTarget: Element }) =>
+                  openGroup(members, e.currentTarget),
+                onkeydown: (e: KeyboardEvent & { currentTarget: Element }) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    openGroup(members, e.currentTarget);
+                  }
+                },
+              }
+            : { "aria-hidden": true }}
         >
           <circle
             cx={p.x}
@@ -572,20 +546,7 @@
           body.name,
         )}{@const isNode =
           body.name === "NORTH_NODE" || body.name === "SOUTH_NODE"}
-        <g
-          data-glyph
-          role="button"
-          tabindex="0"
-          aria-label={name}
-          aria-pressed={selectedBody === body.name}
-          onclick={(e) => selectBody(body.name, e.currentTarget, false)}
-          onkeydown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              selectBody(body.name, e.currentTarget, true);
-            }
-          }}
-        >
+        <g {...button({ kind: "body", name: body.name }, name)}>
           <circle cx={p.x} cy={p.y} r={group.extent} fill="var(--w-wash)" />
           <svg
             x={p.x - Math.min(12, group.extent)}
@@ -604,17 +565,6 @@
       {/if}
     {/each}
   </svg>
-  {#if selected}<div
-      role="status"
-      class="glyph-name"
-      style:left="{Math.min(
-        82,
-        Math.max(18, ((selected.x + 20) / 640) * 100),
-      )}%"
-      style:top="{Math.min(92, ((selected.y + 20) / 640) * 100 + 6)}%"
-    >
-      {copy().signName(selected.name)}
-    </div>{/if}
 </div>
 {#if picker}<GroupedPicker
     members={picker.members}
@@ -628,7 +578,13 @@
     --w-wash: color-mix(in srgb, var(--w-strong) 4%, var(--w-plate));
     position: relative;
     width: 100%;
-    max-width: min(660px, max(240px, calc(100vh - 170px)));
+    /* No tap flash on phones; glyphs show their own pressed state. */
+    -webkit-tap-highlight-color: transparent;
+    /* Pages may set --wheel-max-width; the app keeps it within the viewport. */
+    max-width: var(
+      --wheel-max-width,
+      min(660px, max(240px, calc(100vh - 170px)))
+    );
     margin: auto;
   }
   svg {
@@ -637,6 +593,8 @@
   .chart-root {
     width: 100%;
     height: auto;
+    /* Focusable only to take Escape; its glyphs show their own focus. */
+    outline: none;
   }
   g[role="button"] {
     cursor: pointer;
@@ -647,17 +605,24 @@
     stroke: var(--glyph-focus, var(--w-strong));
     stroke-width: 2.5;
   }
-  .glyph-name {
-    position: absolute;
-    transform: translateX(-50%);
-    background: var(--w-plate);
-    color: var(--w-strong);
-    border: 1px solid var(--w-mid);
-    padding: 8px 13px;
-    border-radius: 6px;
-    font-size: 14px;
-    pointer-events: none;
-    white-space: nowrap;
-    z-index: 1;
+  /* Sectors draw their own keyboard focus; browsers would otherwise outline
+     them on every click. */
+  path[role="button"] {
+    cursor: pointer;
+    outline: none;
+  }
+  path[role="button"]:focus-visible {
+    stroke: var(--w-strong);
+    stroke-width: 2.5;
+  }
+  /* Hover highlights a glyph with its focus ring; sectors take a light wash. */
+  @media (hover: hover) {
+    g[role="button"]:hover > circle:first-of-type {
+      stroke: var(--glyph-focus, var(--w-strong));
+      stroke-width: 2.5;
+    }
+    path[role="button"]:hover {
+      fill: color-mix(in srgb, var(--w-strong) 7%, transparent);
+    }
   }
 </style>

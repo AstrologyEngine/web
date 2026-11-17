@@ -1,118 +1,160 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { resolve } from "$app/paths";
-  import { zodiacGlyphPaths } from "../lib/wheel/zodiac-glyphs";
-  import { planetGlyphPaths } from "../lib/wheel/planet-glyphs";
   import LanguageSwitcher from "../lib/LanguageSwitcher.svelte";
+  import Wheel from "../lib/Wheel.svelte";
+  import sample from "../lib/home/chart.json";
+  import { inVisibleQuarter } from "../lib/home/visible";
+  import type { Chart } from "../lib/calculation/chart";
+  import type { Aspect, Selection } from "../lib/selection";
   import { copy, t } from "../lib/copy/index.svelte";
+  const chart = sample.chart as Chart;
+  const aspects = sample.aspects as Aspect[];
+  const visible = inVisibleQuarter(chart);
+  // Glyphs become buttons once they can respond, not in server-rendered HTML.
+  let hydrated = $state(false);
+  onMount(() => (hydrated = true));
+
+  /** The open info card: what was chosen and where, in page coordinates. */
+  let info = $state<{ selection: Selection; x: number; y: number } | null>(
+    null,
+  );
+  let pageWidth = $state(0),
+    pageHeight = $state(0),
+    cardWidth = $state(0),
+    cardHeight = $state(0);
+  let chartElement = $state<HTMLElement>();
+  let openedWidth = 0;
+  const GAP = 28,
+    MARGIN = 12;
+  const describe = (selection: Selection) => {
+    const c = copy();
+    switch (selection.kind) {
+      case "body":
+        return [c.pointName(selection.name), c.body(selection.name)?.insight];
+      case "angle":
+        return [c.pointName(selection.name), c.angle(selection.name)?.insight];
+      case "sign":
+        return [c.signName(selection.name), c.sign(selection.name)?.insight];
+      case "house":
+        return [
+          c.houseName(selection.number),
+          c.house(selection.number)?.insight,
+        ];
+      case "aspect":
+        return [
+          c.aspectName(selection.aspectType),
+          c.aspect(selection.aspectType)?.insight,
+        ];
+    }
+  };
+  const content = $derived(info && describe(info.selection));
+  /** Beside the chosen point, flipped to stay inside the page. */
+  const position = $derived.by(() => {
+    if (!info) return null;
+    let left = info.x + GAP,
+      top = info.y + GAP;
+    if (left + cardWidth > pageWidth - MARGIN) left = info.x - GAP - cardWidth;
+    if (top + cardHeight > pageHeight - MARGIN) top = info.y - GAP - cardHeight;
+    return { left: Math.max(MARGIN, left), top: Math.max(MARGIN, top) };
+  });
+  /** Opens the card, or closes it when the same item is chosen again. */
+  const show = (selection: Selection, x: number, y: number) => {
+    openedWidth = window.innerWidth;
+    info =
+      JSON.stringify(info?.selection) === JSON.stringify(selection)
+        ? null
+        : { selection, x, y };
+  };
 </script>
+
+<svelte:window
+  onkeydown={(event) => {
+    if (event.key === "Escape" && info) info = null;
+  }}
+  onclick={(event) => {
+    // Clicks on the chart open, switch or close the card themselves.
+    if (event.target instanceof Node && !chartElement?.contains(event.target))
+      info = null;
+  }}
+  onresize={() => {
+    // Width changes move the wheel; mobile toolbars only change the height.
+    if (info && window.innerWidth !== openedWidth) info = null;
+  }}
+/>
 
 <svelte:head>
   <title>{t("landing.meta.title")}</title>
   <meta name="description" content={t("landing.meta.description")} />
 </svelte:head>
 
-<main>
-  <header>
-    <span class="brand-mark" aria-hidden="true">✳</span>
-    {t("brand.name")}
-    <span class="beta">{t("brand.beta")}</span>
-    <LanguageSwitcher />
-  </header>
-  <div class="hero">
-    <section class="intro">
-      <p class="eyebrow">{t("landing.hero.eyebrow")}</p>
-      <h1>
-        {#each copy().lines("landing.hero.title") as line, i (i)}{#if i}<br
-            />{/if}{line}{/each}
-      </h1>
-      <p class="description">{t("landing.hero.description")}</p>
-      <a class="cta" href={resolve("/app")}
-        >{t("landing.hero.cta")} <span aria-hidden="true">↗</span></a
-      >
-      <p class="note">{t("landing.hero.note")}</p>
-    </section>
-    <figure>
-      <div class="sample-label">
-        <span>{t("landing.sample.index")}</span><span
-          >{t("landing.sample.label")}</span
+<div class="page" bind:clientWidth={pageWidth} bind:clientHeight={pageHeight}>
+  <main>
+    <header>
+      <span class="brand-mark" aria-hidden="true">✳</span>
+      {t("brand.name")}
+      <span class="beta">{t("brand.beta")}</span>
+      <LanguageSwitcher />
+    </header>
+    <div class="hero">
+      <section class="intro">
+        <p class="eyebrow">{t("landing.hero.eyebrow")}</p>
+        <h1>
+          {#each copy().lines("landing.hero.title") as line, i (i)}{#if i}<br
+              />{/if}{line}{/each}
+        </h1>
+        <p class="description">{t("landing.hero.description")}</p>
+        <a class="cta" href={resolve("/app")}
+          >{t("landing.hero.cta")} <span aria-hidden="true">↗</span></a
         >
+        <p class="note">{t("landing.hero.note")}</p>
+      </section>
+      <div class="hero-chart">
+        <div class="frame" bind:this={chartElement}>
+          <Wheel
+            {chart}
+            {aspects}
+            label={t("landing.sample.label")}
+            selected={info?.selection ?? null}
+            interactive={(glyph) => hydrated && visible(glyph)}
+            crowding={false}
+            onglyphclick={({ glyph, x, y }) => show(glyph, x, y)}
+            onaspectclick={({ aspects: [aspect], x, y }) =>
+              show(
+                {
+                  kind: "aspect",
+                  first: aspect.planetA,
+                  second: aspect.planetB,
+                  aspectType: aspect.type,
+                },
+                x,
+                y,
+              )}
+            onblank={() => (info = null)}
+          />
+        </div>
       </div>
-      <svg
-        viewBox="0 0 420 420"
-        role="img"
-        aria-label={t("landing.sample.alt")}
+    </div>
+    <footer>
+      {t("landing.footer.brand")}
+      <span>{t("landing.footer.tagline")} ✳</span>
+    </footer>
+  </main>
+  <div class="card-layer" aria-live="polite">
+    {#if info && content && position}
+      <div
+        class="info-card"
+        bind:offsetWidth={cardWidth}
+        bind:offsetHeight={cardHeight}
+        style:left="{position.left}px"
+        style:top="{position.top}px"
       >
-        <path
-          d="M20 400 A380 380 0 0 1 70.9 210 L122.9 240 A320 320 0 0 0 80 400Z"
-          fill="#e15947"
-        />
-        <path
-          d="M70.9 210 A380 380 0 0 1 210 70.9 L240 122.9 A320 320 0 0 0 122.9 240Z"
-          fill="#d58f3b"
-        />
-        <path
-          d="M210 70.9 A380 380 0 0 1 400 20 L400 80 A320 320 0 0 0 240 122.9Z"
-          fill="#c9dd47"
-        />
-        <g fill="none" stroke="#d0d0d0" stroke-width="1">
-          <path
-            d="M20 400 A380 380 0 0 1 400 20 M80 400 A320 320 0 0 1 400 80 M215 400 A185 185 0 0 1 400 215 M250 400 A150 150 0 0 1 400 250"
-          />
-          <path
-            d="M20 400H250 M70.9 210L122.9 240 M210 70.9L240 122.9 M400 20V250 M239.8 307.5L280 330.7 M307.5 239.8L330.7 280"
-          />
-        </g>
-        <g fill="#1f1f1f">
-          <path
-            d={zodiacGlyphPaths[0]}
-            transform="translate(38 298) scale(.29)"
-          />
-          <path
-            d={zodiacGlyphPaths[1]}
-            transform="translate(124 130) scale(.29)"
-          />
-          <path
-            d={zodiacGlyphPaths[2]}
-            transform="translate(297 38) scale(.29)"
-          />
-          <path
-            d={planetGlyphPaths[0]}
-            transform="translate(114 308) scale(.25)"
-          />
-          <path
-            d={planetGlyphPaths[1]}
-            transform="translate(183 210) scale(.25)"
-          />
-          <path
-            d={planetGlyphPaths[2]}
-            transform="translate(300 116) scale(.25)"
-          />
-        </g>
-        <g
-          fill="#4a4a4a"
-          font-size="15"
-          font-family="system-ui, sans-serif"
-          text-anchor="middle"
-          ><text x="236" y="373">1</text><text x="282" y="290">2</text><text
-            x="373"
-            y="239">3</text
-          ></g
-        >
-        <g fill="none" stroke-width="1.3" opacity=".65"
-          ><path d="M255 369L347 269" stroke="#2255cc" /><path
-            d="M291 291L379 254"
-            stroke="#cc2222"
-          /></g
-        >
-      </svg>
-      <figcaption>{t("landing.sample.caption")}</figcaption>
-    </figure>
+        <strong>{content[0]}</strong>
+        {#if content[1]}<p>{content[1]}</p>{/if}
+      </div>
+    {/if}
   </div>
-  <footer>
-    {t("landing.footer.brand")}
-    <span>{t("landing.footer.tagline")} ✳</span>
-  </footer>
-</main>
+</div>
 
 <style>
   :global(*) {
@@ -124,6 +166,14 @@
     color: #1f1f1f;
     font-family: system-ui, sans-serif;
   }
+  /* The page clips the oversized wheel at the viewport edges. */
+  .page {
+    position: relative;
+    overflow: clip;
+    /* Zodiac ring radius; the wheel's outer ring is 273 of its 640 units. */
+    --r: min(50vw, 80svh);
+    --size: calc(var(--r) * 640 / 273);
+  }
   main {
     min-height: 100svh;
     max-width: 1500px;
@@ -131,6 +181,13 @@
     padding: 2rem clamp(1.4rem, 6vw, 6rem) 1.5rem;
     display: flex;
     flex-direction: column;
+  }
+  /* Text sits above the wheel; the wheel takes clicks everywhere else. */
+  header,
+  .intro,
+  footer {
+    position: relative;
+    z-index: 1;
   }
   header {
     font-family: Georgia, serif;
@@ -145,7 +202,6 @@
   }
   .beta,
   .eyebrow,
-  .sample-label,
   footer {
     font:
       600 0.65rem/1.4 system-ui,
@@ -160,14 +216,12 @@
   }
   .hero {
     flex: 1;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
     align-items: center;
-    gap: 4rem;
     padding: 4rem 0;
   }
   .intro {
-    max-width: 570px;
+    max-width: min(570px, 40vw);
   }
   .eyebrow {
     color: #a04938;
@@ -206,36 +260,49 @@
     outline: 3px solid #a04938;
     outline-offset: 4px;
   }
-  .note,
-  figcaption {
+  .note {
     color: #6d716a;
     font-size: 0.8rem;
     line-height: 1.5;
-  }
-  .note {
     margin-top: 1rem;
   }
-  figure {
-    margin: 0;
-    padding: 1.4rem;
-    background: #fff;
+  /* Wheel centre 5% in from the top-right corner: the bottom-left quarter
+     shows, and the rings start curving back before they leave the page. */
+  .hero-chart {
+    position: absolute;
+    inset: 0;
+  }
+  .frame {
+    position: absolute;
+    width: var(--size);
+    left: calc(95% - var(--size) / 2);
+    top: calc(5svh - var(--size) / 2);
+    --wheel-max-width: none;
+  }
+  .info-card {
+    position: absolute;
+    z-index: 2;
+    width: max-content;
+    max-width: min(300px, calc(100vw - 24px));
+    padding: 0.9rem 1.1rem 1rem;
+    background: #fffdf8;
     border: 1px solid #e2dfd7;
+    border-radius: 4px;
+    box-shadow: 0 12px 36px rgb(37 46 42 / 0.14);
+    pointer-events: none;
   }
-  .sample-label {
-    color: #696d65;
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-  svg {
+  .info-card strong {
     display: block;
-    width: min(100%, 490px);
-    margin: 1.5rem auto 0;
+    font:
+      400 1.35rem/1.2 Georgia,
+      serif;
+    letter-spacing: -0.01em;
   }
-  figcaption {
-    border-top: 1px solid #e5e3dd;
-    margin-top: 1rem;
-    padding-top: 1rem;
+  .info-card p {
+    margin: 0.4rem 0 0;
+    color: #555850;
+    font-size: 0.88rem;
+    line-height: 1.55;
   }
   footer {
     display: flex;
@@ -245,13 +312,18 @@
     padding-top: 1.3rem;
   }
   @media (max-width: 720px) {
+    .page {
+      --r: 84vw;
+    }
     main {
       padding-top: 1.25rem;
     }
     .hero {
-      grid-template-columns: 1fr;
-      gap: 2.8rem;
-      padding: 4rem 0 3rem;
+      display: block;
+      padding: 4rem 0 0;
+    }
+    .intro {
+      max-width: none;
     }
     h1 {
       font-size: clamp(3.3rem, 13vw, 5rem);
@@ -259,8 +331,21 @@
     .description {
       margin: 1.5rem 0;
     }
-    figure {
-      padding: 1rem;
+    /* Below the text: the bottom-left quarter in full, the top-left quarter
+       faded behind the text and out through the top of the page. */
+    .hero-chart {
+      position: relative;
+      height: calc(var(--r) + 3.5rem);
+      margin-inline: calc(-1 * clamp(1.4rem, 6vw, 6rem));
+    }
+    .frame {
+      left: calc(95% - var(--size) / 2);
+      top: calc(2.5rem - var(--size) / 2);
+      mask-image: linear-gradient(
+        to bottom,
+        rgb(0 0 0 / 0.14) calc(50% - 3rem),
+        rgb(0 0 0 / 1) 50%
+      );
     }
   }
 </style>

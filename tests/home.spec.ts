@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import {
   birthDialog,
   birthField,
@@ -7,6 +7,15 @@ import {
   enterBirth,
   reopenBirth,
 } from "./helpers";
+
+const sampleChart = (page: Page) =>
+  page.getByRole("group", { name: "SAMPLE CHART" });
+const glyph = (page: Page, name: string) =>
+  sampleChart(page).getByRole("button", { name, exact: true });
+const SUN =
+  "The Sun symbolizes identity, purpose and the wish to express yourself.";
+const JUPITER =
+  "Jupiter symbolizes growth through exploration, belief and a search for meaning.";
 
 for (const viewport of [
   { width: 1280, height: 800 },
@@ -20,12 +29,8 @@ for (const viewport of [
     await expect(
       page.getByRole("heading", { name: /explore your birth chart/i }),
     ).toBeVisible();
-    await expect(page.getByText(/sample chart/i)).toBeVisible();
-    await expect(
-      page.getByRole("img", {
-        name: /sample.*aries.*taurus.*gemini.*houses 1.*3/i,
-      }),
-    ).toBeVisible();
+    for (const name of ["Sun", "Mercury", "Jupiter"])
+      await expect(glyph(page, name)).toBeInViewport();
     const start = page.getByRole("link", { name: /start exploring/i });
     await start.focus();
     await page.keyboard.press("Enter");
@@ -37,6 +42,144 @@ for (const viewport of [
     await expect(entry).toBeEmpty();
   });
 }
+
+test("sample chart glyphs open a card with their name and description", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const sun = glyph(page, "Sun");
+  await sun.click();
+  await expect(page.getByText(SUN)).toBeVisible();
+  await expect(sun).toHaveAttribute("aria-pressed", "true");
+  // Choosing it again closes the card; another glyph replaces it.
+  await sun.click();
+  await expect(page.getByText(SUN)).toHaveCount(0);
+  await glyph(page, "Jupiter").click();
+  await expect(page.getByText(JUPITER)).toBeVisible();
+  await glyph(page, "Cancer").click();
+  await expect(
+    page.getByText(/Cancer symbolizes emotional attachment/),
+  ).toBeVisible();
+  await glyph(page, "House 3").click();
+  await expect(page.getByText("House 3", { exact: true })).toBeVisible();
+  await expect(page.getByText(/The third house represents/)).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByText(/The third house represents/)).toHaveCount(0);
+  await glyph(page, "Imum Coeli").click();
+  await expect(page.getByText(/The Imum Coeli is the point/)).toBeVisible();
+  // A click outside the chart closes it.
+  await page
+    .getByRole("heading", { name: /explore your birth chart/i })
+    .click();
+  await expect(page.getByText(/The Imum Coeli is the point/)).toHaveCount(0);
+});
+
+test("a sample chart glyph opens from the keyboard and keeps focus", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const mercury = glyph(page, "Mercury");
+  await mercury.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByText(/Mercury symbolizes learning/)).toBeVisible();
+  await expect(mercury).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(page.getByText(/Mercury symbolizes learning/)).toHaveCount(0);
+  await expect(mercury).toBeFocused();
+});
+
+test("hover highlights a sample chart glyph and aspect lines open a card", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const jupiter = glyph(page, "Jupiter");
+  await jupiter.hover();
+  await expect(jupiter.locator("circle").first()).toHaveCSS(
+    "stroke-width",
+    "2.5px",
+  );
+  // A visible point on an aspect line, away from any glyph.
+  const point = await sampleChart(page).evaluate((svg: SVGSVGElement) => {
+    const matrix = svg.getScreenCTM()!;
+    for (const line of svg.querySelectorAll<SVGLineElement>(
+      'line[stroke="var(--w-hard)"], line[stroke="var(--w-soft)"]',
+    ))
+      for (const t of [0.3, 0.5, 0.7]) {
+        const [x1, y1, x2, y2] = ["x1", "y1", "x2", "y2"].map(
+          (name) => +line.getAttribute(name)!,
+        );
+        const p = new DOMPoint(
+          x1! + (x2! - x1!) * t,
+          y1! + (y2! - y1!) * t,
+        ).matrixTransform(matrix);
+        if (p.x > 0 && p.x < innerWidth && p.y > 0 && p.y < innerHeight) {
+          const hit = document.elementFromPoint(p.x, p.y);
+          if (hit && !hit.closest("[data-glyph]")) return { x: p.x, y: p.y };
+        }
+      }
+    return null;
+  });
+  expect(point).not.toBeNull();
+  await page.mouse.click(point!.x, point!.y);
+  await expect(
+    page.getByText(/^(Sextile|Square|Trine|Opposition)$/),
+  ).toBeVisible();
+});
+
+test("clicking the sample chart draws no focus outline; keys still show focus", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  for (const name of ["House 4", "Leo sign region", "Sun"]) {
+    const target = glyph(page, name);
+    // Sectors are rings: click a point that hits them, not their box centre.
+    const point = await target.evaluate((el) => {
+      const box = el.getBoundingClientRect();
+      for (let fy = 0.1; fy < 1; fy += 0.1)
+        for (let fx = 0.1; fx < 1; fx += 0.1) {
+          const x = box.left + box.width * fx,
+            y = box.top + box.height * fy;
+          const hit = document.elementFromPoint(x, y);
+          if (hit && el.contains(hit)) return { x, y };
+        }
+      return null;
+    });
+    expect(point).not.toBeNull();
+    await page.mouse.click(point!.x, point!.y);
+    await expect(target).toBeFocused();
+    await expect(target).toHaveCSS("outline-style", "none");
+    await page.keyboard.press("Escape");
+  }
+  const sector = glyph(page, "House 4");
+  await page.keyboard.press("Tab");
+  await sector.focus();
+  await expect(sector).toHaveCSS("stroke-width", "2.5px");
+});
+
+test("only glyphs in the visible quarter are buttons", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  // Glyphs become buttons once the page is interactive.
+  await expect(glyph(page, "Sun")).toBeVisible();
+  for (const name of ["Moon", "Venus", "Mars", "Saturn", "Earth", "Midheaven"])
+    await expect(glyph(page, name)).toHaveCount(0);
+  const buttons = await sampleChart(page).getByRole("button").all();
+  expect(buttons.length).toBeGreaterThan(3);
+  for (const button of buttons) await expect(button).toBeInViewport();
+  // On phones none of them sit behind the text above the chart.
+  await page.setViewportSize({ width: 390, height: 844 });
+  const note = (await page.getByText(/Your chart begins with/).boundingBox())!;
+  for (const button of buttons)
+    expect((await button.boundingBox())!.y).toBeGreaterThan(
+      note.y + note.height,
+    );
+  await glyph(page, "Jupiter").click();
+  const card = (await page.getByText(JUPITER).boundingBox())!;
+  expect(card.x).toBeGreaterThanOrEqual(0);
+  expect(card.x + card.width).toBeLessThanOrEqual(390);
+});
 
 test("visitor creates a personal chart from birth details", async ({
   page,
