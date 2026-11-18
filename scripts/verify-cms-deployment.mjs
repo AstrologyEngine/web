@@ -7,16 +7,28 @@ const isRevision = (value) => /^[a-f0-9]{40}$/.test(value ?? "");
 export const verifyCmsDeployment = async ({
   target,
   revision,
+  token,
   fetch = globalThis.fetch,
 }) => {
   if (!["staging", "alpha"].includes(target) || !isRevision(revision))
     throw new Error("Expected a CMS deployment target and pinned revision");
 
   const read = async (path) => {
-    const response = await fetch(repository + path, {
-      headers: { Accept: "application/vnd.github+json" },
-      signal: AbortSignal.timeout(15_000),
-    });
+    const request = (authorization) =>
+      fetch(repository + path, {
+        headers: {
+          Accept: "application/vnd.github+json",
+          ...(authorization
+            ? { Authorization: `Bearer ${authorization}` }
+            : {}),
+        },
+        signal: AbortSignal.timeout(15_000),
+      });
+    // A repository-scoped runner token can be denied on another repository.
+    // The CMS deployment metadata is also public.
+    const first = await request(token);
+    const response =
+      token && [401, 403, 404].includes(first.status) ? await request() : first;
     if (!response.ok)
       throw new Error(
         `Could not verify CMS ${target}: GitHub HTTP ${response.status}`,
@@ -55,6 +67,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const deployment = await verifyCmsDeployment({
     target,
     revision: contract.cmsRevision,
+    token: process.env.GH_TOKEN,
   });
   console.log(
     `CMS ${target} verified at ${deployment.revision} (${deployment.logUrl ?? "no workflow link"})`,

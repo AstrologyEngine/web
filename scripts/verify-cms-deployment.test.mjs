@@ -67,3 +67,21 @@ test("rejects an older or divergent CMS deployment", async () => {
       /does not include the pinned contract revision/,
     );
 });
+
+test("uses the Actions token and can read public metadata if cross-repo access is denied", async () => {
+  const auth = [];
+  const result = await verifyCmsDeployment({
+    target: "staging",
+    revision,
+    token: "test-token",
+    fetch: async (url, { headers }) => {
+      assert.equal(new URL(url).origin, "https://api.github.com");
+      auth.push(headers.Authorization);
+      if (auth.length === 1) return Response.json({}, { status: 403 });
+      if (auth.length === 2) return Response.json([{ id: 42, sha: revision }]);
+      return Response.json([{ state: "success" }]);
+    },
+  });
+  assert.equal(result.revision, revision);
+  assert.deepEqual(auth, ["Bearer test-token", undefined, "Bearer test-token"]);
+});
