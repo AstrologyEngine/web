@@ -26,7 +26,11 @@
   "env": {
     "staging": {
       "preview_urls": true,
-      "previews": {},
+      "previews": {
+        "services": [
+          { "binding": "CMS", "service": "astrology-engine-cms-staging" },
+        ],
+      },
       "name": "astrology-engine-web-staging",
       "services": [
         { "binding": "CMS", "service": "astrology-engine-cms-staging" },
