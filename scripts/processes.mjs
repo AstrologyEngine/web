@@ -60,9 +60,7 @@ export const availablePort = (port) =>
     const server = createServer();
     server.once("error", () =>
       reject(
-        new Error(
-          `Port ${port} is unavailable; set WEB_PORT, CMS_PORT or PLAYWRIGHT_PORT.`,
-        ),
+        new Error(`Port ${port} is unavailable; set WEB_PORT or CMS_PORT.`),
       ),
     );
     server.listen(port, "127.0.0.1", () => server.close(resolve));

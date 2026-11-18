@@ -14,6 +14,8 @@ export type Selection =
       second: BodyName;
       aspectType: Aspect["type"];
     };
+/** A clickable point on the wheel: everything selectable except aspects. */
+export type Glyph = Exclude<Selection, { kind: "aspect" }>;
 export const samePair = (aspect: Aspect, a: BodyName, b: BodyName) =>
   (aspect.planetA === a && aspect.planetB === b) ||
   (aspect.planetA === b && aspect.planetB === a);

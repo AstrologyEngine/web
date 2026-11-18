@@ -1,0 +1,824 @@
+{
+  "chart": {
+    "configuration": {
+      "reference": "tropical",
+      "divisions": "equal",
+      "ophiuchus": null
+    },
+    "convention_revision": "astrology-engine-conventions-v1",
+    "reference_offset_degrees": 0,
+    "speed_reference": "tropical",
+    "bodies": [
+      {
+        "name": "SUN",
+        "longitude": 75.35692435875339,
+        "speed": 0.9571389887736359,
+        "declination": 22.630656047492874,
+        "sign": {
+          "sign": "gemini",
+          "degrees_in_sign": 15.356924358753389,
+          "width_degrees": 30
+        }
+      },
+      {
+        "name": "EARTH",
+        "longitude": 255.3569243587534,
+        "speed": 0.9571389887736359,
+        "declination": 22.630656047492874,
+        "sign": {
+          "sign": "sagittarius",
+          "degrees_in_sign": 15.356924358753389,
+          "width_degrees": 30
+        }
+      },
+      {
+        "name": "MOON",
+        "longitude": 168.29875797577108,
+        "speed": 12.098271373742818,
+        "declination": 1.6452104896722504,
+        "sign": {
+          "sign": "virgo",
+          "degrees_in_sign": 18.298757975771082,
+          "width_degrees": 30
+        }
+      },
+      {
+        "name": "NORTH_NODE",
+        "longitude": 207.20767909723023,
+        "speed": 0.005221937927672116,
+        "declination": -10.476891288437802,
+        "sign": {
+          "sign": "libra",
+          "degrees_in_sign": 27.207679097230226,
+          "width_degrees": 30
+        }
+      },
+      {
+        "name": "SOUTH_NODE",
+        "longitude": 27.207679097230198,
+        "speed": 0.005221937927672116,
+        "declination": -10.476891288437802,
+        "sign": {
+          "sign": "aries",
+          "degrees_in_sign": 27.207679097230198,
+          "width_degrees": 30
+        }
+      },
+      {
+        "name": "MERCURY",
+        "longitude": 93.09599564929756,
+        "speed": 0.10460808552818435,
+        "declination": 23.257732642620084,
+        "sign": {
+          "sign": "cancer",
+          "degrees_in_sign": 3.0959956492975635,
+          "width_degrees": 30
+        }
+      },
+      {
+        "name": "VENUS",
+        "longitude": 39.4355340059789,
+        "speed": 1.1751035517437458,
+        "declination": 12.743594283716874,
+        "sign": {
+          "sign": "taurus",
+          "degrees_in_sign": 9.435534005978901,
+          "width_degrees": 30
+        }
+      },
+      {
+        "name": "MARS",
+        "longitude": 190.77756472856265,
+        "speed": 0.19763595589222405,
+        "declination": -4.103057516079762,
+        "sign": {
+          "sign": "libra",
+          "degrees_in_sign": 10.777564728562652,
+          "width_degrees": 30
+        }
+      },
+      {
+        "name": "JUPITER",
+        "longitude": 111.3837180860551,
+        "speed": 0.20019821234893698,
+        "declination": 22.068516445647354,
+        "sign": {
+          "sign": "cancer",
+          "degrees_in_sign": 21.383718086055097,
+          "width_degrees": 30
+        }
+      },
+      {
+        "name": "SATURN",
+        "longitude": 228.1507893318557,
+        "speed": -0.06231641702538582,
+        "declination": -14.888522897054736,
+        "sign": {
+          "sign": "scorpio",
+          "degrees_in_sign": 18.15078933185569,
+          "width_degrees": 30
+        }
+      },
+      {
+        "name": "URANUS",
+        "longitude": 15.677386524069638,
+        "speed": 0.034790388006285866,
+        "declination": 5.561697139316441,
+        "sign": {
+          "sign": "aries",
+          "degrees_in_sign": 15.677386524069638,
+          "width_degrees": 30
+        }
+      },
+      {
+        "name": "NEPTUNE",
+        "longitude": 337.59201856616374,
+        "speed": 0.001978159769123522,
+        "declination": -9.383853581056195,
+        "sign": {
+          "sign": "pisces",
+          "degrees_in_sign": 7.592018566163745,
+          "width_degrees": 30
+        }
+      },
+      {
+        "name": "PLUTO",
+        "longitude": 282.9631839236673,
+        "speed": -0.021453688967540074,
+        "declination": -20.17400273473094,
+        "sign": {
+          "sign": "capricorn",
+          "degrees_in_sign": 12.963183923667316,
+          "width_degrees": 30
+        }
+      },
+      {
+        "name": "CHIRON",
+        "longitude": 347.6636680830835,
+        "speed": 0.013106537051953637,
+        "declination": -0.34062602287363264,
+        "sign": {
+          "sign": "pisces",
+          "degrees_in_sign": 17.663668083083508,
+          "width_degrees": 30
+        }
+      },
+      {
+        "name": "CERES",
+        "longitude": 198.59835401163164,
+        "speed": 0.02773184743296042,
+        "declination": 1.8428660884346484,
+        "sign": {
+          "sign": "libra",
+          "degrees_in_sign": 18.598354011631642,
+          "width_degrees": 30
+        }
+      },
+      {
+        "name": "ASCENDANT_SYMBOL",
+        "longitude": 58.52870552091943,
+        "speed": 0,
+        "declination": 0,
+        "sign": {
+          "sign": "taurus",
+          "degrees_in_sign": 28.52870552091943,
+          "width_degrees": 30
+        }
+      },
+      {
+        "name": "MIDHEAVEN",
+        "longitude": 297.2686115650516,
+        "speed": 0,
+        "declination": 0,
+        "sign": {
+          "sign": "capricorn",
+          "degrees_in_sign": 27.26861156505157,
+          "width_degrees": 30
+        }
+      },
+      {
+        "name": "DESCENDANT",
+        "longitude": 238.52870552091943,
+        "speed": 0,
+        "declination": 0,
+        "sign": {
+          "sign": "scorpio",
+          "degrees_in_sign": 28.52870552091943,
+          "width_degrees": 30
+        }
+      },
+      {
+        "name": "IMUM_COELI",
+        "longitude": 117.26861156505157,
+        "speed": 0,
+        "declination": 0,
+        "sign": {
+          "sign": "cancer",
+          "degrees_in_sign": 27.26861156505157,
+          "width_degrees": 30
+        }
+      }
+    ],
+    "zodiac_sectors": [
+      { "sign": "aries", "start_degrees": 0, "width_degrees": 30 },
+      { "sign": "taurus", "start_degrees": 30, "width_degrees": 30 },
+      { "sign": "gemini", "start_degrees": 60, "width_degrees": 30 },
+      { "sign": "cancer", "start_degrees": 90, "width_degrees": 30 },
+      { "sign": "leo", "start_degrees": 120, "width_degrees": 30 },
+      { "sign": "virgo", "start_degrees": 150, "width_degrees": 30 },
+      { "sign": "libra", "start_degrees": 180, "width_degrees": 30 },
+      { "sign": "scorpio", "start_degrees": 210, "width_degrees": 30 },
+      { "sign": "sagittarius", "start_degrees": 240, "width_degrees": 30 },
+      { "sign": "capricorn", "start_degrees": 270, "width_degrees": 30 },
+      { "sign": "aquarius", "start_degrees": 300, "width_degrees": 30 },
+      { "sign": "pisces", "start_degrees": 330, "width_degrees": 30 }
+    ],
+    "house_sectors": [
+      { "sign": "aries", "start_degrees": 0, "width_degrees": 30 },
+      { "sign": "taurus", "start_degrees": 30, "width_degrees": 30 },
+      { "sign": "gemini", "start_degrees": 60, "width_degrees": 30 },
+      { "sign": "cancer", "start_degrees": 90, "width_degrees": 30 },
+      { "sign": "leo", "start_degrees": 120, "width_degrees": 30 },
+      { "sign": "virgo", "start_degrees": 150, "width_degrees": 30 },
+      { "sign": "libra", "start_degrees": 180, "width_degrees": 30 },
+      { "sign": "scorpio", "start_degrees": 210, "width_degrees": 30 },
+      { "sign": "sagittarius", "start_degrees": 240, "width_degrees": 30 },
+      { "sign": "capricorn", "start_degrees": 270, "width_degrees": 30 },
+      { "sign": "aquarius", "start_degrees": 300, "width_degrees": 30 },
+      { "sign": "pisces", "start_degrees": 330, "width_degrees": 30 }
+    ],
+    "cusps": [30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 0],
+    "requested_house_system": "whole-sign",
+    "house_system": "whole-sign"
+  },
+  "aspects": [
+    {
+      "planetA": "SUN",
+      "planetB": "EARTH",
+      "type": "Opposition",
+      "angle": 180,
+      "orb": 0,
+      "status": "separating"
+    },
+    {
+      "planetA": "SUN",
+      "planetB": "MOON",
+      "type": "Square",
+      "angle": 92.94183361701769,
+      "orb": 2.941833617017693,
+      "status": "separating"
+    },
+    {
+      "planetA": "SUN",
+      "planetB": "MARS",
+      "type": "Trine",
+      "angle": 115.42064036980926,
+      "orb": 4.579359630190737,
+      "status": "separating"
+    },
+    {
+      "planetA": "SUN",
+      "planetB": "SATURN",
+      "type": "Quincunx",
+      "angle": 152.7938649731023,
+      "orb": 2.793864973102302,
+      "status": "applying"
+    },
+    {
+      "planetA": "SUN",
+      "planetB": "URANUS",
+      "type": "Sextile",
+      "angle": 59.67953783468375,
+      "orb": 0.3204621653162505,
+      "status": "applying"
+    },
+    {
+      "planetA": "SUN",
+      "planetB": "NEPTUNE",
+      "type": "Square",
+      "angle": 97.76490579258962,
+      "orb": 7.764905792589616,
+      "status": "separating"
+    },
+    {
+      "planetA": "SUN",
+      "planetB": "PLUTO",
+      "type": "Quincunx",
+      "angle": 152.39374043508607,
+      "orb": 2.393740435086073,
+      "status": "separating"
+    },
+    {
+      "planetA": "SUN",
+      "planetB": "CHIRON",
+      "type": "Square",
+      "angle": 87.69325627566991,
+      "orb": 2.30674372433009,
+      "status": "applying"
+    },
+    {
+      "planetA": "SUN",
+      "planetB": "CERES",
+      "type": "Trine",
+      "angle": 123.24142965287825,
+      "orb": 3.241429652878253,
+      "status": "applying"
+    },
+    {
+      "planetA": "EARTH",
+      "planetB": "MOON",
+      "type": "Square",
+      "angle": 87.05816638298231,
+      "orb": 2.941833617017693,
+      "status": "separating"
+    },
+    {
+      "planetA": "EARTH",
+      "planetB": "MARS",
+      "type": "Sextile",
+      "angle": 64.57935963019074,
+      "orb": 4.579359630190737,
+      "status": "separating"
+    },
+    {
+      "planetA": "EARTH",
+      "planetB": "URANUS",
+      "type": "Trine",
+      "angle": 120.32046216531626,
+      "orb": 0.3204621653162576,
+      "status": "applying"
+    },
+    {
+      "planetA": "EARTH",
+      "planetB": "NEPTUNE",
+      "type": "Square",
+      "angle": 82.23509420741036,
+      "orb": 7.764905792589644,
+      "status": "separating"
+    },
+    {
+      "planetA": "EARTH",
+      "planetB": "CHIRON",
+      "type": "Square",
+      "angle": 92.30674372433012,
+      "orb": 2.3067437243301185,
+      "status": "applying"
+    },
+    {
+      "planetA": "EARTH",
+      "planetB": "CERES",
+      "type": "Sextile",
+      "angle": 56.75857034712175,
+      "orb": 3.241429652878253,
+      "status": "applying"
+    },
+    {
+      "planetA": "MOON",
+      "planetB": "JUPITER",
+      "type": "Sextile",
+      "angle": 56.915039889715985,
+      "orb": 3.0849601102840154,
+      "status": "applying"
+    },
+    {
+      "planetA": "MOON",
+      "planetB": "SATURN",
+      "type": "Sextile",
+      "angle": 59.85203135608461,
+      "orb": 0.14796864391539089,
+      "status": "separating"
+    },
+    {
+      "planetA": "MOON",
+      "planetB": "URANUS",
+      "type": "Quincunx",
+      "angle": 152.62137145170144,
+      "orb": 2.6213714517014353,
+      "status": "separating"
+    },
+    {
+      "planetA": "MOON",
+      "planetB": "PLUTO",
+      "type": "Trine",
+      "angle": 114.66442594789623,
+      "orb": 5.335574052103766,
+      "status": "separating"
+    },
+    {
+      "planetA": "MOON",
+      "planetB": "CHIRON",
+      "type": "Opposition",
+      "angle": 179.36491010731243,
+      "orb": 0.6350898926875743,
+      "status": "separating"
+    },
+    {
+      "planetA": "MOON",
+      "planetB": "CERES",
+      "type": "Semisextile",
+      "angle": 30.29959603586056,
+      "orb": 0.29959603586056005,
+      "status": "applying"
+    },
+    {
+      "planetA": "NORTH_NODE",
+      "planetB": "SOUTH_NODE",
+      "type": "Opposition",
+      "angle": 179.99999999999997,
+      "orb": 2.842170943040401e-14,
+      "status": "separating"
+    },
+    {
+      "planetA": "NORTH_NODE",
+      "planetB": "MERCURY",
+      "type": "Trine",
+      "angle": 114.11168344793266,
+      "orb": 5.888316552067337,
+      "status": "separating"
+    },
+    {
+      "planetA": "NORTH_NODE",
+      "planetB": "JUPITER",
+      "type": "Square",
+      "angle": 95.82396101117513,
+      "orb": 5.823961011175129,
+      "status": "applying"
+    },
+    {
+      "planetA": "NORTH_NODE",
+      "planetB": "CERES",
+      "type": "Conjunction",
+      "angle": 8.609325085598584,
+      "orb": 8.609325085598584,
+      "status": "applying"
+    },
+    {
+      "planetA": "NORTH_NODE",
+      "planetB": "ASCENDANT_SYMBOL",
+      "type": "Quincunx",
+      "angle": 148.6789735763108,
+      "orb": 1.3210264236892044,
+      "status": "applying"
+    },
+    {
+      "planetA": "NORTH_NODE",
+      "planetB": "MIDHEAVEN",
+      "type": "Square",
+      "angle": 90.06093246782135,
+      "orb": 0.060932467821345426,
+      "status": "applying"
+    },
+    {
+      "planetA": "NORTH_NODE",
+      "planetB": "DESCENDANT",
+      "type": "Semisextile",
+      "angle": 31.321026423689204,
+      "orb": 1.3210264236892044,
+      "status": "applying"
+    },
+    {
+      "planetA": "NORTH_NODE",
+      "planetB": "IMUM_COELI",
+      "type": "Square",
+      "angle": 89.93906753217865,
+      "orb": 0.060932467821345426,
+      "status": "applying"
+    },
+    {
+      "planetA": "SOUTH_NODE",
+      "planetB": "MERCURY",
+      "type": "Sextile",
+      "angle": 65.88831655206737,
+      "orb": 5.888316552067366,
+      "status": "separating"
+    },
+    {
+      "planetA": "SOUTH_NODE",
+      "planetB": "JUPITER",
+      "type": "Square",
+      "angle": 84.1760389888249,
+      "orb": 5.823961011175101,
+      "status": "applying"
+    },
+    {
+      "planetA": "SOUTH_NODE",
+      "planetB": "CERES",
+      "type": "Opposition",
+      "angle": 171.39067491440144,
+      "orb": 8.609325085598556,
+      "status": "applying"
+    },
+    {
+      "planetA": "SOUTH_NODE",
+      "planetB": "ASCENDANT_SYMBOL",
+      "type": "Semisextile",
+      "angle": 31.321026423689233,
+      "orb": 1.3210264236892328,
+      "status": "applying"
+    },
+    {
+      "planetA": "SOUTH_NODE",
+      "planetB": "MIDHEAVEN",
+      "type": "Square",
+      "angle": 89.93906753217863,
+      "orb": 0.06093246782137385,
+      "status": "applying"
+    },
+    {
+      "planetA": "SOUTH_NODE",
+      "planetB": "DESCENDANT",
+      "type": "Quincunx",
+      "angle": 148.67897357631077,
+      "orb": 1.3210264236892328,
+      "status": "applying"
+    },
+    {
+      "planetA": "SOUTH_NODE",
+      "planetB": "IMUM_COELI",
+      "type": "Square",
+      "angle": 90.06093246782137,
+      "orb": 0.06093246782137385,
+      "status": "applying"
+    },
+    {
+      "planetA": "MERCURY",
+      "planetB": "MARS",
+      "type": "Square",
+      "angle": 97.68156907926509,
+      "orb": 7.681569079265088,
+      "status": "separating"
+    },
+    {
+      "planetA": "MERCURY",
+      "planetB": "NEPTUNE",
+      "type": "Trine",
+      "angle": 115.5039770831338,
+      "orb": 4.496022916866195,
+      "status": "applying"
+    },
+    {
+      "planetA": "MERCURY",
+      "planetB": "PLUTO",
+      "type": "Opposition",
+      "angle": 170.13281172563023,
+      "orb": 9.867188274369767,
+      "status": "applying"
+    },
+    {
+      "planetA": "VENUS",
+      "planetB": "MARS",
+      "type": "Quincunx",
+      "angle": 151.34203072258376,
+      "orb": 1.3420307225837576,
+      "status": "applying"
+    },
+    {
+      "planetA": "VENUS",
+      "planetB": "SATURN",
+      "type": "Opposition",
+      "angle": 171.2847446741232,
+      "orb": 8.715255325876797,
+      "status": "applying"
+    },
+    {
+      "planetA": "VENUS",
+      "planetB": "NEPTUNE",
+      "type": "Sextile",
+      "angle": 61.84351543981518,
+      "orb": 1.843515439815178,
+      "status": "separating"
+    },
+    {
+      "planetA": "VENUS",
+      "planetB": "PLUTO",
+      "type": "Trine",
+      "angle": 116.47235008231158,
+      "orb": 3.5276499176884215,
+      "status": "applying"
+    },
+    {
+      "planetA": "MARS",
+      "planetB": "URANUS",
+      "type": "Opposition",
+      "angle": 175.100178204493,
+      "orb": 4.899821795506995,
+      "status": "applying"
+    },
+    {
+      "planetA": "MARS",
+      "planetB": "PLUTO",
+      "type": "Square",
+      "angle": 92.18561919510466,
+      "orb": 2.185619195104664,
+      "status": "applying"
+    },
+    {
+      "planetA": "MARS",
+      "planetB": "CERES",
+      "type": "Conjunction",
+      "angle": 7.82078928306899,
+      "orb": 7.82078928306899,
+      "status": "applying"
+    },
+    {
+      "planetA": "JUPITER",
+      "planetB": "SATURN",
+      "type": "Trine",
+      "angle": 116.7670712458006,
+      "orb": 3.2329287541994063,
+      "status": "separating"
+    },
+    {
+      "planetA": "JUPITER",
+      "planetB": "URANUS",
+      "type": "Square",
+      "angle": 95.70633156198546,
+      "orb": 5.706331561985465,
+      "status": "separating"
+    },
+    {
+      "planetA": "JUPITER",
+      "planetB": "PLUTO",
+      "type": "Opposition",
+      "angle": 171.57946583761222,
+      "orb": 8.420534162387781,
+      "status": "separating"
+    },
+    {
+      "planetA": "JUPITER",
+      "planetB": "CHIRON",
+      "type": "Trine",
+      "angle": 123.72005000297159,
+      "orb": 3.7200500029715897,
+      "status": "separating"
+    },
+    {
+      "planetA": "JUPITER",
+      "planetB": "CERES",
+      "type": "Square",
+      "angle": 87.21463592557654,
+      "orb": 2.7853640744234553,
+      "status": "separating"
+    },
+    {
+      "planetA": "JUPITER",
+      "planetB": "MIDHEAVEN",
+      "type": "Opposition",
+      "angle": 174.11510652100353,
+      "orb": 5.884893478996474,
+      "status": "applying"
+    },
+    {
+      "planetA": "JUPITER",
+      "planetB": "DESCENDANT",
+      "type": "Trine",
+      "angle": 127.14498743486433,
+      "orb": 7.144987434864333,
+      "status": "applying"
+    },
+    {
+      "planetA": "JUPITER",
+      "planetB": "IMUM_COELI",
+      "type": "Conjunction",
+      "angle": 5.884893478996474,
+      "orb": 5.884893478996474,
+      "status": "applying"
+    },
+    {
+      "planetA": "SATURN",
+      "planetB": "URANUS",
+      "type": "Quincunx",
+      "angle": 147.52659719221396,
+      "orb": 2.4734028077860444,
+      "status": "applying"
+    },
+    {
+      "planetA": "SATURN",
+      "planetB": "PLUTO",
+      "type": "Sextile",
+      "angle": 54.812394591811625,
+      "orb": 5.187605408188375,
+      "status": "applying"
+    },
+    {
+      "planetA": "SATURN",
+      "planetB": "CHIRON",
+      "type": "Trine",
+      "angle": 119.51287875122782,
+      "orb": 0.48712124877218343,
+      "status": "applying"
+    },
+    {
+      "planetA": "SATURN",
+      "planetB": "CERES",
+      "type": "Semisextile",
+      "angle": 29.55243532022405,
+      "orb": 0.44756467977595094,
+      "status": "separating"
+    },
+    {
+      "planetA": "URANUS",
+      "planetB": "PLUTO",
+      "type": "Square",
+      "angle": 92.7142026004023,
+      "orb": 2.7142026004023023,
+      "status": "separating"
+    },
+    {
+      "planetA": "URANUS",
+      "planetB": "CHIRON",
+      "type": "Semisextile",
+      "angle": 28.01371844098611,
+      "orb": 1.9862815590138894,
+      "status": "applying"
+    },
+    {
+      "planetA": "URANUS",
+      "planetB": "CERES",
+      "type": "Opposition",
+      "angle": 177.079032512438,
+      "orb": 2.9209674875619953,
+      "status": "applying"
+    },
+    {
+      "planetA": "NEPTUNE",
+      "planetB": "PLUTO",
+      "type": "Sextile",
+      "angle": 54.62883464249643,
+      "orb": 5.371165357503571,
+      "status": "applying"
+    },
+    {
+      "planetA": "PLUTO",
+      "planetB": "CHIRON",
+      "type": "Sextile",
+      "angle": 64.70048415941619,
+      "orb": 4.700484159416192,
+      "status": "separating"
+    },
+    {
+      "planetA": "PLUTO",
+      "planetB": "CERES",
+      "type": "Square",
+      "angle": 84.36482991203567,
+      "orb": 5.635170087964326,
+      "status": "separating"
+    },
+    {
+      "planetA": "CHIRON",
+      "planetB": "CERES",
+      "type": "Quincunx",
+      "angle": 149.06531407145187,
+      "orb": 0.9346859285481344,
+      "status": "separating"
+    },
+    {
+      "planetA": "ASCENDANT_SYMBOL",
+      "planetB": "MIDHEAVEN",
+      "type": "Trine",
+      "angle": 121.26009395586786,
+      "orb": 1.260093955867859,
+      "status": "separating"
+    },
+    {
+      "planetA": "ASCENDANT_SYMBOL",
+      "planetB": "DESCENDANT",
+      "type": "Opposition",
+      "angle": 180,
+      "orb": 0,
+      "status": "separating"
+    },
+    {
+      "planetA": "ASCENDANT_SYMBOL",
+      "planetB": "IMUM_COELI",
+      "type": "Sextile",
+      "angle": 58.73990604413214,
+      "orb": 1.260093955867859,
+      "status": "separating"
+    },
+    {
+      "planetA": "MIDHEAVEN",
+      "planetB": "DESCENDANT",
+      "type": "Sextile",
+      "angle": 58.73990604413214,
+      "orb": 1.260093955867859,
+      "status": "separating"
+    },
+    {
+      "planetA": "MIDHEAVEN",
+      "planetB": "IMUM_COELI",
+      "type": "Opposition",
+      "angle": 180,
+      "orb": 0,
+      "status": "separating"
+    },
+    {
+      "planetA": "DESCENDANT",
+      "planetB": "IMUM_COELI",
+      "type": "Trine",
+      "angle": 121.26009395586786,
+      "orb": 1.260093955867859,
+      "status": "separating"
+    }
+  ]
+}

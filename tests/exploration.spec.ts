@@ -13,6 +13,22 @@ test("a visitor selects a body and reads its placement", async ({ page }) => {
   await expect(page.getByText("Retrograde", { exact: true })).toBeVisible();
 });
 
+test("hovering a chart glyph highlights it without selecting it", async ({
+  page,
+}) => {
+  await page.goto("/app");
+  await enterBirth(page);
+  const chart = page.getByRole("group", { name: /natal chart/i });
+  const sun = chart.getByRole("button", { name: "Sun", exact: true });
+  const ring = sun.locator("circle").first();
+  await expect(ring).toHaveCSS("stroke", "none");
+  await sun.hover();
+  await expect(ring).toHaveCSS("stroke-width", "2.5px");
+  await expect(sun).toHaveAttribute("aria-pressed", "false");
+  await page.mouse.move(0, 0);
+  await expect(ring).toHaveCSS("stroke", "none");
+});
+
 test("keyboard selection focuses details and Escape returns to its origin", async ({
   page,
 }) => {
