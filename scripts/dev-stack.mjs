@@ -13,25 +13,15 @@ const port = (value, fallback) => {
   return number;
 };
 
-export const runStack = async ({ review = false, serveOnly = false } = {}) => {
+const runStack = async () => {
   const root = fileURLToPath(new URL("..", import.meta.url));
   const cms = cmsRepoPath();
-  const wp = port(process.env.WEB_PORT ?? process.env.REVIEW_WEB_PORT, 5173);
-  const cp = port(process.env.CMS_PORT ?? process.env.REVIEW_CMS_PORT, 8787);
-  const tp = port(process.env.PLAYWRIGHT_PORT, 4173);
-  const ports = [
-    wp,
-    cp,
-    cp + 10000,
-    ...(review && !serveOnly
-      ? [tp, tp + 1, tp + 2, tp + 4614, tp + 4615, tp + 14614, tp + 14615]
-      : []),
-  ];
-  if (new Set([wp, cp, cp + 10000]).size !== 3 || ports.some((p) => p > 65535))
-    throw new Error(
-      "Stack and browser-test ports must be distinct and at most 65535",
-    );
-  for (const p of new Set(ports)) await availablePort(p);
+  const wp = port(process.env.WEB_PORT, 5173);
+  const cp = port(process.env.CMS_PORT, 8787);
+  const ports = [wp, cp, cp + 10000];
+  if (new Set(ports).size !== ports.length || ports.some((p) => p > 65535))
+    throw new Error("Stack ports must be distinct and at most 65535");
+  for (const p of ports) await availablePort(p);
   const releaseLock = await acquireStackLock(root);
   const supervisor = createSupervisor();
   let linkSetup, seedWatcher, stopping;
@@ -61,9 +51,9 @@ export const runStack = async ({ review = false, serveOnly = false } = {}) => {
     assertRunning();
     return supervisor.start(...args);
   };
-  const run = async (args, cwd = root, vars = env) => {
+  const run = async (args, cwd = root) => {
     assertRunning();
-    await supervisor.run("bun", args, cwd, vars);
+    await supervisor.run("bun", args, cwd, env);
     assertRunning();
   };
   try {
@@ -74,24 +64,6 @@ export const runStack = async ({ review = false, serveOnly = false } = {}) => {
     linkSetup = linkLocalContract({ root, cms });
     await linkSetup;
     assertRunning();
-    if (review && !serveOnly) {
-      if (!process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE)
-        await run(["x", "playwright", "install", "chromium"]);
-      for (const check of ["sync", "check", "check:ts", "lint", "format:check"])
-        await run(["run", check]);
-      await supervisor.run(
-        "bash",
-        ["-c", "node --test scripts/*.test.mjs"],
-        root,
-        env,
-      );
-      await run(["test", "verification"]);
-      await run(["run", "validate"], cms);
-      await run(["run", "build"]);
-      const localEnv = { ...env };
-      delete localEnv.E2E_BASE_URL;
-      await run(["run", "test:browser"], root, localEnv);
-    }
     await run(["run", "migrate:local"], cms);
     await run(["run", "seed:local"], cms);
     const contract = start("bun", ["run", "contract:watch"], cms, env);
@@ -144,10 +116,6 @@ export const runStack = async ({ review = false, serveOnly = false } = {}) => {
     console.log(
       `\nWeb: ${wu}\nCMS: ${cu}\nLocal data persists in the CMS checkout. Ctrl+C stops this stack.`,
     );
-    const tasks = JSON.parse(process.env.REVIEW_MANUAL_TASKS_JSON || "[]");
-    tasks.forEach((task, i) =>
-      console.log(`${i + 1}. ${task.replaceAll("{WEB}", wu)}`),
-    );
     const name = await Promise.race(
       [
         ["CMS", cs],
@@ -163,9 +131,7 @@ export const runStack = async ({ review = false, serveOnly = false } = {}) => {
   }
 };
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  runStack().catch((error) => {
-    console.error(error.message);
-    process.exitCode = 1;
-  });
-}
+runStack().catch((error) => {
+  console.error(error.message);
+  process.exitCode = 1;
+});
