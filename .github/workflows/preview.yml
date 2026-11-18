@@ -54,6 +54,7 @@ jobs:
           id=$(jq -n --arg ref "$HEAD_SHA" --arg environment "pr-$PR" '{ref:$ref,environment:$environment,auto_merge:false,required_contexts:[],transient_environment:true,production_environment:false}' | gh api -X POST "repos/$REPO/deployments" --input - --jq .id)
           echo "id=$id" >> "$GITHUB_OUTPUT"
           gh api -X POST "repos/$REPO/deployments/$id/statuses" -f state=in_progress
+          node scripts/verify-cms-deployment.mjs staging
           bun run sync
           CMS_SNAPSHOT_ORIGIN=https://cms-staging.astrologyengine.dev bun run build
       - name: Upload preview
