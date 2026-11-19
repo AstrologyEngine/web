@@ -1,0 +1,22 @@
+{
+  "ASCENDANT_SYMBOL": {
+    "name": "Ascendant",
+    "insight": "The Ascendant is where the zodiac meets the eastern horizon, symbolizing how you first meet the world.",
+    "keywords": ["eastern horizon", "approach"]
+  },
+  "MIDHEAVEN": {
+    "name": "Midheaven",
+    "insight": "The Midheaven marks the zodiac’s upper meridian crossing and symbolizes vocation and public visibility.",
+    "keywords": ["meridian", "public life"]
+  },
+  "DESCENDANT": {
+    "name": "Descendant",
+    "insight": "The Descendant is where the zodiac meets the western horizon, symbolizing encounters and partnerships.",
+    "keywords": ["western horizon", "partnership"]
+  },
+  "IMUM_COELI": {
+    "name": "Imum Coeli",
+    "insight": "The Imum Coeli is the point opposite the Midheaven, symbolizing home, roots and private foundations.",
+    "keywords": ["roots", "foundation"]
+  }
+}

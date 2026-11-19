@@ -15,3 +15,8 @@ See `docs/agents/triage-labels.md`.
 
 Single-context layout: root `GLOSSARY.md` and `docs/adr/`.
 See `docs/agents/domain.md`.
+
+### Website copy
+
+For UI text, translations, accessibility labels, or chart reference copy,
+see [the copy editing guide](docs/agents/content.md).

@@ -1,0 +1,37 @@
+{
+  "Conjunction": {
+    "name": "Conjunction",
+    "insight": "A conjunction places two chart factors near the same zodiac position, symbolically combining their themes.",
+    "keywords": ["union", "focus"]
+  },
+  "Semisextile": {
+    "name": "Semisextile",
+    "insight": "A semisextile places two chart factors about 30° apart, interpreted here as a subtle need to accommodate differences.",
+    "keywords": ["adjustment", "awareness"]
+  },
+  "Sextile": {
+    "name": "Sextile",
+    "insight": "A sextile places two chart factors about 60° apart, symbolizing opportunities for cooperation.",
+    "keywords": ["opportunity", "cooperation"]
+  },
+  "Square": {
+    "name": "Square",
+    "insight": "A square places two chart factors about 90° apart, symbolizing friction between themes that call for attention.",
+    "keywords": ["tension", "action"]
+  },
+  "Trine": {
+    "name": "Trine",
+    "insight": "A trine places two chart factors about 120° apart, symbolizing ease and mutual support.",
+    "keywords": ["flow", "ease"]
+  },
+  "Quincunx": {
+    "name": "Quincunx",
+    "insight": "A quincunx places two chart factors about 150° apart, symbolizing themes that can be difficult to reconcile.",
+    "keywords": ["adjustment", "adaptation"]
+  },
+  "Opposition": {
+    "name": "Opposition",
+    "insight": "An opposition places two chart factors about 180° apart, symbolizing contrasting needs held in relationship.",
+    "keywords": ["contrast", "balance"]
+  }
+}

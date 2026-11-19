@@ -5,7 +5,6 @@ build/
 .wrangler/
 static/release.json
 static/calculation-worker.js
-static/content/
 
 # Caches and generated test output
 .cache/

@@ -1,25 +1,31 @@
-/**
- * Typed access to CMS copy (docs/designs/cms.md §9.3). Keys and placeholder
- * names come from the CMS catalog, so unknown keys fail type checks.
- */
-import type { AppCatalog } from "@astrologyengine/cms-contract/catalog";
+import type { placeholders, UiKey } from "./content/placeholders";
 
-type UiKeys = AppCatalog["ui"]["keys"];
-export type UiKey = keyof UiKeys & string;
+export type { UiKey } from "./content/placeholders";
+
+type UiKeys = {
+  [K in UiKey]: K extends keyof typeof placeholders
+    ? (typeof placeholders)[K]
+    : readonly [];
+};
 type ParamsOf<K extends UiKey> = UiKeys[K] extends readonly []
   ? []
   : [params: Record<UiKeys[K][number], string | number>];
 
-/** Keys whose text takes no placeholders. */
 export type PlainKey = {
   [K in UiKey]: UiKeys[K] extends readonly [] ? K : never;
 }[UiKey];
 
 export type Reference = { insight: string; keywords: string[] };
 export type NamedReference = Reference & { name: string };
-
-import type { Bundle } from "@astrologyengine/cms-contract/types";
-export type { Bundle } from "@astrologyengine/cms-contract/types";
+export type ContentEntries = {
+  ui?: Partial<Record<UiKey, string>>;
+  body?: Record<string, NamedReference>;
+  angle?: Record<string, NamedReference>;
+  sign?: Record<string, NamedReference>;
+  aspect?: Record<string, NamedReference>;
+  house?: Record<string, Reference>;
+};
+export type Bundle = { locale: string; entries: ContentEntries };
 
 type Options = { warn?: (message: string) => void };
 
@@ -33,26 +39,28 @@ export const createCopy = (
   const missing = (id: string) => {
     if (warned.has(id)) return;
     warned.add(id);
-    warn(`Missing CMS copy: ${id} (${bundle.locale})`);
+    warn(`Missing copy: ${id} (${bundle.locale})`);
   };
-  const lookup = <T>(collection: string, key: string) =>
-    bundle.entries[collection]?.[key] as T | undefined;
+  const lookup = <T>(collection: keyof ContentEntries, key: string) =>
+    (bundle.entries[collection] as Record<string, unknown> | undefined)?.[
+      key
+    ] as T | undefined;
 
   const t = <K extends UiKey>(key: K, ...[params]: ParamsOf<K>): string => {
-    const entry = lookup<{ text: string }>("ui", key);
+    const entry = lookup<string>("ui", key);
     if (!entry) {
       missing(`ui:${key}`);
       return key;
     }
-    if (!params) return entry.text;
+    if (!params) return entry;
     const values = params as Record<string, string | number>;
-    return entry.text.replace(PLACEHOLDER, (match, name: string) =>
+    return entry.replace(PLACEHOLDER, (match, name: string) =>
       Object.hasOwn(values, name) ? String(values[name]) : match,
     );
   };
 
   const named =
-    (collection: string) =>
+    (collection: keyof ContentEntries) =>
     (key: string): NamedReference | undefined =>
       lookup<NamedReference>(collection, key);
   const body = named("body");

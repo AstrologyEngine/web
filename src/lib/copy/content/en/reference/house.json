@@ -1,0 +1,50 @@
+{
+  "1": {
+    "insight": "The first house represents self-presentation, physical presence and how you enter new situations.",
+    "keywords": ["presence", "self-presentation"]
+  },
+  "2": {
+    "insight": "The second house represents personal resources, possessions and what you rely on for security.",
+    "keywords": ["resources", "security"]
+  },
+  "3": {
+    "insight": "The third house represents everyday learning, communication, siblings and nearby surroundings.",
+    "keywords": ["learning", "communication"]
+  },
+  "4": {
+    "insight": "The fourth house represents home, family roots and the foundations of private life.",
+    "keywords": ["home", "roots"]
+  },
+  "5": {
+    "insight": "The fifth house represents creativity, play, romance and relationships with children.",
+    "keywords": ["creativity", "play"]
+  },
+  "6": {
+    "insight": "The sixth house represents daily work, practical responsibilities and routines of care.",
+    "keywords": ["routine", "care"]
+  },
+  "7": {
+    "insight": "The seventh house represents one-to-one commitments, including partnerships and agreements.",
+    "keywords": ["partnership", "relationship"]
+  },
+  "8": {
+    "insight": "The eighth house represents shared resources, obligations and experiences of loss or change.",
+    "keywords": ["shared resources", "change"]
+  },
+  "9": {
+    "insight": "The ninth house represents higher learning, travel and the beliefs that shape a wider worldview.",
+    "keywords": ["exploration", "belief"]
+  },
+  "10": {
+    "insight": "The tenth house represents vocation, reputation and responsibilities in public life.",
+    "keywords": ["vocation", "reputation"]
+  },
+  "11": {
+    "insight": "The eleventh house represents friendships, groups and hopes pursued with others.",
+    "keywords": ["community", "aspiration"]
+  },
+  "12": {
+    "insight": "The twelfth house represents solitude, retreat and parts of life kept out of public view.",
+    "keywords": ["solitude", "retreat"]
+  }
+}

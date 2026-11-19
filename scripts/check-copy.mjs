@@ -1,6 +1,6 @@
 // Fails when Svelte markup contains hardcoded copy: text nodes with letters or
 // literal aria-label/placeholder/title/alt/label attributes. All user-facing
-// copy comes from the CMS (docs/designs/cms.md). Symbols and numbers are fine.
+// copy comes from the web content files. Symbols and numbers are fine.
 import { readdir, readFile } from "node:fs/promises";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -79,7 +79,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     console.error(`${relative(".", file)}:${line}: hardcoded copy: ${text}`);
   if (findings.length) {
     console.error(
-      `${findings.length} hardcoded string(s). Add them to the CMS catalog and use t().`,
+      `${findings.length} hardcoded string(s). Add them to the web content files and use t().`,
     );
     process.exit(1);
   }

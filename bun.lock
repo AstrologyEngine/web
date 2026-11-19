@@ -5,7 +5,6 @@
     "": {
       "name": "web",
       "dependencies": {
-        "@astrologyengine/cms-contract": "https://github.com/AstrologyEngine/cms/releases/download/v0.1.0/cms-contract-0.1.0.tgz",
         "@js-temporal/polyfill": "0.5.1",
         "chrono-node": "2.10.3",
         "zod": "4.6.7",
@@ -31,8 +30,6 @@
     },
   },
   "packages": {
-    "@astrologyengine/cms-contract": ["@astrologyengine/cms-contract@https://github.com/AstrologyEngine/cms/releases/download/v0.1.0/cms-contract-0.1.0.tgz", {}, "sha512-7fRq0KR0DnhOFcYM4lr2Imf1v8kjhiTev97Cghy329wW8vJExjMzurzsWn7PIdVPqoLXA/CbJJaQ7JrWAa2u3A=="],
-
     "@changesets/apply-release-plan": ["@changesets/apply-release-plan@8.1.1", "", { "dependencies": { "@changesets/config": "^4.0.1", "@changesets/format": "^0.1.2", "@changesets/git": "^4.0.1", "@changesets/should-skip-package": "^1.0.0", "@changesets/types": "^7.0.0", "import-meta-resolve": "^4.2.0", "jsonc-parser": "^3.3.1", "semver": "^7.8.1" } }, "sha512-nk2Hbq3M9NeHMdaIRBDvawKrQJzXB9sGyBUE5yWnIKtvdcNCPj75zBekJYr0gTT2ecJH3eFeTrc8eisPImcv0Q=="],
 
     "@changesets/assemble-release-plan": ["@changesets/assemble-release-plan@7.0.0", "", { "dependencies": { "@changesets/errors": "^1.0.0", "@changesets/get-dependents-graph": "^3.0.0", "@changesets/should-skip-package": "^1.0.0", "@changesets/types": "^7.0.0", "semver": "^7.8.1" } }, "sha512-oEW8BxdA604kGGtDSCiHr5w9Tv4UWe9I2k61IBNZzCOE1kbYaJj4v+lFQNgcEZFkUc2pV/+hASErGDvpJOZCTg=="],

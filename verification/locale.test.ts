@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { chooseLocale } from "../src/lib/server/cms/locale";
+import { chooseLocale } from "../src/lib/server/content/locale";
 
 const enabled = ["en", "es-419", "pt"];
 const choose = (input: {

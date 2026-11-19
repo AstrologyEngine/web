@@ -1,0 +1,18 @@
+{
+  "wheel.angle.asc": "ASC",
+  "wheel.angle.dsc": "DSC",
+  "wheel.angle.ic": "IC",
+  "wheel.angle.mc": "MC",
+  "wheel.group.label": "Grouped bodies: {bodies}",
+  "wheel.group.labelSelected": "Grouped bodies: {bodies}. Selected {body}",
+  "wheel.groupPicker.close": "Close body picker",
+  "wheel.groupPicker.title": "Choose a body",
+  "wheel.label": "Interactive natal chart",
+  "wheel.mobile.dragHint": "Drag sideways to pan",
+  "wheel.mobile.panLeft": "Pan wheel left",
+  "wheel.mobile.panRight": "Pan wheel right",
+  "wheel.mobile.viewport": "Chart viewport",
+  "wheel.mobile.zoomIn": "Zoom half wheel",
+  "wheel.mobile.zoomOut": "Show whole wheel",
+  "wheel.sign.region": "{sign} sign region"
+}

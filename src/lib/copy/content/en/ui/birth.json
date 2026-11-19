@@ -1,0 +1,17 @@
+{
+  "birth.action.done": "Done",
+  "birth.action.retry": "Retry",
+  "birth.chip.dateNeeded": "Date needed",
+  "birth.chip.placeFound": "Place found",
+  "birth.chip.placeNeeded": "Birthplace needed",
+  "birth.chip.timeNeeded": "Birth time needed",
+  "birth.chip.timeProvided": "Time provided",
+  "birth.choice.date": "Choose a date",
+  "birth.choice.offset": "Choose the recorded offset",
+  "birth.choice.place": "Choose a birthplace",
+  "birth.choice.placeOption": "{city}, {region}, {country}",
+  "birth.input.label": "Birth details",
+  "birth.input.placeholder": "June 21, 2000 at 1pm in London",
+  "birth.modal.intro": "A date, time and birthplace locate your chart in the sky.",
+  "birth.status.resolving": "Resolving birth details…"
+}

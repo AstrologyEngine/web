@@ -1,0 +1,77 @@
+{
+  "SUN": {
+    "name": "Sun",
+    "insight": "The Sun symbolizes identity, purpose and the wish to express yourself.",
+    "keywords": ["identity", "purpose"]
+  },
+  "MOON": {
+    "name": "Moon",
+    "insight": "The Moon symbolizes emotional needs, familiar habits and what feels comforting.",
+    "keywords": ["emotions", "comfort"]
+  },
+  "MERCURY": {
+    "name": "Mercury",
+    "insight": "Mercury symbolizes learning, reasoning and the exchange of ideas.",
+    "keywords": ["thought", "communication"]
+  },
+  "VENUS": {
+    "name": "Venus",
+    "insight": "Venus symbolizes affection, attraction and what you value or enjoy.",
+    "keywords": ["connection", "values"]
+  },
+  "MARS": {
+    "name": "Mars",
+    "insight": "Mars symbolizes initiative, desire and the way you assert yourself.",
+    "keywords": ["action", "drive"]
+  },
+  "JUPITER": {
+    "name": "Jupiter",
+    "insight": "Jupiter symbolizes growth through exploration, belief and a search for meaning.",
+    "keywords": ["growth", "meaning"]
+  },
+  "SATURN": {
+    "name": "Saturn",
+    "insight": "Saturn symbolizes boundaries, responsibility and what takes time to build.",
+    "keywords": ["discipline", "structure"]
+  },
+  "URANUS": {
+    "name": "Uranus",
+    "insight": "Uranus symbolizes independence, experimentation and breaks with familiar patterns.",
+    "keywords": ["change", "freedom"]
+  },
+  "NEPTUNE": {
+    "name": "Neptune",
+    "insight": "Neptune symbolizes imagination, longing and the blurred line between ideals and illusion.",
+    "keywords": ["imagination", "ideals"]
+  },
+  "PLUTO": {
+    "name": "Pluto",
+    "insight": "Pluto symbolizes power, control and profound processes of change.",
+    "keywords": ["power", "transformation"]
+  },
+  "CHIRON": {
+    "name": "Chiron",
+    "insight": "Chiron symbolizes vulnerability and the understanding that can grow from difficult experiences.",
+    "keywords": ["vulnerability", "understanding"]
+  },
+  "CERES": {
+    "name": "Ceres",
+    "insight": "Ceres symbolizes nurturing, nourishment and the experience of giving or receiving care.",
+    "keywords": ["care", "nourishment"]
+  },
+  "NORTH_NODE": {
+    "name": "North Node",
+    "insight": "The North Node marks the point where the Moon crosses the Sun’s apparent path northward, interpreted here as a symbol of development.",
+    "keywords": ["lunar node", "development"]
+  },
+  "SOUTH_NODE": {
+    "name": "South Node",
+    "insight": "The South Node marks the point where the Moon crosses the Sun’s apparent path southward, interpreted here as a symbol of familiar patterns.",
+    "keywords": ["lunar node", "familiarity"]
+  },
+  "EARTH": {
+    "name": "Earth",
+    "insight": "Earth is shown here as a symbolic point opposite the Sun, rather than a planet observed from Earth.",
+    "keywords": ["Earth point", "opposite Sun"]
+  }
+}

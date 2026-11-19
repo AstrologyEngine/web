@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { enterBirth } from "./helpers";
 
-// Runs against a CMS seeded with tests/fixtures/cms-pseudo-locale.json.
+// Runs with the partial pseudo-locale enabled by Playwright.
 const pseudoEyebrow = "[À ĹÎŢŢĹË ÇÛŔÎÖŚÎŢÝ ĜÖËŚ À ĹÖÑĜ ŴÀÝ]";
 
 test.describe("with a browser preferring the pseudo-locale", () => {

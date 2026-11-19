@@ -1,0 +1,18 @@
+{
+  "app.birth.dateTime": "{date} at {time}",
+  "app.birth.empty": "Enter birth details",
+  "app.empty.caption": "Add a date, time and place of birth",
+  "app.empty.label": "Empty chart awaiting birth details",
+  "app.empty.title": "Your sky begins here",
+  "app.entry.edit": "Edit birth details",
+  "app.entry.headingEmpty": "Start with your birth details",
+  "app.entry.headingWithBirth": "Your birth chart",
+  "app.error.retry": "Retry calculation",
+  "app.error.retryLink": "Retry",
+  "app.meta.title": "Your chart | Astrology Engine",
+  "app.rail.hint": "Select a planet, sign, house or angle on the wheel to read about it here.",
+  "app.status.calculating": "Calculating your chart…",
+  "app.status.housesAdjusted": "House system adjusted to {houseSystem}.",
+  "app.status.notApplied": "Showing {shown} chart; requested settings have not been applied.",
+  "app.status.updating": "Showing {shown} chart while updating to {requested}."
+}

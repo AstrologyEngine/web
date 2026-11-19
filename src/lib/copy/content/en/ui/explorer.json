@@ -1,0 +1,17 @@
+{
+  "explorer.announce.cleared": "Selection cleared",
+  "explorer.announce.opened": "Selection opened",
+  "explorer.announce.pickerReset": "Connections updated; open the picker again.",
+  "explorer.announce.unavailable": "Selection no longer available",
+  "explorer.aspects.explore": "Explore aspects",
+  "explorer.aspects.exploreOf": "Explore aspects of {body}",
+  "explorer.list.angles": "Choose an angle by name",
+  "explorer.list.bodies": "Choose a body by name",
+  "explorer.list.houses": "Choose a house by number",
+  "explorer.list.signs": "Choose a sign by name",
+  "explorer.picker.back": "Back",
+  "explorer.picker.close": "Close",
+  "explorer.picker.first": "Choose the first body",
+  "explorer.picker.label": "Choose an aspect",
+  "explorer.picker.second": "Choose a connection to {body}"
+}

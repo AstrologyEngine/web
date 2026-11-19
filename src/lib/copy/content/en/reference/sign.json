@@ -1,0 +1,67 @@
+{
+  "aries": {
+    "name": "Aries",
+    "insight": "Aries symbolizes the impulse to begin, take a risk and act directly.",
+    "keywords": ["initiative", "courage"]
+  },
+  "taurus": {
+    "name": "Taurus",
+    "insight": "Taurus symbolizes steadiness, physical comfort and the patient cultivation of what matters.",
+    "keywords": ["steadiness", "comfort"]
+  },
+  "gemini": {
+    "name": "Gemini",
+    "insight": "Gemini symbolizes curiosity, conversation and the exploration of different perspectives.",
+    "keywords": ["curiosity", "communication"]
+  },
+  "cancer": {
+    "name": "Cancer",
+    "insight": "Cancer symbolizes emotional attachment, protection and the need for belonging.",
+    "keywords": ["care", "belonging"]
+  },
+  "leo": {
+    "name": "Leo",
+    "insight": "Leo symbolizes creative expression, generosity and the wish to be seen.",
+    "keywords": ["creativity", "expression"]
+  },
+  "virgo": {
+    "name": "Virgo",
+    "insight": "Virgo symbolizes careful observation, practical service and the refinement of skills.",
+    "keywords": ["discernment", "service"]
+  },
+  "libra": {
+    "name": "Libra",
+    "insight": "Libra symbolizes cooperation, fairness and the weighing of different needs.",
+    "keywords": ["balance", "relationship"]
+  },
+  "scorpio": {
+    "name": "Scorpio",
+    "insight": "Scorpio symbolizes emotional depth, questions of trust and the process of letting go.",
+    "keywords": ["depth", "transformation"]
+  },
+  "ophiuchus": {
+    "name": "Ophiuchus",
+    "insight": "Ophiuchus is a constellation crossed by the Sun’s apparent path and included in this app’s True Sky preset.",
+    "keywords": ["constellation", "Sun’s path"]
+  },
+  "sagittarius": {
+    "name": "Sagittarius",
+    "insight": "Sagittarius symbolizes exploration, the search for meaning and the testing of beliefs.",
+    "keywords": ["exploration", "meaning"]
+  },
+  "capricorn": {
+    "name": "Capricorn",
+    "insight": "Capricorn symbolizes responsibility, patient ambition and work toward lasting goals.",
+    "keywords": ["commitment", "structure"]
+  },
+  "aquarius": {
+    "name": "Aquarius",
+    "insight": "Aquarius symbolizes independent thought, collective ideals and alternatives to established ways.",
+    "keywords": ["innovation", "community"]
+  },
+  "pisces": {
+    "name": "Pisces",
+    "insight": "Pisces symbolizes imagination, compassion and openness to experiences beyond clear boundaries.",
+    "keywords": ["imagination", "empathy"]
+  }
+}
