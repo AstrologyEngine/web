@@ -1,5 +1,11 @@
 # web
 
+## 0.3.1
+
+### Patch Changes
+
+- 782f000: Move website copy and chart references into the web repository so edits can be previewed and released with the site.
+
 ## 0.3.0
 
 ### Minor Changes
