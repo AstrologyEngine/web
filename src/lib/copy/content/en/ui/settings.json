@@ -1,0 +1,23 @@
+{
+  "settings.advanced.houses": "Advanced settings: {houses} houses",
+  "settings.help.divisionsConstellation": "constellation",
+  "settings.help.divisionsEqual": "equal",
+  "settings.help.faganBradley": "The preset labeled Vedic uses twelve equal signs with the Fagan–Bradley sidereal reference, a Western sidereal convention distinct from those commonly used in Vedic astrology.",
+  "settings.help.label": "System help",
+  "settings.help.summary": "Signs: {divisions}. Actual houses: {houses}.",
+  "settings.help.summaryOphiuchusIncluded": "Signs: {divisions} · Ophiuchus included. Actual houses: {houses}.",
+  "settings.help.toggle": "About this system",
+  "settings.help.tropical": "Tropical astrology divides the zodiac into twelve equal signs, beginning at the March equinox point.",
+  "settings.help.trueSkyConstellations": "True Sky uses unequal, constellation-based divisions following the Chimenti convention, including Ophiuchus as a thirteenth sign.",
+  "settings.houses.equal": "Equal",
+  "settings.houses.equalHint": "Twelve 30° houses measured from the Ascendant.",
+  "settings.houses.label": "House system",
+  "settings.houses.placidus": "Placidus",
+  "settings.houses.placidusHint": "Houses sized by the time it takes each part of the sky to rise.",
+  "settings.houses.wholeSign": "Whole Sign",
+  "settings.houses.wholeSignHint": "Each house is one whole sign.",
+  "settings.preset.tropical": "Tropical",
+  "settings.preset.trueSky": "True Sky",
+  "settings.preset.vedic": "Vedic",
+  "settings.presets.label": "Zodiac presets"
+}

@@ -1,4 +1,4 @@
-/** CMS keys for settings identifiers that the UI displays. */
+/** Copy keys for settings identifiers that the UI displays. */
 import type { PlainKey } from "./copy/copy";
 import type { Preset, Settings } from "./settings";
 

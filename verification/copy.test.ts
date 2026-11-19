@@ -3,9 +3,6 @@ import { createCopy, type Bundle } from "../src/lib/copy/copy";
 
 const bundle: Bundle = {
   locale: "en",
-  default: "en",
-  chain: ["en"],
-  version: 3,
   entries: {
     body: {
       SUN: { name: "Sun", insight: "Identity.", keywords: ["identity"] },
@@ -21,13 +18,12 @@ const bundle: Bundle = {
     },
     house: { "1": { insight: "Presence.", keywords: ["presence"] } },
     ui: {
-      "brand.name": { text: "Astrology Engine" },
-      "chart.house.name": { text: "House {number}" },
-      "app.entry.summary": { text: "{date} at {time} in {place}" },
-      "landing.hero.title": { text: "Explore your\nbirth chart." },
+      "brand.name": "Astrology Engine",
+      "chart.house.name": "House {number}",
+      "app.entry.summary": "{date} at {time} in {place}",
+      "landing.hero.title": "Explore your\nbirth chart.",
     },
   },
-  fallbacks: {},
 };
 
 describe("createCopy", () => {

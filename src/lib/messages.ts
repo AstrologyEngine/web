@@ -1,6 +1,6 @@
 /**
- * Server and worker outcomes are stable codes; the client words them with CMS
- * copy (docs/designs/cms.md §9.3).
+ * Server and worker outcomes are stable codes; the client words them with site
+ * copy.
  */
 import type { PlainKey } from "./copy/copy";
 

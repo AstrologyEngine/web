@@ -1,37 +1,13 @@
-import { resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-import { cmsRepoPath } from "./scripts/cms-repo.mjs";
 import { defineConfig } from "@playwright/test";
 
-// Projects (docs/plans/cms.md, Phase 7):
-//   default  – the site against a seeded local CMS
-//   i18n     – a second CMS seeded with a partially translated pseudo-locale
-//   cms-down – the site with an unreachable CMS (bundled snapshot copy)
 const remote = process.env.E2E_BASE_URL;
 const port = Number(process.env.PLAYWRIGHT_PORT ?? "4173");
-const ports = {
-  web: port,
-  webDown: port + 1,
-  webI18n: port + 2,
-  cms: port + 4614, // 8787 by default
-  cmsI18n: port + 4615,
-};
 const url = (p: number) => `http://127.0.0.1:${p}`;
-// Optional: use a locally installed Chromium when Playwright's download is unavailable.
 const chromium = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE;
 
-const cms = (p: number, fixture?: string) => ({
-  command: `bun run dev:e2e --port ${p}`,
-  ...(fixture ? { env: { CMS_E2E_FIXTURE: fixture } } : {}),
-  cwd: cmsRepoPath(),
-  url: `${url(p)}/health`,
-  reuseExistingServer: false,
-  timeout: 120_000,
-});
-const web = (p: number, cmsOrigin: string) => ({
-  command: `bun run dev --host 127.0.0.1 --port ${p} --strictPort`,
+const web = (p: number, mode = "") => ({
+  command: `bun run dev --host 127.0.0.1 --port ${p} --strictPort ${mode}`,
   url: url(p),
-  env: { CMS_ORIGIN: cmsOrigin },
   reuseExistingServer: false,
   timeout: 120_000,
 });
@@ -56,40 +32,20 @@ export default defineConfig({
         {
           name: "remote",
           use: { baseURL: remote },
-          testIgnore: /i18n|cms-down/,
+          testIgnore: /i18n/,
         },
       ]
     : [
         {
           name: "default",
-          use: { baseURL: url(ports.web) },
-          testIgnore: /i18n|cms-down/,
+          use: { baseURL: url(port) },
+          testIgnore: /i18n/,
         },
         {
           name: "i18n",
-          use: { baseURL: url(ports.webI18n) },
+          use: { baseURL: url(port + 1) },
           testMatch: /i18n\.spec\.ts/,
         },
-        {
-          name: "cms-down",
-          use: { baseURL: url(ports.webDown) },
-          testMatch: /cms-down\.spec\.ts/,
-        },
       ],
-  webServer: remote
-    ? undefined
-    : [
-        cms(ports.cms),
-        cms(
-          ports.cmsI18n,
-          resolve(
-            fileURLToPath(new URL(".", import.meta.url)),
-            "tests/fixtures/cms-pseudo-locale.json",
-          ),
-        ),
-        web(ports.web, url(ports.cms)),
-        web(ports.webI18n, url(ports.cmsI18n)),
-        // Port 9 (discard) refuses connections: the CMS is down.
-        web(ports.webDown, url(9)),
-      ],
+  webServer: remote ? undefined : [web(port), web(port + 1, "--mode e2e-i18n")],
 });

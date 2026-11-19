@@ -5,7 +5,7 @@ type BodyId = (typeof bodyIds)[number];
 
 /**
  * Traditional and modern ruler of each sign, as body IDs; their names come
- * from the CMS. Ophiuchus is a modern sign: Pluto rules it, with no
+ * from the web content files. Ophiuchus is a modern sign: Pluto rules it, with no
  * traditional ruler.
  */
 export const rulers: Record<

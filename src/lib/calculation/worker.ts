@@ -88,7 +88,7 @@ const dataset = async (utc: string) => {
   return { data, sha256: s.sha256 };
 };
 let queue = Promise.resolve();
-/** Stable outcome code; the page words it with CMS copy. */
+/** Stable outcome code; the page words it with site copy. */
 const calculationCode = (error: unknown) => {
   const message = error instanceof Error ? error.message : "";
   if (message === "Could not download calculation data.")

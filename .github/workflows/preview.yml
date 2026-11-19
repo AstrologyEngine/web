@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   preview:
-    if: github.event.pull_request.head.repo.full_name == github.repository && (github.event.action == 'closed' || vars.CMS_DEPLOY_ENABLED == 'true')
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     env:
@@ -54,9 +54,8 @@ jobs:
           id=$(jq -n --arg ref "$HEAD_SHA" --arg environment "pr-$PR" '{ref:$ref,environment:$environment,auto_merge:false,required_contexts:[],transient_environment:true,production_environment:false}' | gh api -X POST "repos/$REPO/deployments" --input - --jq .id)
           echo "id=$id" >> "$GITHUB_OUTPUT"
           gh api -X POST "repos/$REPO/deployments/$id/statuses" -f state=in_progress
-          node scripts/verify-cms-deployment.mjs staging
           bun run sync
-          CMS_SNAPSHOT_ORIGIN=https://cms-staging.astrologyengine.dev bun run build
+          bun run build
       - name: Upload preview
         id: upload
         if: steps.deploy.outputs.id != ''

@@ -1,23 +1,19 @@
 import { dev } from "$app/environment";
 import type { Handle } from "@sveltejs/kit";
-import { contentSource } from "$lib/server/cms";
-import { chooseLocale } from "$lib/server/cms/locale";
+import { defaultCode, locales } from "$lib/server/content";
+import { chooseLocale } from "$lib/server/content/locale";
 
 const YEAR = 60 * 60 * 24 * 365;
 
-/** Negotiates the page locale (docs/designs/cms.md §9.2). */
+/** Negotiates the page locale. */
 export const handle: Handle = async ({ event, resolve }) => {
   if (event.url.pathname.startsWith("/api/")) return resolve(event);
-  const locales = await contentSource({
-    platform: event.platform,
-    origin: event.url.origin,
-  }).locales();
   const { locale, persist } = chooseLocale({
     query: event.url.searchParams.get("lang"),
     cookie: event.cookies.get("lang"),
     acceptLanguage: event.request.headers.get("accept-language"),
-    enabled: locales.locales.map((entry) => entry.code),
-    defaultCode: locales.default,
+    enabled: locales.map((entry) => entry.code),
+    defaultCode,
   });
   if (persist)
     event.cookies.set("lang", locale, {

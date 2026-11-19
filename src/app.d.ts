@@ -13,12 +13,6 @@ declare global {
     interface Platform {
       env: {
         ASSETS: { fetch(input: Request | URL | string): Promise<Response> };
-        CMS: {
-          fetch(
-            input: Request | URL | string,
-            init?: RequestInit,
-          ): Promise<Response>;
-        };
       };
     }
   }

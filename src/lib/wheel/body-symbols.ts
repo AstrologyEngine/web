@@ -22,7 +22,7 @@ const planetSymbols = Object.fromEntries(
 ) as Record<(typeof planetIds)[number], { path: string }>;
 
 // SVG glyphs ported from astrology-engine-website at 9613598; Earth and Ceres retained for this app.
-/** Glyphs only; display names come from the CMS `body` and `angle` entries. */
+/** Glyphs only; display names come from the web content files `body` and `angle` entries. */
 export const bodySymbols: Record<string, { path: string }> = {
   ...planetSymbols,
   EARTH: {

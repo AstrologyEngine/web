@@ -29,7 +29,7 @@ test("flags literal accessible and hint attributes", () => {
   );
 });
 
-test("allows CMS expressions, symbols, numbers and non-copy attributes", () => {
+test("allows copy expressions, symbols, numbers and non-copy attributes", () => {
   assert.deepEqual(
     find(`<script lang="ts">const x = "Not markup";</script>
 <p class="primary" role="status">{t("brand.name")} ✳ × ° ↗ · 12</p>

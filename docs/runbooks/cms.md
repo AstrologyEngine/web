@@ -1,7 +1,5 @@
-# CMS runbooks
+# Superseded CMS runbook
 
-The CMS is now maintained in [AstrologyEngine/cms](https://github.com/AstrologyEngine/cms).
-See the [CMS runbooks document](https://github.com/AstrologyEngine/cms/blob/main/docs/runbooks/cms.md).
+The web project owns site copy. See the [copy editing guide](../agents/content.md).
 
-Original history remains in this repository. The extraction and web integration
-are described in [the extraction record](../cms-extraction.md).
+The [CMS extraction record](../cms-extraction.md) documents the former service.

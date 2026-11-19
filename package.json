@@ -5,24 +5,23 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "bun run worker:build && node scripts/cms-snapshot.mjs && vite dev",
+    "dev": "bun run worker:build && vite dev",
     "sync": "svelte-kit sync",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "check:ts": "node node_modules/@typescript/native/bin/tsc --noEmit",
     "lint": "oxlint --disable-nested-config . && node scripts/check-copy.mjs",
     "format": "oxfmt --disable-nested-config . && prettier --plugin prettier-plugin-svelte --write \"**/*.svelte\"",
     "format:check": "oxfmt --disable-nested-config --check . && prettier --plugin prettier-plugin-svelte --check \"**/*.svelte\"",
-    "build": "bun run worker:build && node scripts/build-info.mjs && node scripts/cms-snapshot.mjs && vite build",
+    "build": "bun run worker:build && node scripts/build-info.mjs && vite build",
     "dry-run": "wrangler deploy --dry-run",
     "test:browser": "playwright test",
     "changeset": "changeset",
     "version:release": "changeset version && bun install --lockfile-only && bun run format",
     "release:publish": "node scripts/publish-release.mjs",
     "worker:build": "bun build src/lib/calculation/worker.ts --target browser --outfile static/calculation-worker.js",
-    "dev:stack": "node scripts/dev-stack.mjs"
+    "check:content": "bun test verification/content.test.ts"
   },
   "dependencies": {
-    "@astrologyengine/cms-contract": "https://github.com/AstrologyEngine/cms/releases/download/v0.1.0/cms-contract-0.1.0.tgz",
     "@js-temporal/polyfill": "0.5.1",
     "chrono-node": "2.10.3",
     "zod": "4.6.7"
